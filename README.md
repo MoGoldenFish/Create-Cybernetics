@@ -9,7 +9,7 @@ Credits:
 
 Modeling Artists: 
     
-    Artistic VoidK - HexCore, Arc Thrower (not yet added)
+    Artistic VoidK - HexCore 
 
 Translators: 
 
@@ -19,4 +19,4 @@ Translators:
 
 Sound Design: 
 
-    Tar - Robosurgeon Surgery Sound
+    Tar - All non-vanilla sounds (Surgery chamber, surgey table, Smasher sounds, and pigstrom grunts) 
