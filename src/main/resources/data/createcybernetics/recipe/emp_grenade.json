@@ -21,11 +21,9 @@
   },
 
   "pattern": [
-    "     ",
-    " TRT ",
-    " WBW ",
-    " TGT ",
-    "     "
+    "TRT",
+    "WBW",
+    "TGT"
   ],
 
   "result": {
