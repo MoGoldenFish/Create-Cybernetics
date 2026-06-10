@@ -15,7 +15,7 @@ Translators:
 
     Ukranian - Roll54, Tenwoc 
     Japanese - hamutaromaru
-    Russian - InventedReality
+    Russian - InventedReality, Filarin, mrNeon777
     Chinese - OrzMirror 
 
 Sound Design: 
