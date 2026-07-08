@@ -38,5 +38,14 @@ public final class IronsSpellbooksCyberwareAttributes {
                 cc("irons_addmana_manabattery3"),
                 100, AttributeModifier.Operation.ADD_VALUE);
 
+        CyberwareAttributeHelper.registerModifierDynamicAttribute(
+                "sculked_eldritch_power", IronsSpellbooksCompat.ATTR_ELDRITCH_SPELL_POWER,
+                cc("sculked_eldritch_power"),
+                25, AttributeModifier.Operation.ADD_VALUE);
+        CyberwareAttributeHelper.registerModifierDynamicAttribute(
+                "sculked_eldritch_resist", IronsSpellbooksCompat.ATTR_ELDRITCH_MAGIC_RESIST,
+                cc("sculked_eldritch_resist"),
+                10, AttributeModifier.Operation.ADD_VALUE);
+
     }
 }

@@ -8,11 +8,12 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
 public class NeuropozyneEffect extends MobEffect {
+
+    public static final String HUMANITY_BONUS_KEY = "neuropozyne";
 
     private static final int HUMANITY_PER_LEVEL = 25;
 
@@ -37,14 +38,15 @@ public class NeuropozyneEffect extends MobEffect {
 
     @Override
     public boolean applyEffectTick(LivingEntity living, int amplifier) {
-        if (!(living instanceof Player player)) return true;
-        if (player.level().isClientSide) return true;
-
-        PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
-        if (data != null) {
-            int bonus = (amplifier + 1) * HUMANITY_PER_LEVEL;
-            data.setHumanityBonus(bonus);
+        if (!(living instanceof Player player)) {
+            return true;
         }
+
+        if (player.level().isClientSide) {
+            return true;
+        }
+
+        applyHumanityBonus(player, amplifier);
 
         if ((player.tickCount % 20) == 0) {
             MobEffectInstance rejection = player.getEffect(ModEffects.CYBERWARE_REJECTION);
@@ -60,13 +62,31 @@ public class NeuropozyneEffect extends MobEffect {
         return true;
     }
 
-    @Override
-    public void onMobRemoved(LivingEntity living, int amplifier, Entity.RemovalReason reason) {
-        if (!(living instanceof Player player)) return;
-        if (player.level().isClientSide) return;
+    public static void applyHumanityBonus(Player player, int amplifier) {
+        if (player == null || player.level().isClientSide) {
+            return;
+        }
 
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
-        if (data != null) data.clearHumanityBonus();
+        if (data == null) {
+            return;
+        }
+
+        int bonus = (amplifier + 1) * HUMANITY_PER_LEVEL;
+        data.setHumanityBonus(player, HUMANITY_BONUS_KEY, bonus);
+    }
+
+    public static void clearHumanityBonus(Player player) {
+        if (player == null || player.level().isClientSide) {
+            return;
+        }
+
+        PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
+        if (data == null) {
+            return;
+        }
+
+        data.clearHumanityBonus(player, HUMANITY_BONUS_KEY);
     }
 
     private static void rollSideEffects(Player player, int amplifier) {
@@ -78,17 +98,25 @@ public class NeuropozyneEffect extends MobEffect {
         int debuffDuration = DEBUFF_DURATION_BASE + (level - 1) * DEBUFF_DURATION_PER_LEVEL;
         int debuffAmp = Math.min(2, (level - 1) / 2);
 
-        maybeApply(player, MobEffects.WEAKNESS, chance * 1.00f, debuffDuration, debuffAmp);
+        maybeApply(player, MobEffects.WEAKNESS, chance, debuffDuration, debuffAmp);
         maybeApply(player, MobEffects.DIG_SLOWDOWN, chance * 0.85f, debuffDuration, debuffAmp);
         maybeApply(player, MobEffects.CONFUSION, chance * 0.70f, debuffDuration, 0);
     }
 
     private static void maybeApply(Player player, Holder<MobEffect> effect, float chance, int duration, int amplifier) {
-        if (chance <= 0f) return;
-        if (player.getRandom().nextFloat() >= chance) return;
-        MobEffectInstance existing = player.getEffect(effect);
+        if (chance <= 0f) {
+            return;
+        }
 
-        if (existing != null && existing.getDuration() > duration / 2) return;
+        if (player.getRandom().nextFloat() >= chance) {
+            return;
+        }
+
+        MobEffectInstance existing = player.getEffect(effect);
+        if (existing != null && existing.getDuration() > duration / 2) {
+            return;
+        }
+
         player.addEffect(new MobEffectInstance(effect, duration, amplifier, false, true, true));
     }
 }

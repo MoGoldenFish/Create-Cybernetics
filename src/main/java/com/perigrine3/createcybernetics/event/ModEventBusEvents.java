@@ -2,8 +2,12 @@ package com.perigrine3.createcybernetics.event;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.entity.ModEntities;
+import com.perigrine3.createcybernetics.entity.client.RipperModel;
 import com.perigrine3.createcybernetics.entity.client.models.CyberskeletonModel;
 import com.perigrine3.createcybernetics.entity.client.models.CyberzombieModel;
+import com.perigrine3.createcybernetics.entity.client.models.HogBoyModel;
+import com.perigrine3.createcybernetics.entity.client.models.PigstromModel;
+import com.perigrine3.createcybernetics.entity.client.models.PunklinModel;
 import com.perigrine3.createcybernetics.entity.client.models.SmasherModel;
 import com.perigrine3.createcybernetics.entity.custom.*;
 import net.minecraft.world.entity.SpawnPlacementTypes;
@@ -20,16 +24,29 @@ import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 public class ModEventBusEvents {
     @SubscribeEvent
     public static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(RipperModel.LAYER_LOCATION, RipperModel::createBodyLayer);
+
         event.registerLayerDefinition(SmasherModel.LAYER_LOCATION, SmasherModel::createBodyLayer);
         event.registerLayerDefinition(CyberzombieModel.LAYER_LOCATION, CyberzombieModel::createBodyLayer);
         event.registerLayerDefinition(CyberskeletonModel.LAYER_LOCATION, CyberskeletonModel::createBodyLayer);
+
+        event.registerLayerDefinition(HogBoyModel.LAYER_LOCATION, HogBoyModel::createBodyLayer);
+        event.registerLayerDefinition(PunklinModel.LAYER_LOCATION, PunklinModel::createBodyLayer);
+        event.registerLayerDefinition(PigstromModel.LAYER_LOCATION, PigstromModel::createBodyLayer);
     }
 
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
+        event.put(ModEntities.RIPPER.get(), RipperEntity.createAttributes().build());
+        event.put(ModEntities.TATHOG.get(), TatHogEntity.createAttributes().build());
+
         event.put(ModEntities.SMASHER.get(), SmasherEntity.createAttributes().build());
         event.put(ModEntities.CYBERZOMBIE.get(), CyberzombieEntity.createAttributes().build());
         event.put(ModEntities.CYBERSKELETON.get(), CyberskeletonEntity.createAttributes().build());
+
+        event.put(ModEntities.HOGBOY.get(), HogBoyEntity.createAttributes().build());
+        event.put(ModEntities.PUNKLIN.get(), PunklinEntity.createAttributes().build());
+        event.put(ModEntities.PIGSTROM.get(), PigstromEntity.createAttributes().build());
     }
 
     @SubscribeEvent
@@ -40,12 +57,18 @@ public class ModEventBusEvents {
                 Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(ModEntities.CYBERSKELETON.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
-    }
 
+        event.register(ModEntities.HOGBOY.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                AbstractCyberPiglinGangEntity::checkCyberPiglinSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(ModEntities.PUNKLIN.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                AbstractCyberPiglinGangEntity::checkCyberPiglinSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(ModEntities.PIGSTROM.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                AbstractCyberPiglinGangEntity::checkCyberPiglinSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+    }
 
     @SubscribeEvent
     public static void modifyDefaultComponents(ModifyDefaultComponentsEvent event) {
         //event.modify(Items.WHEAT, builder -> builder
-                //.set(DataComponents.FOOD, new FoodProperties.Builder().nutrition(4).saturationModifier(0.1F).build()));
+        //.set(DataComponents.FOOD, new FoodProperties.Builder().nutrition(4).saturationModifier(0.1F).build()));
     }
 }

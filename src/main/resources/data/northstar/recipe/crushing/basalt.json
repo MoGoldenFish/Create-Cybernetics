@@ -1,0 +1,41 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "northstar"
+    }
+  ],
+  "type": "create:crushing",
+  "ingredients": [
+    {
+      "item": "minecraft:basalt"
+    }
+  ],
+  "processing_time": 1000,
+  "results": [
+    {
+      "count": 2,
+      "id": "northstar:salt"
+    },
+    {
+      "chance": 0.75,
+      "id": "northstar:salt"
+    },
+    {
+      "chance": 0.25,
+      "id": "northstar:salt"
+    },
+    {
+      "count": 2,
+      "id": "createcybernetics:titaniumnugget"
+    },
+    {
+      "chance": 0.75,
+      "id": "createcybernetics:titaniumnugget"
+    },
+    {
+      "chance": 0.25,
+      "id": "createcybernetics:titaniumnugget"
+    }
+  ]
+}

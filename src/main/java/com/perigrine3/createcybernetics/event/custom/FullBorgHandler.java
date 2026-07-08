@@ -127,11 +127,13 @@ public final class FullBorgHandler {
             CyberwareAttributeHelper.removeModifier(player, "dragoon_knockback");
         }
 
-        boolean copernicusModel = isCopernicus(data);
-        if (copernicusModel) {
-            CyberwareAttributeHelper.applyModifier(player, "copernicus_oxygen");
-        } else {
-            CyberwareAttributeHelper.removeModifier(player, "copernicus_oxygen");
+        if (ModCompats.isInstalled("creatingspace")) {
+            boolean copernicusModel = isCopernicus(data);
+            if (copernicusModel) {
+                CyberwareAttributeHelper.applyModifier(player, "copernicus_oxygen");
+            } else {
+                CyberwareAttributeHelper.removeModifier(player, "copernicus_oxygen");
+            }
         }
 
         boolean genosModel = isGenos(data);
@@ -145,6 +147,62 @@ public final class FullBorgHandler {
         } else {
             CyberwareAttributeHelper.removeModifier(player, "genos_strength");
             CyberwareAttributeHelper.removeModifier(player, "genos_speed");
+        }
+
+        boolean kildareModel = isKildare(data);
+        if (kildareModel) {
+            CyberwareAttributeHelper.applyModifier(player, "kildare_strength");
+            CyberwareAttributeHelper.applyModifier(player, "kildare_speed");
+        } else {
+            CyberwareAttributeHelper.removeModifier(player, "kildare_strength");
+            CyberwareAttributeHelper.removeModifier(player, "kildare_speed");
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+        boolean sculkedBody = isSculked(data);
+        if (sculkedBody) {
+            if (ModCompats.isInstalled("irons_spellbooks")) {
+                CyberwareAttributeHelper.applyModifier(player, "sculked_eldritch_power");
+                CyberwareAttributeHelper.applyModifier(player, "sculked_eldritch_resist");
+            }
+            CyberwareAttributeHelper.applyModifier(player, "sculked_strength");
+            CyberwareAttributeHelper.applyModifier(player, "sculked_speed");
+            int xpLevel = player.experienceLevel;
+            if (xpLevel >= 10) {
+                CyberwareAttributeHelper.applyModifier(player, "sculked_size1");
+            } else {
+                CyberwareAttributeHelper.removeModifier(player, "sculked_size1");
+            }
+            if (xpLevel >= 20) {
+                CyberwareAttributeHelper.applyModifier(player, "sculked_size2");
+            } else {
+                CyberwareAttributeHelper.removeModifier(player, "sculked_size2");
+            }
+            if (xpLevel >= 30) {
+                CyberwareAttributeHelper.applyModifier(player, "sculked_size3");
+            } else {
+                CyberwareAttributeHelper.removeModifier(player, "sculked_size3");
+            }
+        } else {
+            CyberwareAttributeHelper.removeModifier(player, "sculked_strength");
+            CyberwareAttributeHelper.removeModifier(player, "sculked_speed");
+            CyberwareAttributeHelper.removeModifier(player, "sculked_size1");
+            CyberwareAttributeHelper.removeModifier(player, "sculked_size2");
+            CyberwareAttributeHelper.removeModifier(player, "sculked_size3");
+            if (ModCompats.isInstalled("irons_spellbooks")) {
+                CyberwareAttributeHelper.removeModifier(player, "sculked_eldritch_power");
+                CyberwareAttributeHelper.removeModifier(player, "sculked_eldritch_resist");
+            }
         }
     }
 
@@ -307,6 +365,7 @@ public final class FullBorgHandler {
                 && data.hasSpecificItem(ModItems.MUSCLEUPGRADES_SYNTHMUSCLE.get(), CyberwareSlot.MUSCLE)
                 && data.hasSpecificItem(ModItems.HEARTUPGRADES_CYBERHEART.get(), CyberwareSlot.HEART)
                 && data.hasSpecificItem(ModItems.BASECYBERWARE_LINEARFRAME.get(), CyberwareSlot.BONE)
+                && data.hasSpecificItem(ModItems.BASECYBERWARE_CYBEREYES.get(), CyberwareSlot.EYES)
                 && data.hasMultipleSpecificItem(ModItems.LUNGSUPGRADES_OXYGEN.get(), CyberwareSlot.LUNGS, 3)
                 && data.hasSpecificItem(ModItems.SKINUPGRADES_SOLARSKIN.get(), CyberwareSlot.SKIN)
                 && data.hasSpecificItem(ModItems.SKINUPGRADES_NETHERITEPLATING.get(), CyberwareSlot.SKIN)
@@ -338,6 +397,58 @@ public final class FullBorgHandler {
                 && data.hasSpecificItem(ModItems.BRAINUPGRADES_MATRIX.get(), CyberwareSlot.BRAIN);
     }
 
+    public static boolean isKildare(PlayerCyberwareData data) {
+        if (data == null) return false;
+        return data.hasSpecificItem(ModItems.BASECYBERWARE_RIGHTARM.get(), CyberwareSlot.RARM)
+                && data.hasSpecificItem(ModItems.BASECYBERWARE_LEFTARM.get(), CyberwareSlot.LARM)
+                && data.hasSpecificItem(ModItems.BASECYBERWARE_RIGHTLEG.get(), CyberwareSlot.RLEG)
+                && data.hasSpecificItem(ModItems.BASECYBERWARE_LEFTLEG.get(), CyberwareSlot.LLEG)
+                && data.hasSpecificItem(ModItems.SKINUPGRADES_METALPLATING.get(), CyberwareSlot.SKIN)
+                && data.hasSpecificItem(ModItems.MUSCLEUPGRADES_SYNTHMUSCLE.get(), CyberwareSlot.MUSCLE)
+                && data.hasSpecificItem(ModItems.HEARTUPGRADES_CYBERHEART.get(), CyberwareSlot.HEART)
+                && data.hasSpecificItem(ModItems.BASECYBERWARE_LINEARFRAME.get(), CyberwareSlot.BONE)
+                && data.hasSpecificItem(ModItems.BASECYBERWARE_CYBEREYES.get(), CyberwareSlot.EYES)
+                && data.hasSpecificItem(ModItems.EYEUPGRADES_ZOOM.get(), CyberwareSlot.EYES)
+                && data.hasSpecificItem(ModItems.EYEUPGRADES_HUDJACK.get(), CyberwareSlot.EYES)
+                && data.hasSpecificItem(ModItems.ARMUPGRADES_CRAFTHANDS.get(), CyberwareSlot.LARM, CyberwareSlot.RARM)
+                && data.hasSpecificItem(ModItems.ARMUPGRADES_RIPPERCLAW.get(), CyberwareSlot.LARM, CyberwareSlot.RARM);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public static boolean isSculked(PlayerCyberwareData data) {
+        if (data == null) return false;
+        return data.hasSpecificItem(ModItems.BODYPART_SCULKRIGHTARM.get(), CyberwareSlot.RARM)
+                && data.hasSpecificItem(ModItems.BODYPART_SCULKLEFTARM.get(), CyberwareSlot.LARM)
+                && data.hasSpecificItem(ModItems.BODYPART_SCULKRIGHTLEG.get(), CyberwareSlot.RLEG)
+                && data.hasSpecificItem(ModItems.BODYPART_SCULKLEFTLEG.get(), CyberwareSlot.LLEG)
+                && data.hasSpecificItem(ModItems.BODYPART_SCULKSKIN.get(), CyberwareSlot.SKIN)
+                && data.hasSpecificItem(ModItems.BODYPART_SCULKMUSCLE.get(), CyberwareSlot.MUSCLE)
+                && data.hasSpecificItem(ModItems.WETWARE_SCULKHEART.get(), CyberwareSlot.HEART)
+                && data.hasSpecificItem(ModItems.WETWARE_WARDENANTLERS.get(), CyberwareSlot.EYES)
+                && data.hasSpecificItem(ModItems.WETWARE_SCULKLUNGS.get(), CyberwareSlot.LUNGS);
+    }
+
+
+
+
+
+
+
+
+
+
     public static boolean isFullBorg(ServerPlayer player) {
         if (player == null) return false;
         if (!player.hasData(ModAttachments.CYBERWARE)) return false;
@@ -355,6 +466,7 @@ public final class FullBorgHandler {
         if (isDragoon(data)) return true;
         if (isCopernicus(data)) return true;
         if (isGenos(data)) return true;
+        if (isKildare(data)) return true;
 
         return false;
     }

@@ -261,13 +261,20 @@ public class CyberwareAttributeHelper {
                 ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "neuralprocessor_speed"),
                 1, AttributeModifier.Operation.ADD_VALUE));
 
-
         registerModifier("dragonskin_armor", new AttributeModifierData(armorAttribute,
                 ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dragonskin_armor"),
                 5, AttributeModifier.Operation.ADD_VALUE));
         registerModifier("dragonskin_toughness", new AttributeModifierData(armorToughnessAttribute,
                 ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dragonskin_toughness"),
                 5, AttributeModifier.Operation.ADD_VALUE));
+
+        registerModifier("ripperclaw_damage", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "ripperclaw_damage"),
+                2, AttributeModifier.Operation.ADD_VALUE));
+
+        registerModifier("gooeymuscle_fall", new AttributeModifierData(safeFallDistanceAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "gooeymuscle_fall"),
+                7, AttributeModifier.Operation.ADD_VALUE));
 
 
 
@@ -340,6 +347,10 @@ public class CyberwareAttributeHelper {
         registerModifier("blackshard_sprint", new AttributeModifierData(crouchSpeedAttribute,
                 ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "blackshard_crouch_sprint"),
                 3.5, AttributeModifier.Operation.ADD_VALUE));
+
+
+
+
 
 
 
@@ -443,6 +454,37 @@ public class CyberwareAttributeHelper {
         registerModifier("genos_strength", new AttributeModifierData(attackDamageAttribute,
                 ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "genos_strength_add"),
                 4, AttributeModifier.Operation.ADD_VALUE));
+
+        registerModifier("kildare_strength", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "kildare_strength_add"),
+                1, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("kildare_speed", new AttributeModifierData(speedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "kildare_speed_add"),
+                0.01, AttributeModifier.Operation.ADD_VALUE));
+
+
+
+
+
+        registerModifier("sculked_strength", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "sculked_strength"),
+                1, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("sculked_speed", new AttributeModifierData(speedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "sculked_speed"),
+                0.01, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("sculked_size1", new AttributeModifierData(scaleAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "sculked_size1"),
+                0.1, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("sculked_size2", new AttributeModifierData(scaleAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "sculked_size2"),
+                0.1, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("sculked_size3", new AttributeModifierData(scaleAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "sculked_size3"),
+                0.1, AttributeModifier.Operation.ADD_VALUE));
+
+
+
+
 
 
 
@@ -582,5 +624,68 @@ public class CyberwareAttributeHelper {
                     .map(h -> (Holder<Attribute>) h)
                     .orElse(null);
         }
+    }
+
+    public static void setPermanentModifier(
+            LivingEntity entity,
+            Holder<Attribute> attribute,
+            ResourceLocation modifierId,
+            double amount,
+            AttributeModifier.Operation operation
+    ) {
+        if (entity == null || attribute == null || modifierId == null || operation == null) {
+            return;
+        }
+
+        var instance = entity.getAttribute(attribute);
+        if (instance == null) {
+            return;
+        }
+
+        instance.removeModifier(modifierId);
+        instance.addOrReplacePermanentModifier(new AttributeModifier(modifierId, amount, operation));
+    }
+
+    public static void removePermanentModifier(
+            LivingEntity entity,
+            Holder<Attribute> attribute,
+            ResourceLocation modifierId
+    ) {
+        if (entity == null || attribute == null || modifierId == null) {
+            return;
+        }
+
+        var instance = entity.getAttribute(attribute);
+        if (instance == null) {
+            return;
+        }
+
+        instance.removeModifier(modifierId);
+    }
+
+    public static int getIntValue(LivingEntity entity, Holder<Attribute> attribute, int fallback) {
+        if (entity == null || attribute == null) {
+            return fallback;
+        }
+
+        var instance = entity.getAttribute(attribute);
+        if (instance == null) {
+            return fallback;
+        }
+
+        return net.minecraft.util.Mth.floor(instance.getValue());
+    }
+
+    public static void setBaseValue(LivingEntity entity, Holder<Attribute> attribute, double value) {
+        if (entity == null || attribute == null) {
+            return;
+        }
+
+        var instance = entity.getAttribute(attribute);
+        if (instance == null) {
+            return;
+        }
+
+        instance.setBaseValue(value);
     }
 }

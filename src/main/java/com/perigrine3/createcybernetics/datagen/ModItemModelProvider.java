@@ -21,6 +21,7 @@ public class ModItemModelProvider extends ItemModelProvider {
 
         basicItem(ModItems.EYEUPGRADEBASE.get());
         basicItem(ModItems.TITANIUM_HAND.get());
+        basicItem(ModItems.GRAPHENE_ELASTOMER.get());
         basicItem(ModItems.HOLOIMPRINT_CHIP.get());
         basicItem(ModItems.FRONTAL_LOBE.get());
         basicItem(ModItems.PARIETAL_LOBE.get());
@@ -37,6 +38,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.NEUROPOZYNE_AUTOINJECTOR.get());
 
         basicItem(ModItems.EMPTY_AUTOINJECTOR.get());
+        basicItem(ModItems.INCOMPLETE_EMPTY_AUTOINJECTOR.get());
 
         basicItem(ModItems.COPPER_UPGRADE_TEMPLATE.get());
         basicItem(ModItems.IRON_UPGRADE_TEMPLATE.get());
@@ -62,19 +64,17 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.COOKED_LIVER.get());
         basicItem(ModItems.BONE_MARROW.get());
 
-        if (ModItems.ANDOUILLE_SAUSAGE != null && ModItems.ROASTED_ANDOUILLE != null && ModItems.GROUND_OFFAL != null && ModItems.BRAIN_STEW != null ) {
-            basicItem(ModItems.ANDOUILLE_SAUSAGE.get());
-            basicItem(ModItems.ROASTED_ANDOUILLE.get());
-            basicItem(ModItems.GROUND_OFFAL.get());
-            basicItem(ModItems.BRAIN_STEW.get());
-        }
 
 
 
-
+        withExistingParent(ModItems.RIPPER_SPAWN_EGG.getId().getPath(), mcLoc("item/template_spawn_egg"));
+        withExistingParent(ModItems.TATHOG_SPAWN_EGG.getId().getPath(), mcLoc("item/template_spawn_egg"));
         withExistingParent(ModItems.SMASHER_SPAWN_EGG.getId().getPath(), mcLoc("item/template_spawn_egg"));
         withExistingParent(ModItems.CYBERZOMBIE_SPAWN_EGG.getId().getPath(), mcLoc("item/template_spawn_egg"));
         withExistingParent(ModItems.CYBERSKELETON_SPAWN_EGG.getId().getPath(), mcLoc("item/template_spawn_egg"));
+        withExistingParent(ModItems.HOGBOY_SPAWN_EGG.getId().getPath(), mcLoc("item/template_spawn_egg"));
+        withExistingParent(ModItems.PUNKLIN_SPAWN_EGG.getId().getPath(), mcLoc("item/template_spawn_egg"));
+        withExistingParent(ModItems.PIGSTROM_SPAWN_EGG.getId().getPath(), mcLoc("item/template_spawn_egg"));
 
 
 //COMPONENT
@@ -89,11 +89,6 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.COMPONENT_STORAGE.get());
         basicItem(ModItems.COMPONENT_SYNTHNERVES.get());
         basicItem(ModItems.COMPONENT_MESH.get());
-
-        if (ModItems.COMPONENT_LED != null && ModItems.COMPONENT_TITANIUMROD != null) {
-            basicItem(ModItems.COMPONENT_LED.get());
-            basicItem(ModItems.COMPONENT_TITANIUMROD.get());
-        }
     }
 
 //BODY PART
@@ -158,11 +153,6 @@ public class ModItemModelProvider extends ItemModelProvider {
 //EYES
         {
         basicItem(ModItems.EYEUPGRADES_HUDLENS.get());
-
-            if (ModItems.EYEUPGRADES_NAVIGATIONCHIP != null) {
-                basicItem(ModItems.EYEUPGRADES_NAVIGATIONCHIP.get());
-            }
-
         basicItem(ModItems.EYEUPGRADES_HUDJACK.get());
         basicItem(ModItems.EYEUPGRADES_NIGHTVISION.get());
         basicItem(ModItems.EYEUPGRADES_TARGETING.get());
@@ -181,6 +171,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.ARMUPGRADES_FIRESTARTER.get());
         basicItem(ModItems.ARMUPGRADES_PNEUMATICWRIST.get());
         basicItem(ModItems.ARMUPGRADES_REINFORCEDKNUCKLES.get());
+        basicItem(ModItems.ARMUPGRADES_RIPPERCLAW.get());
     }
 
 //LEGS
@@ -198,11 +189,6 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.BONEUPGRADES_BONEFLEX.get());
         basicItem(ModItems.BONEUPGRADES_BONELACING.get());
         basicItem(ModItems.BONEUPGRADES_CAPACITORFRAME.get());
-
-            if (ModItems.BONEUPGRADES_ELYTRA != null) {
-                basicItem(ModItems.BONEUPGRADES_ELYTRA.get());
-            }
-
         basicItem(ModItems.BONEUPGRADES_PIEZO.get());
         basicItem(ModItems.BONEUPGRADES_SPINALINJECTOR.get());
         basicItem(ModItems.BONEUPGRADES_SANDEVISTAN.get());
@@ -213,12 +199,6 @@ public class ModItemModelProvider extends ItemModelProvider {
         {
         basicItem(ModItems.BRAINUPGRADES_CYBERBRAIN.get());
         basicItem(ModItems.BRAINUPGRADES_EYEOFDEFENDER.get());
-
-            if (ModItems.BRAINUPGRADES_CONSCIOUSNESSTRANSMITTER != null && ModItems.BRAINUPGRADES_CORTICALSTACK != null) {
-                basicItem(ModItems.BRAINUPGRADES_CONSCIOUSNESSTRANSMITTER.get());
-                basicItem(ModItems.BRAINUPGRADES_CORTICALSTACK.get());
-            }
-
         basicItem(ModItems.BRAINUPGRADES_ENDERJAMMER.get());
         basicItem(ModItems.BRAINUPGRADES_MATRIX.get());
         basicItem(ModItems.BRAINUPGRADES_NEURALCONTEXTUALIZER.get());
@@ -227,10 +207,6 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.BRAINUPGRADES_CHIPWARESLOTS.get());
         basicItem(ModItems.BRAINUPGRADES_NEURALPROCESSOR.get());
         basicItem(ModItems.BRAINUPGRADES_ICEPROTOCOL.get());
-
-            if (ModItems.BRAINUPGRADES_SPELLJAMMER != null) {
-                basicItem(ModItems.BRAINUPGRADES_SPELLJAMMER.get());
-            }
     }
 
 //HEART
@@ -260,9 +236,6 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.ORGANSUPGRADES_METABOLIC.get());
         basicItem(ModItems.ORGANSUPGRADES_DENSEBATTERY.get());
         basicItem(ModItems.ORGANSUPGRADES_HEATENGINE.get());
-            if (ModItems.ORGANSUPGRADES_MANABATTERY != null) {
-                basicItem(ModItems.ORGANSUPGRADES_MANABATTERY.get());
-            }
     }
 
 //SKIN
@@ -277,13 +250,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.SKINUPGRADES_SUBDERMALARMOR.get());
         basicItem(ModItems.SKINUPGRADES_SUBDERMALSPIKES.get());
         basicItem(ModItems.SKINUPGRADES_SYNTHETICSETULES.get());
-
-            if (ModItems.SKINUPGRADES_SWEAT != null) {
-                basicItem(ModItems.SKINUPGRADES_SWEAT.get());
-            }
-            if (ModItems.SKINUPGRADES_MANASKIN != null) {
-                basicItem(ModItems.SKINUPGRADES_MANASKIN.get());
-            }
+        basicItem(ModItems.SKINUPGRADES_EMPTHREADING.get());
     }
 
 //MUSCLE
@@ -294,10 +261,6 @@ public class ModItemModelProvider extends ItemModelProvider {
 
 //WETWARE
         {
-            if (ModItems.WETWARE_BLUBBER != null) {
-                basicItem(ModItems.WETWARE_BLUBBER.get());
-            }
-
             basicItem(ModItems.WETWARE_FIREBREATHINGLUNGS.get());
             basicItem(ModItems.WETWARE_WATERBREATHINGLUNGS.get());
             basicItem(ModItems.WETWARE_GUARDIANEYE.get());
@@ -315,6 +278,8 @@ public class ModItemModelProvider extends ItemModelProvider {
             basicItem(ModItems.WETWARE_DRAGONSKIN.get());
             basicItem(ModItems.WETWARE_WARDENANTLERS.get());
             basicItem(ModItems.WETWARE_SCULKHEART.get());
+            basicItem(ModItems.WETWARE_GOOEYMUSCLE.get());
+            basicItem(ModItems.WETWARE_ELECTROCYTEMUSCLE.get());
         }
 
 
@@ -328,11 +293,6 @@ public class ModItemModelProvider extends ItemModelProvider {
             basicItem(ModItems.SCAVENGED_CYBEREYES.get());
             basicItem(ModItems.SCAVENGED_LINEARFRAME.get());
             basicItem(ModItems.SCAVENGED_HUDLENS.get());
-
-            if (ModItems.SCAVENGED_NAVIGATIONCHIP != null) {
-                basicItem(ModItems.SCAVENGED_NAVIGATIONCHIP.get());
-            }
-
             basicItem(ModItems.SCAVENGED_HUDJACK.get());
             basicItem(ModItems.SCAVENGED_NIGHTVISION.get());
             basicItem(ModItems.SCAVENGED_TARGETING.get());
@@ -347,6 +307,7 @@ public class ModItemModelProvider extends ItemModelProvider {
             basicItem(ModItems.SCAVENGED_FIRESTARTER.get());
             basicItem(ModItems.SCAVENGED_PNEUMATICWRIST.get());
             basicItem(ModItems.SCAVENGED_REINFORCEDKNUCKLES.get());
+            basicItem(ModItems.SCAVENGED_ARCCANNON.get());
             basicItem(ModItems.SCAVENGED_METALDETECTOR.get());
             basicItem(ModItems.SCAVENGED_ANKLEBRACERS.get());
             basicItem(ModItems.SCAVENGED_JUMPBOOST.get());
@@ -357,21 +318,10 @@ public class ModItemModelProvider extends ItemModelProvider {
             basicItem(ModItems.SCAVENGED_BONEFLEX.get());
             basicItem(ModItems.SCAVENGED_BONELACING.get());
             basicItem(ModItems.SCAVENGED_CAPACITORFRAME.get());
-
-            if (ModItems.SCAVENGED_ELYTRA != null) {
-                basicItem(ModItems.SCAVENGED_ELYTRA.get());
-            }
-
             basicItem(ModItems.SCAVENGED_PIEZO.get());
             basicItem(ModItems.SCAVENGED_SPINALINJECTOR.get());
             basicItem(ModItems.SCAVENGED_SANDEVISTAN.get());
             basicItem(ModItems.SCAVENGED_EYEOFDEFENDER.get());
-
-            if (ModItems.SCAVENGED_CONSCIOUSNESSTRANSMITTER != null && ModItems.SCAVENGED_CORTICALSTACK != null) {
-                basicItem(ModItems.SCAVENGED_CONSCIOUSNESSTRANSMITTER.get());
-                basicItem(ModItems.SCAVENGED_CORTICALSTACK.get());
-            }
-
             basicItem(ModItems.SCAVENGED_ENDERJAMMER.get());
             basicItem(ModItems.SCAVENGED_MATRIX.get());
             basicItem(ModItems.SCAVENGED_NEURALCONTEXTUALIZER.get());
@@ -407,18 +357,6 @@ public class ModItemModelProvider extends ItemModelProvider {
             basicItem(ModItems.SCAVENGED_SUBDERMALSPIKES.get());
             basicItem(ModItems.SCAVENGED_SYNTHETICSETULES.get());
             basicItem(ModItems.SCAVENGED_METALPLATING.get());
-
-            if (ModItems.SCAVENGED_SWEAT != null) {
-                basicItem(ModItems.SCAVENGED_SWEAT.get());
-            }
-            if (ModItems.SCAVENGED_MANABATTERY != null &&
-                    ModItems.SCAVENGED_MANASKIN != null &&
-                    ModItems.SCAVENGED_SPELLJAMMER != null) {
-                basicItem(ModItems.SCAVENGED_MANABATTERY.get());
-                basicItem(ModItems.SCAVENGED_MANASKIN.get());
-                basicItem(ModItems.SCAVENGED_SPELLJAMMER.get());
-            }
-
             basicItem(ModItems.SCAVENGED_SYNTHMUSCLE.get());
             basicItem(ModItems.SCAVENGED_WIREDREFLEXES.get());
         }

@@ -8,7 +8,7 @@
   ],
   "key": {
     "G": {
-      "item": "glass"
+      "item": "minecraft:glass_pane"
     },
     "B": {
       "tag": "minecraft:buttons"

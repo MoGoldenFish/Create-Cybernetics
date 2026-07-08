@@ -9,6 +9,7 @@
     "CorpseEntityRemoveMixin",
     "InventoryMenuChipwareSlotsMixin",
     "LivingEntitySandevistanTrailMixin",
+    "LivingEntitySurgerySleepDamageMixin",
     "PlayerSprintWhileCrouchingMixin",
     "ProjectileInaccuracyMixin",
     "RaidMixin",
@@ -25,8 +26,15 @@
     "client.CreativeSlotWrapperHideChipwareMixin",
     "client.InventoryScreenChipwareSlotsMixin",
     "client.ItemInHandRendererMixin",
+    "client.ItemInHandRendererOverlayMixin",
     "client.LivingEntityRendererAccessor",
-    "client.ScreenInvoker"
+    "client.PlayerModelImpactSquishMixin",
+    "client.PlayerModelVanillaWearHideMixin",
+    "client.PlayerRendererSkinHideMixin",
+    "client.ScreenInvoker",
+    "playeranimator.LivingEntityRendererFirstPersonOverlayMixin",
+    "pointblank.GunItemRendererMixin",
+    "wildfire.GenderLayerOverlayMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,0 +1,32 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:mod_loaded",
+        "modid": "northstar"
+      }
+    },
+ {
+  "type": "create:crushing",
+  "ingredients": [
+    {
+      "item": "minecraft:basalt"
+    }
+  ],
+  "processing_time": 1000,
+  "results": [
+    {
+      "count": 2,
+      "id": "createcybernetics:titaniumnugget"
+    },
+    {
+      "chance": 0.75,
+      "id": "createcybernetics:titaniumnugget"
+    },
+    {
+      "chance": 0.25,
+      "id": "createcybernetics:titaniumnugget"
+    }
+  ]
+}

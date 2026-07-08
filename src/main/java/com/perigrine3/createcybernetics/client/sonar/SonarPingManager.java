@@ -9,6 +9,9 @@ import java.util.List;
 public final class SonarPingManager {
     public static final int MAX_PINGS = 16;
 
+    private static final Object LOCK = new Object();
+    private static final ArrayList<Ping> PINGS = new ArrayList<>(MAX_PINGS);
+
     public static final class Ping {
         public final Vec3 worldPos;
         public final long timeNanos;
@@ -19,39 +22,85 @@ public final class SonarPingManager {
         }
     }
 
-    private static final ArrayList<Ping> PINGS = new ArrayList<>(MAX_PINGS);
-
-    private SonarPingManager() {}
-
-    /** Push newest ping (ring buffer). */
-    public static void push(Vec3 worldPos) {
-        long now = Util.getNanos();
-        if (PINGS.size() >= MAX_PINGS) PINGS.remove(0);
-        PINGS.add(new Ping(worldPos, now));
+    private SonarPingManager() {
     }
 
-    /** Remove pings older than lifeSeconds (prevents dead junk). */
-    public static void prune(float lifeSeconds) {
-        long now = Util.getNanos();
-        long maxAgeNanos = (long) (lifeSeconds * 1_000_000_000L);
+    public static void push(Vec3 worldPos) {
+        if (!isValidPosition(worldPos)) {
+            return;
+        }
 
-        for (int i = PINGS.size() - 1; i >= 0; i--) {
-            Ping p = PINGS.get(i);
-            if (now - p.timeNanos > maxAgeNanos) {
-                PINGS.remove(i);
+        long now = Util.getNanos();
+
+        synchronized (LOCK) {
+            pruneInvalidEntriesLocked();
+
+            while (PINGS.size() >= MAX_PINGS) {
+                PINGS.remove(0);
             }
+
+            PINGS.add(new Ping(worldPos, now));
         }
     }
 
-    /** Newest-first snapshot (stable order for uniform filling). */
+    public static void prune(float lifeSeconds) {
+        if (lifeSeconds <= 0.0F || !Float.isFinite(lifeSeconds)) {
+            clear();
+            return;
+        }
+
+        long now = Util.getNanos();
+        long maxAgeNanos = (long) (lifeSeconds * 1_000_000_000L);
+
+        synchronized (LOCK) {
+            PINGS.removeIf(ping -> isInvalidOrExpired(ping, now, maxAgeNanos));
+        }
+    }
+
     public static List<Ping> snapshotNewestFirst() {
-        int n = PINGS.size();
-        ArrayList<Ping> out = new ArrayList<>(n);
-        for (int i = n - 1; i >= 0; i--) out.add(PINGS.get(i));
-        return out;
+        synchronized (LOCK) {
+            pruneInvalidEntriesLocked();
+
+            int size = PINGS.size();
+            ArrayList<Ping> out = new ArrayList<>(size);
+
+            for (int i = size - 1; i >= 0; i--) {
+                Ping ping = PINGS.get(i);
+                if (isValidPing(ping)) {
+                    out.add(ping);
+                }
+            }
+
+            return out;
+        }
     }
 
     public static void clear() {
-        PINGS.clear();
+        synchronized (LOCK) {
+            PINGS.clear();
+        }
+    }
+
+    private static void pruneInvalidEntriesLocked() {
+        PINGS.removeIf(ping -> !isValidPing(ping));
+    }
+
+    private static boolean isInvalidOrExpired(Ping ping, long now, long maxAgeNanos) {
+        if (!isValidPing(ping)) {
+            return true;
+        }
+
+        return now - ping.timeNanos > maxAgeNanos;
+    }
+
+    private static boolean isValidPing(Ping ping) {
+        return ping != null && isValidPosition(ping.worldPos);
+    }
+
+    private static boolean isValidPosition(Vec3 pos) {
+        return pos != null
+                && Double.isFinite(pos.x)
+                && Double.isFinite(pos.y)
+                && Double.isFinite(pos.z);
     }
 }

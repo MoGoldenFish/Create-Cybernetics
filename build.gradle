@@ -122,6 +122,10 @@ repositories {
     maven { url = "https://maven.ithundxr.dev/snapshots" } // Registrate
     maven { url = "https://cursemaven.com" }
     maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
+    maven {
         name = "C4's Maven"
         url = "https://maven.theillusivec4.top/"
     }
@@ -133,10 +137,15 @@ repositories {
 
 dependencies {
     implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
-    implementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_version}")
+    implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
     runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+
+    //implementation "maven.modrinth:create-aeronautics:YhZLrAFC"
+    //implementation "curse.maven:sable-1312371:8007005"
+
+    implementation "curse.maven:cybernetics-cyberchems-1520237:8003738"
 
     implementation ("curse.maven:create-enchantment-industry-688768:7216917")
     implementation ("curse.maven:create-dragons-plus-1216624:7231493")
@@ -155,16 +164,17 @@ dependencies {
     implementation "curse.maven:cloth-config-348521:5729127"
 
     implementation "curse.maven:northstar-redux-1318310:7476517"
-    implementation "curse.maven:geckolib-388172:7415496"
 
-    //compileOnly "io.redspace:irons_spellbooks:1.21.1-3.15.2:api"
-    //localRuntime "io.redspace:irons_spellbooks:1.21.1-3.15.2"
+    //implementation "curse.maven:create-creating-space-858897:8034284"
+
+    compileOnly "io.redspace:irons_spellbooks:1.21.1-3.15.2:api"
+    localRuntime "io.redspace:irons_spellbooks:1.21.1-3.15.2"
 
     compileOnly "top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1:api"
     runtimeOnly "top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1"
 
-    implementation "curse.maven:vics-point-blank-961053:7515178"
-    implementation "curse.maven:geckolib-388172:7415496"
+    implementation "curse.maven:vics-point-blank-961053:7713179"
+    implementation "curse.maven:geckolib-388172:7707149"
 
     implementation "curse.maven:health-bars-1367734:7122333"
     implementation "curse.maven:puzzles-lib-495476:7140307"
@@ -175,7 +185,18 @@ dependencies {
     implementation "curse.maven:common-network-806044:7087488"
     implementation "curse.maven:azurelib-817423:7797694"
 
-    implementation "curse.maven:reforgedplay-mod-1018692:6942967"
+    //implementation "curse.maven:reforgedplay-mod-1018692:6942967"
+
+    //implementation "curse.maven:female-gender-neoforge-481655:5579007"
+
+    implementation "curse.maven:origins-neoforge-1375372:8063289"
+    implementation "curse.maven:jupiter-1072905:7738312"
+
+    implementation "curse.maven:ears-412013:6166554"
+
+    implementation "curse.maven:sound-physics-perfected-1328492:7734849"
+    implementation "curse.maven:yacl-667299:7437845"
+
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

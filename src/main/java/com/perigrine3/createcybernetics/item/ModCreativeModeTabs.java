@@ -40,6 +40,7 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.TITANIUMSHEET);
                         output.accept(ModItems.EYEUPGRADEBASE);
                         output.accept(ModItems.TITANIUM_HAND);
+                        output.accept(ModItems.GRAPHENE_ELASTOMER);
                         output.accept(ModItems.HOLOIMPRINT_CHIP);
                         output.accept(ModItems.FRONTAL_LOBE);
                         output.accept(ModItems.PARIETAL_LOBE);
@@ -139,6 +140,7 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.SCAVENGED_FIRESTARTER);
                         output.accept(ModItems.SCAVENGED_PNEUMATICWRIST);
                         output.accept(ModItems.SCAVENGED_REINFORCEDKNUCKLES);
+                        output.accept(ModItems.SCAVENGED_ARCCANNON);
                         output.accept(ModItems.SCAVENGED_METALDETECTOR);
                         output.accept(ModItems.SCAVENGED_ANKLEBRACERS);
                         output.accept(ModItems.SCAVENGED_JUMPBOOST);
@@ -267,6 +269,8 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.ARMUPGRADES_FIRESTARTER);
                         output.accept(ModItems.ARMUPGRADES_PNEUMATICWRIST);
                         output.accept(ModItems.ARMUPGRADES_REINFORCEDKNUCKLES);
+                        output.accept(ModItems.ARMUPGRADES_RIPPERCLAW);
+                        output.accept(ModItems.ARMUPGRADES_ARCCANNON);
                     //LEG UPGRADES
                         output.accept(ModItems.LEGUPGRADES_METALDETECTOR);
                         output.accept(ModItems.LEGUPGRADES_ANKLEBRACERS);
@@ -344,6 +348,7 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.SKINUPGRADES_SUBDERMALSPIKES);
                         output.accept(ModItems.SKINUPGRADES_SYNTHETICSETULES);
                         output.accept(ModItems.SKINUPGRADES_METALPLATING);
+                        output.accept(ModItems.SKINUPGRADES_EMPTHREADING);
 
                         if (ModItems.SKINUPGRADES_SWEAT != null) {
                             output.accept(ModItems.SKINUPGRADES_SWEAT);
@@ -366,6 +371,8 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.WETWARE_GUARDIANEYE);
                         output.accept(ModItems.WETWARE_POLARBEARFUR);
                         output.accept(ModItems.WETWARE_RAVAGERTENDONS);
+                        output.accept(ModItems.WETWARE_GOOEYMUSCLE);
+                        output.accept(ModItems.WETWARE_ELECTROCYTEMUSCLE);
                         output.accept(ModItems.WETWARE_SCULKLUNGS);
                         output.accept(ModItems.WETWARE_WARDENANTLERS);
                         output.accept(ModItems.WETWARE_SCULKHEART);

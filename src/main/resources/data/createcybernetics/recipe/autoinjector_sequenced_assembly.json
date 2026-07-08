@@ -1,0 +1,91 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "createcybernetics:titaniumsheet"
+  },
+  "results": [
+    {
+      "chance": 399.0,
+      "id": "createcybernetics:empty_autoinjector"
+    },
+    {
+      "chance": 8.0,
+      "id": "createcybernetics:titaniumsheet"
+    },
+    {
+      "chance": 8.0,
+      "id": "createcybernetics:titaniumnugget"
+    },
+    {
+      "chance": 5.0,
+      "id": "minecraft:glass_pane"
+    }
+  ],
+
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "createcybernetics:incomplete_empty_autoinjector"
+        },
+        {
+          "item": "minecraft:glass_pane"
+        }
+      ],
+      "results": [
+        {
+          "id": "createcybernetics:incomplete_empty_autoinjector"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "createcybernetics:incomplete_empty_autoinjector"
+        },
+        {
+          "tag": "minecraft:buttons"
+        }
+      ],
+      "results": [
+        {
+          "id": "createcybernetics:incomplete_empty_autoinjector"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "createcybernetics:incomplete_empty_autoinjector"
+        },
+        {
+          "item": "createcybernetics:titaniumnugget"
+        }
+      ],
+      "results": [
+        {
+          "id": "createcybernetics:incomplete_empty_autoinjector"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "createcybernetics:incomplete_empty_autoinjector"
+        }
+      ],
+      "results": [
+        {
+          "id": "createcybernetics:incomplete_empty_autoinjector"
+        }
+      ]
+    }
+  ],
+  "transitional_item": {
+    "id": "createcybernetics:incomplete_empty_autoinjector"
+  }
+}

@@ -6,13 +6,17 @@ import com.perigrine3.createcybernetics.effect.ModEffects;
 import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 import java.util.Set;
@@ -59,12 +63,5 @@ public class SculkedMuscleItem extends Item implements ICyberwareItem {
 
     @Override
     public void onTick(Player player) {
-        if (!player.hasEffect(ModEffects.SCULKED_EFFECT)) {
-            if ((player.tickCount % 24000) == 0) {
-                if (player.getRandom().nextFloat() < 0.25f) {
-                    player.addEffect(new MobEffectInstance(ModEffects.SCULKED_EFFECT, Integer.MAX_VALUE, 0, false, false, true));
-                }
-            }
-        }
     }
 }
