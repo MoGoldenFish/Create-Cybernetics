@@ -113,8 +113,8 @@ public class GrassfedStomachItem extends Item implements ICyberwareItem {
 
     private static void fillHunger(Player player) {
         FoodData food = player.getFoodData();
-        food.setFoodLevel(20);
-        food.setSaturation(20.0F);
+        food.eat(2, 0.3F);
+        //food.setSaturation(1F);
     }
 
     private static boolean isEatingWheat(Player player) {
