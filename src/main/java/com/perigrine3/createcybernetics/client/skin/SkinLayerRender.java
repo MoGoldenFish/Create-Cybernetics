@@ -3,6 +3,7 @@ package com.perigrine3.createcybernetics.client.skin;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.perigrine3.createcybernetics.CreateCybernetics;
+import com.perigrine3.createcybernetics.client.render.CyberwareLimbHider;
 import com.perigrine3.createcybernetics.compat.bettercombat.BetterCombatCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
@@ -18,6 +19,7 @@ import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -36,10 +38,19 @@ public final class SkinLayerRender {
 
     private record FirstPersonArmRenderRequest(
             boolean replaceVanillaArm,
-            boolean hideVanillaSleeve
+            boolean hideVanillaSleeve,
+            boolean vanillaSleeveEnabled
     ) {
         boolean shouldCancelVanillaRender() {
             return replaceVanillaArm || hideVanillaSleeve;
+        }
+
+        boolean shouldRenderVanillaSleeve() {
+            return vanillaSleeveEnabled && !hideVanillaSleeve;
+        }
+
+        boolean shouldRenderOverlaySleeve() {
+            return vanillaSleeveEnabled;
         }
     }
 
@@ -54,10 +65,21 @@ public final class SkinLayerRender {
             AbstractClientPlayer player = event.getPlayer();
             if (player == null) return;
 
+            HumanoidArm arm = event.getArm();
+
+            if (arm == HumanoidArm.RIGHT && !CyberwareLimbHider.shouldRenderRightArm(player)) {
+                event.setCanceled(true);
+                return;
+            }
+
+            if (arm == HumanoidArm.LEFT && !CyberwareLimbHider.shouldRenderLeftArm(player)) {
+                event.setCanceled(true);
+                return;
+            }
+
             SkinModifierState state = SkinModifierManager.getPlayerSkinState(player);
             if (state == null || !state.hasModifiers()) return;
 
-            HumanoidArm arm = event.getArm();
             UUID id = player.getUUID();
 
             boolean replaceVanillaArm = false;
@@ -69,9 +91,10 @@ public final class SkinLayerRender {
             }
 
             boolean hideVanillaSleeve = shouldHideVanillaSleeve(state, arm);
+            boolean vanillaSleeveEnabled = isSleeveEnabled(player, arm);
 
             FirstPersonArmRenderRequest request =
-                    new FirstPersonArmRenderRequest(replaceVanillaArm, hideVanillaSleeve);
+                    new FirstPersonArmRenderRequest(replaceVanillaArm, hideVanillaSleeve, vanillaSleeveEnabled);
 
             if (arm == HumanoidArm.RIGHT) {
                 FP_RIGHT.put(id, request);
@@ -92,6 +115,17 @@ public final class SkinLayerRender {
             if (player == null) return;
 
             HumanoidArm arm = event.getArm();
+
+            if (arm == HumanoidArm.RIGHT && !CyberwareLimbHider.shouldRenderRightArm(player)) {
+                FP_RIGHT.remove(player.getUUID());
+                return;
+            }
+
+            if (arm == HumanoidArm.LEFT && !CyberwareLimbHider.shouldRenderLeftArm(player)) {
+                FP_LEFT.remove(player.getUUID());
+                return;
+            }
+
             UUID id = player.getUUID();
 
             FirstPersonArmRenderRequest request = arm == HumanoidArm.RIGHT
@@ -160,9 +194,9 @@ public final class SkinLayerRender {
                 model.leftPants.visible = false;
 
                 model.rightArm.visible = arm == HumanoidArm.RIGHT;
-                model.rightSleeve.visible = arm == HumanoidArm.RIGHT;
+                model.rightSleeve.visible = arm == HumanoidArm.RIGHT && request.shouldRenderOverlaySleeve();
                 model.leftArm.visible = arm == HumanoidArm.LEFT;
-                model.leftSleeve.visible = arm == HumanoidArm.LEFT;
+                model.leftSleeve.visible = arm == HumanoidArm.LEFT && request.shouldRenderOverlaySleeve();
 
                 model.setupAnim(player, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
 
@@ -175,14 +209,17 @@ public final class SkinLayerRender {
                     var replacementVc = buffer.getBuffer(RenderType.entityTranslucent(replacementTexture));
 
                     armPart.render(poseStack, replacementVc, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
-                    sleevePart.render(poseStack, replacementVc, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
+
+                    if (request.shouldRenderOverlaySleeve()) {
+                        sleevePart.render(poseStack, replacementVc, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
+                    }
                 } else {
                     ResourceLocation baseSkinTexture = player.getSkin().texture();
                     var baseVc = buffer.getBuffer(RenderType.entityTranslucent(baseSkinTexture));
 
                     armPart.render(poseStack, baseVc, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
 
-                    if (!request.hideVanillaSleeve) {
+                    if (request.shouldRenderVanillaSleeve()) {
                         sleevePart.render(poseStack, baseVc, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
                     }
                 }
@@ -193,7 +230,7 @@ public final class SkinLayerRender {
 
                     armPart.render(poseStack, underlayVc, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
 
-                    if (!request.hideVanillaSleeve) {
+                    if (request.shouldRenderVanillaSleeve()) {
                         sleevePart.render(poseStack, underlayVc, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
                     }
                 }
@@ -211,14 +248,18 @@ public final class SkinLayerRender {
                         if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_ARM)) {
                             model.rightArm.render(poseStack, vc, light, OverlayTexture.NO_OVERLAY, color);
                         }
-                        if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_SLEEVE)) {
+
+                        if (request.shouldRenderOverlaySleeve()
+                                && modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_SLEEVE)) {
                             model.rightSleeve.render(poseStack, vc, light, OverlayTexture.NO_OVERLAY, color);
                         }
                     } else {
                         if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_ARM)) {
                             model.leftArm.render(poseStack, vc, light, OverlayTexture.NO_OVERLAY, color);
                         }
-                        if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_SLEEVE)) {
+
+                        if (request.shouldRenderOverlaySleeve()
+                                && modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_SLEEVE)) {
                             model.leftSleeve.render(poseStack, vc, light, OverlayTexture.NO_OVERLAY, color);
                         }
                     }
@@ -230,14 +271,18 @@ public final class SkinLayerRender {
                             if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_ARM)) {
                                 model.rightArm.render(poseStack, glintVc, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
                             }
-                            if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_SLEEVE)) {
+
+                            if (request.shouldRenderOverlaySleeve()
+                                    && modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_SLEEVE)) {
                                 model.rightSleeve.render(poseStack, glintVc, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
                             }
                         } else {
                             if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_ARM)) {
                                 model.leftArm.render(poseStack, glintVc, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
                             }
-                            if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_SLEEVE)) {
+
+                            if (request.shouldRenderOverlaySleeve()
+                                    && modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_SLEEVE)) {
                                 model.leftSleeve.render(poseStack, glintVc, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
                             }
                         }
@@ -279,6 +324,12 @@ public final class SkinLayerRender {
                     : hide.contains(SkinModifier.HideVanilla.LEFT_SLEEVE);
         }
 
+        private static boolean isSleeveEnabled(AbstractClientPlayer player, HumanoidArm arm) {
+            return arm == HumanoidArm.RIGHT
+                    ? SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.RIGHT_SLEEVE)
+                    : SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.LEFT_SLEEVE);
+        }
+
         private static SkinModifier findReplacementArmModifier(SkinModifierState state, HumanoidArm arm) {
             for (SkinModifier modifier : state.getModifiers()) {
                 if (modifier != null && modifier.replacesVanillaArm(arm)) {
@@ -303,6 +354,7 @@ public final class SkinLayerRender {
             for (SkinModifier modifier : state.getModifiers()) {
                 if (modifier == null) continue;
                 if (!modifier.needsPlayerSkinUnderlay()) continue;
+
                 if (FastColor.ARGB32.alpha(modifier.getColor()) < 255) {
                     return true;
                 }

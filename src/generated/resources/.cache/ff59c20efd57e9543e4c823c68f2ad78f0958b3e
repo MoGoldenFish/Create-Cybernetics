@@ -1,0 +1,8 @@
+// 1.21.1	2026-07-13T01:44:50.6322528	Tags for minecraft:entity_type mod id createcybernetics
+d34e429edb6533156e4409ef479ac5111157ad01 data/minecraft/tags/entity_type/deflects_projectiles.json
+d34e429edb6533156e4409ef479ac5111157ad01 data/minecraft/tags/entity_type/fall_damage_immune.json
+208cbb7f91564e522413f9bd02e0fae7383c9df3 data/minecraft/tags/entity_type/illager.json
+d34e429edb6533156e4409ef479ac5111157ad01 data/minecraft/tags/entity_type/raiders.json
+000a137a983bc4df2b2ad9b8fbcec07b0e51bc03 data/minecraft/tags/entity_type/skeletons.json
+2b0ce1676eed88126860e94f0f8430abf9db8963 data/minecraft/tags/entity_type/undead.json
+a5a5cc9fcb143b311145851e2af158b00e160a77 data/minecraft/tags/entity_type/zombies.json

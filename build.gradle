@@ -170,8 +170,8 @@ dependencies {
     implementation "curse.maven:vics-point-blank-961053:7713179"
     implementation "curse.maven:geckolib-388172:7707149"
 
-    implementation "curse.maven:health-bars-1367734:7122333"
-    implementation "curse.maven:puzzles-lib-495476:7140307"
+    //implementation "curse.maven:health-bars-1367734:7122333"
+    //implementation "curse.maven:puzzles-lib-495476:7140307"
 
     implementation "curse.maven:corpse-316582:7018307"
 
@@ -183,13 +183,32 @@ dependencies {
 
     //implementation "curse.maven:female-gender-neoforge-481655:5579007"
 
-    implementation "curse.maven:origins-neoforge-1375372:8063289"
-    implementation "curse.maven:jupiter-1072905:7738312"
+    //implementation "curse.maven:origins-neoforge-1375372:8063289"
+    //implementation "curse.maven:jupiter-1072905:7738312"
 
-    implementation "curse.maven:ears-412013:6166554"
+    //implementation "curse.maven:ears-412013:6166554"
 
     implementation "curse.maven:sound-physics-perfected-1328492:7734849"
     implementation "curse.maven:yacl-667299:7437845"
+
+    implementation "curse.maven:parcool-482378:7760593"
+
+    //implementation "curse.maven:apothic-attributes-898963:7445079"
+    //implementation "curse.maven:placebo-283644:6926281"
+
+    //implementation "curse.maven:cosmetic-armor-reworked-237307:5610814"
+
+    implementation "curse.maven:mekanism-268560:7904058"
+
+    implementation "curse.maven:oritech-1030830:8211754"
+    implementation "curse.maven:geckolib-388172:7707149"
+    implementation "curse.maven:architectury-api-419699:5786327"
+    implementation "curse.maven:athena-841890:8061947"
+
+    implementation "curse.maven:just-enough-resources-jer-240630:6174588"
+
+    implementation "curse.maven:ftb-essentials-410811:7608733"
+    implementation "curse.maven:ftb-library-forge-404465:8226923"
 
 }
 

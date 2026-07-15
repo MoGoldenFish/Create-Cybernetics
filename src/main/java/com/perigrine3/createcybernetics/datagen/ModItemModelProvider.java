@@ -159,6 +159,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.EYEUPGRADES_UNDERWATERVISION.get());
         basicItem(ModItems.EYEUPGRADES_ZOOM.get());
         basicItem(ModItems.EYEUPGRADES_TRAJECTORYCALCULATOR.get());
+        basicItem(ModItems.EYEUPGRADES_BIOMONITOR.get());
     }
 
 //ARMS
@@ -172,6 +173,12 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.ARMUPGRADES_PNEUMATICWRIST.get());
         basicItem(ModItems.ARMUPGRADES_REINFORCEDKNUCKLES.get());
         basicItem(ModItems.ARMUPGRADES_RIPPERCLAW.get());
+        basicItem(ModItems.ARMUPGRADES_MANTISBLADE_IRON.get());
+        basicItem(ModItems.ARMUPGRADES_MANTISBLADE_COPPER.get());
+        basicItem(ModItems.ARMUPGRADES_MANTISBLADE_TITANIUM.get());
+        basicItem(ModItems.ARMUPGRADES_MANTISBLADE_GOLD.get());
+        basicItem(ModItems.ARMUPGRADES_MANTISBLADE_DIAMOND.get());
+        basicItem(ModItems.ARMUPGRADES_MANTISBLADE_NETHERITE.get());
     }
 
 //LEGS
@@ -223,6 +230,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         {
         basicItem(ModItems.LUNGSUPGRADES_HYPEROXYGENATION.get());
         basicItem(ModItems.LUNGSUPGRADES_OXYGEN.get());
+        basicItem(ModItems.LUNGSUPGRADES_SYNTHLUNGS.get());
     }
 
 //ORGANS
@@ -236,6 +244,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.ORGANSUPGRADES_METABOLIC.get());
         basicItem(ModItems.ORGANSUPGRADES_DENSEBATTERY.get());
         basicItem(ModItems.ORGANSUPGRADES_HEATENGINE.get());
+        basicItem(ModItems.ORGANSUPGRADES_OREGRINDER.get());
     }
 
 //SKIN
@@ -299,6 +308,7 @@ public class ModItemModelProvider extends ItemModelProvider {
             basicItem(ModItems.SCAVENGED_UNDERWATERVISION.get());
             basicItem(ModItems.SCAVENGED_ZOOM.get());
             basicItem(ModItems.SCAVENGED_TRAJECTORYCALCULATOR.get());
+            basicItem(ModItems.SCAVENGED_BIOMONITOR.get());
             basicItem(ModItems.SCAVENGED_ARMCANNON.get());
             basicItem(ModItems.SCAVENGED_FLYWHEEL.get());
             basicItem(ModItems.SCAVENGED_CLAWS.get());
@@ -308,6 +318,12 @@ public class ModItemModelProvider extends ItemModelProvider {
             basicItem(ModItems.SCAVENGED_PNEUMATICWRIST.get());
             basicItem(ModItems.SCAVENGED_REINFORCEDKNUCKLES.get());
             basicItem(ModItems.SCAVENGED_ARCCANNON.get());
+            basicItem(ModItems.SCAVENGED_MANTISBLADE_TITANIUM.get());
+            basicItem(ModItems.SCAVENGED_MANTISBLADE_IRON.get());
+            basicItem(ModItems.SCAVENGED_MANTISBLADE_COPPER.get());
+            basicItem(ModItems.SCAVENGED_MANTISBLADE_GOLD.get());
+            basicItem(ModItems.SCAVENGED_MANTISBLADE_DIAMOND.get());
+            basicItem(ModItems.SCAVENGED_MANTISBLADE_NETHERITE.get());
             basicItem(ModItems.SCAVENGED_METALDETECTOR.get());
             basicItem(ModItems.SCAVENGED_ANKLEBRACERS.get());
             basicItem(ModItems.SCAVENGED_JUMPBOOST.get());
@@ -338,6 +354,7 @@ public class ModItemModelProvider extends ItemModelProvider {
             basicItem(ModItems.SCAVENGED_PLATELETS.get());
             basicItem(ModItems.SCAVENGED_HYPEROXYGENATION.get());
             basicItem(ModItems.SCAVENGED_OXYGEN.get());
+            basicItem(ModItems.SCAVENGED_SYNTHLUNGS.get());
             basicItem(ModItems.SCAVENGED_ADRENALINE.get());
             basicItem(ModItems.SCAVENGED_BATTERY.get());
             basicItem(ModItems.SCAVENGED_DIAMONDWAFERSTACK.get());
@@ -346,6 +363,7 @@ public class ModItemModelProvider extends ItemModelProvider {
             basicItem(ModItems.SCAVENGED_METABOLIC.get());
             basicItem(ModItems.SCAVENGED_DENSEBATTERY.get());
             basicItem(ModItems.SCAVENGED_HEATENGINE.get());
+            basicItem(ModItems.SCAVENGED_OREGRINDER.get());
             basicItem(ModItems.SCAVENGED_ARTERIALTURBINE.get());
             basicItem(ModItems.SCAVENGED_CHROMATOPHORES.get());
             basicItem(ModItems.SCAVENGED_SYNTHSKIN.get());

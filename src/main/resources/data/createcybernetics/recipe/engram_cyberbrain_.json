@@ -1,0 +1,16 @@
+{
+  "type": "createcybernetics:cyberbrain_smithing",
+  "template": {
+    "item": "createcybernetics:netherite_qpu"
+  },
+  "base": {
+    "type": "createcybernetics:completed_biochip"
+  },
+  "addition": {
+    "item": "createcybernetics:brainupgrades_cyberbrain"
+  },
+  "result": {
+    "id": "createcybernetics:brainupgrades_cyberbrain",
+    "count": 1
+  }
+}

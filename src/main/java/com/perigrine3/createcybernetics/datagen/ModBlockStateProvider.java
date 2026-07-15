@@ -29,7 +29,6 @@ public class ModBlockStateProvider extends BlockStateProvider {
         blockWithItem(ModBlocks.TITANIUM_BLOCK);
 
         blockWithItem(ModBlocks.SMOOTH_TITANIUM);
-        cutoutMippedBlockWithItem(ModBlocks.TITANIUM_GRATE);
         blockWithItem(ModBlocks.ETCHED_TITANIUM_COPPER);
 
         stairsBlock(ModBlocks.SMOOTH_TITANIUM_STAIRS.get(), blockTexture(ModBlocks.SMOOTH_TITANIUM.get()));

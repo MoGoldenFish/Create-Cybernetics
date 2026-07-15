@@ -54,15 +54,12 @@ public final class CyberwarePrimaryDyeRecipe extends CustomRecipe {
         for (int i = 0; i < input.size(); i++) {
             ItemStack stack = input.getItem(i);
             if (stack.isEmpty()) continue;
-
             if (stack.getItem() instanceof DyeItem dye) {
                 dyes.add(dye);
                 continue;
             }
 
-            // Only allow exactly one non-dye item in the grid.
             if (!target.isEmpty()) return ItemStack.EMPTY;
-
             if (!isValidTarget(stack)) return ItemStack.EMPTY;
             target = stack;
         }
@@ -79,12 +76,10 @@ public final class CyberwarePrimaryDyeRecipe extends CustomRecipe {
     }
 
     private static boolean isValidTarget(ItemStack stack) {
-        // Case 1: Cyberware item that opts into dyeing (your existing ICyberwareItem API)
         if (stack.getItem() instanceof ICyberwareItem cyberwareItem) {
             return cyberwareItem.isDyeable(stack);
         }
 
-        // Case 2: Infolog data shard (or similar) that has its own dyeable flag
         if (stack.getItem() instanceof InfologDataShardItem dataShardItem) {
             return dataShardItem.isDyeable(stack);
         }

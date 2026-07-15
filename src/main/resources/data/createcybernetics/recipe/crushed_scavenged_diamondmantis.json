@@ -1,0 +1,32 @@
+{
+"type": "create:crushing",
+  "ingredients": [
+    {
+      "type": "neoforge:compound",
+      "ingredients": [
+        {
+          "item": "createcybernetics:scavenged_mantisblade_diamond"
+        }
+      ]
+    }
+  ],
+  "processing_time": 100,
+  "results": [
+    {
+      "chance": 0.70,
+      "id": "minecraft:diamond"
+    },
+    {
+      "chance": 0.25,
+      "id": "createcybernetics:titaniumingot"
+    },
+    {
+      "chance": 0.20,
+      "id": "createcybernetics:component_actuator"
+    },
+    {
+      "chance": 0.25,
+      "id": "create:experience_nugget"
+    }
+  ]
+}

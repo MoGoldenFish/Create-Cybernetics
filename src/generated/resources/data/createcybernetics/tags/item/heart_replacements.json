@@ -1,6 +1,10 @@
 {
   "values": [
     "createcybernetics:heartupgrades_cyberheart",
-    "createcybernetics:wetware_sculkheart"
+    "createcybernetics:wetware_sculkheart",
+    {
+      "id": "createcybernetics:heartupgrades_anomaly",
+      "required": false
+    }
   ]
 }

@@ -1,7 +1,7 @@
 package com.perigrine3.createcybernetics.worldgen;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
-import com.perigrine3.createcybernetics.entity.ModEntities;
+import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
@@ -9,13 +9,10 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.level.biome.Biomes;
-import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.neoforged.neoforge.common.world.BiomeModifier;
 import net.neoforged.neoforge.common.world.BiomeModifiers;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
-
-import java.util.List;
 
 public class ModBiomeModifiers {
     public static final ResourceKey<BiomeModifier> ADD_TITANIUMORE = registerKey("add_titaniumore");
@@ -34,27 +31,39 @@ public class ModBiomeModifiers {
         context.register(ADD_TITANIUMORE, new BiomeModifiers.AddFeaturesBiomeModifier(
                 biomes.getOrThrow(BiomeTags.IS_OVERWORLD),
                 HolderSet.direct(placedFeatures.getOrThrow(ModPlacedFeatures.TITANIUMORE_PLACED_KEY)),
-                GenerationStep.Decoration.UNDERGROUND_ORES));
+                GenerationStep.Decoration.UNDERGROUND_ORES
+        ));
 
-        context.register(SPAWN_CYBERZOMBIE, new BiomeModifiers.AddSpawnsBiomeModifier(
-                biomes.getOrThrow(BiomeTags.IS_OVERWORLD),
-                List.of(new MobSpawnSettings.SpawnerData(ModEntities.CYBERZOMBIE.get(), 10, 1, 3))));
-        context.register(SPAWN_CYBERSKELETON, new BiomeModifiers.AddSpawnsBiomeModifier(
-                biomes.getOrThrow(BiomeTags.IS_OVERWORLD),
-                List.of(new MobSpawnSettings.SpawnerData(ModEntities.CYBERSKELETON.get(), 10, 1, 3))));
+        context.register(SPAWN_CYBERZOMBIE, new ConfigurableEntitySpawnBiomeModifier(
+                biomes.getOrThrow(ModTags.Biomes.CYBERMONSTER_SPAWNS),
+                "cyberzombie"
+        ));
 
-        context.register(SPAWN_HOGBOY, new BiomeModifiers.AddSpawnsBiomeModifier(
+        context.register(SPAWN_CYBERSKELETON, new ConfigurableEntitySpawnBiomeModifier(
+                biomes.getOrThrow(ModTags.Biomes.CYBERMONSTER_SPAWNS),
+                "cyberskeleton"
+        ));
+
+        context.register(SPAWN_HOGBOY, new ConfigurableEntitySpawnBiomeModifier(
                 HolderSet.direct(biomes.getOrThrow(Biomes.SOUL_SAND_VALLEY)),
-                List.of(new MobSpawnSettings.SpawnerData(ModEntities.HOGBOY.get(), 5, 1, 4))));
-        context.register(SPAWN_PUNKLIN, new BiomeModifiers.AddSpawnsBiomeModifier(
+                "hogboy"
+        ));
+
+        context.register(SPAWN_PUNKLIN, new ConfigurableEntitySpawnBiomeModifier(
                 HolderSet.direct(biomes.getOrThrow(Biomes.WARPED_FOREST)),
-                List.of(new MobSpawnSettings.SpawnerData(ModEntities.PUNKLIN.get(), 10, 3, 7))));
-        context.register(SPAWN_PIGSTROM, new BiomeModifiers.AddSpawnsBiomeModifier(
+                "punklin"
+        ));
+
+        context.register(SPAWN_PIGSTROM, new ConfigurableEntitySpawnBiomeModifier(
                 HolderSet.direct(biomes.getOrThrow(Biomes.CRIMSON_FOREST)),
-                List.of(new MobSpawnSettings.SpawnerData(ModEntities.PIGSTROM.get(), 14, 4, 8))));
+                "pigstrom"
+        ));
     }
 
     private static ResourceKey<BiomeModifier> registerKey(String name) {
-        return ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, name));
+        return ResourceKey.create(
+                NeoForgeRegistries.Keys.BIOME_MODIFIERS,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, name)
+        );
     }
 }

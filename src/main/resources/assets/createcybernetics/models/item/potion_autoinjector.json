@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "createcybernetics:item/empty_autoinjector",
+    "layer1": "createcybernetics:item/potion_autoinjector_mask"
+  }
+}

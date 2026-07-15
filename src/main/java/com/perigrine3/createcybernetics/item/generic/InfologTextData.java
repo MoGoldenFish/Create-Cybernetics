@@ -9,25 +9,72 @@ public final class InfologTextData {
     private InfologTextData() {}
 
     public static final String KEY_TEXT = "cc_infolog_text";
+    public static final String KEY_TITLE = "cc_infolog_title";
     public static final String KEY_LOCKED = "cc_infolog_locked";
 
     public static String getText(ItemStack stack) {
-        CustomData cd = stack.get(DataComponents.CUSTOM_DATA);
-        if (cd == null) return "";
-        CompoundTag tag = cd.copyTag();
-        return tag.contains(KEY_TEXT, CompoundTag.TAG_STRING) ? tag.getString(KEY_TEXT) : "";
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+
+        if (customData != null) {
+            CompoundTag tag = customData.copyTag();
+
+            if (tag.contains(KEY_TEXT, CompoundTag.TAG_STRING)) {
+                return tag.getString(KEY_TEXT);
+            }
+        }
+
+        if (stack.getItem() instanceof InfologDataShardItem infolog) {
+            return infolog.getDefaultText();
+        }
+
+        return "";
+    }
+
+    public static String getTitle(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+
+        if (customData != null) {
+            CompoundTag tag = customData.copyTag();
+
+            if (tag.contains(KEY_TITLE, CompoundTag.TAG_STRING)) {
+                return tag.getString(KEY_TITLE);
+            }
+        }
+
+        if (stack.getItem() instanceof InfologDataShardItem infolog) {
+            return infolog.getDefaultTitle();
+        }
+
+        return "";
     }
 
     public static boolean isLocked(ItemStack stack) {
-        CustomData cd = stack.get(DataComponents.CUSTOM_DATA);
-        if (cd == null) return false;
-        CompoundTag tag = cd.copyTag();
-        return tag.contains(KEY_LOCKED, CompoundTag.TAG_BYTE) && tag.getBoolean(KEY_LOCKED);
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+
+        if (customData != null) {
+            CompoundTag tag = customData.copyTag();
+
+            if (tag.contains(KEY_LOCKED, CompoundTag.TAG_BYTE)) {
+                return tag.getBoolean(KEY_LOCKED);
+            }
+        }
+
+        if (stack.getItem() instanceof InfologDataShardItem infolog) {
+            return infolog.isPermanentlyLocked();
+        }
+
+        return false;
     }
 
     public static void setText(ItemStack stack, String text) {
         CompoundTag tag = getOrCreateTag(stack);
         tag.putString(KEY_TEXT, text == null ? "" : text);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
+
+    public static void setTitle(ItemStack stack, String title) {
+        CompoundTag tag = getOrCreateTag(stack);
+        tag.putString(KEY_TITLE, title == null ? "" : title);
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
 
@@ -38,7 +85,7 @@ public final class InfologTextData {
     }
 
     private static CompoundTag getOrCreateTag(ItemStack stack) {
-        CustomData cd = stack.get(DataComponents.CUSTOM_DATA);
-        return cd != null ? cd.copyTag() : new CompoundTag();
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        return customData != null ? customData.copyTag() : new CompoundTag();
     }
 }

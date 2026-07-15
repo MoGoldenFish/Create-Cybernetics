@@ -5,7 +5,7 @@ import com.perigrine3.createcybernetics.api.InstalledCyberware;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
 import com.perigrine3.createcybernetics.item.ModItems;
-import com.perigrine3.createcybernetics.screen.custom.TattooMenu;
+import com.perigrine3.createcybernetics.screen.custom.tattoo_system.TattooMenu;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;

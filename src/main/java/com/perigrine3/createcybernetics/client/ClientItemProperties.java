@@ -19,6 +19,42 @@ public final class ClientItemProperties {
         event.enqueueWork(() -> {
             ItemProperties.register(ModItems.DATA_SHARD_INFOLOG.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
                     (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            ItemProperties.register(ModItems.DATA_SHARD_INFOLOG_GETTING_STARTED.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            ItemProperties.register(ModItems.DATA_SHARD_INFOLOG_ROBOSURGEON_MANUAL.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            ItemProperties.register(ModItems.DATA_SHARD_INFOLOG_FBC_GUIDE.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            ItemProperties.register(ModItems.DATA_SHARD_INFOLOG_CYBERBESTIARY.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            ItemProperties.register(ModItems.DATA_SHARD_INFOLOG_SURGERY_TABLE_MANUAL.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            ItemProperties.register(ModItems.DATA_SHARD_INFOLOG_CYBERDECK.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            ItemProperties.register(ModItems.DATA_SHARD_INFOLOG_HARVESTER_ENCHANTMENT.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            ItemProperties.register(ModItems.DATA_SHARD_INFOLOG_DATURA.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            ItemProperties.register(ModItems.DATA_SHARD_INFOLOG_WAIT_YOUR_TURN.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            ItemProperties.register(ModItems.DATA_SHARD_INFOLOG_THE_BREACH.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            ItemProperties.register(ModItems.DATA_SHARD_INFOLOG_AI_CHAT.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            ItemProperties.register(ModItems.DATA_SHARD_INFOLOG_CYBERPSYCHO_TRANSCRIPT.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            ItemProperties.register(ModItems.DATA_SHARD_INFOLOG_CPU_INSTALL.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            if (ModItems.DATA_SHARD_INFOLOG_CYBERCHEMS != null) {
+                ItemProperties.register(ModItems.DATA_SHARD_INFOLOG_CYBERCHEMS.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                        (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            }
+
+            ItemProperties.register(ModItems.DATA_SHARD_GAME_MINESWEEPER.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+            ItemProperties.register(ModItems.DATA_SHARD_GAME_CHESS.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
+                    (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);
+
 
             ItemProperties.register(ModItems.BASECYBERWARE_LEFTARM.get(), ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dyed"),
                     (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1.0F : 0.0F);

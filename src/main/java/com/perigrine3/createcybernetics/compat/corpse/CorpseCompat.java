@@ -301,16 +301,23 @@ public final class CorpseCompat {
 
                 ItemStack effective = !installedStack.isEmpty() ? installedStack : def;
                 if (effective.isEmpty()) continue;
-                if (!shouldDropInstalledOnDeath(effective, slot)) continue;
 
                 if (ModItems.BRAINUPGRADES_CORTICALSTACK != null
-                        && effective.is(ModItems.BRAINUPGRADES_CORTICALSTACK.get())
-                        && hadCorticalStack
-                        && !capsuleStored) {
-                    ItemStack capsule = XPCapsuleItem.makeCapsule(player.getGameProfile().getName(), xpPoints);
-                    putFirstEmpty(stored, capsule);
-                    capsuleStored = true;
+                        && effective.is(ModItems.BRAINUPGRADES_CORTICALSTACK.get())) {
+                    if (hadCorticalStack && !capsuleStored) {
+                        ItemStack capsule = XPCapsuleItem.makeCapsule(player.getGameProfile().getName(), xpPoints);
+                        putFirstEmpty(stored, capsule);
+                        capsuleStored = true;
+                    }
+
+                    if (!shouldDropInstalledOnDeath(effective, slot)) continue;
+
+                    ItemStack sanitized = sanitizeStoredInventoryNbtForCorpse(effective, provider);
+                    putFirstEmpty(stored, sanitized);
+                    continue;
                 }
+
+                if (!shouldDropInstalledOnDeath(effective, slot)) continue;
 
                 ItemStack sanitized = sanitizeStoredInventoryNbtForCorpse(effective, provider);
                 putFirstEmpty(stored, sanitized);

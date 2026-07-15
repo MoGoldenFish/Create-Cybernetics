@@ -21,6 +21,21 @@ public final class ModTooltipHandler {
 
         if (stack.getItem() == ModBlocks.CHARGING_BLOCK.asItem()) {
             event.getToolTip().add(Component.translatable("tooltip.createcybernetics.charging_block").withStyle(ChatFormatting.AQUA));
+            event.getToolTip().add(Component.translatable("tooltip.createcybernetics.charging_block.energy").withStyle(ChatFormatting.DARK_RED));
         }
+        if (stack.getItem() == ModBlocks.ROBOSURGEON.asItem()) {
+            event.getToolTip().add(Component.translatable("tooltip.createcybernetics.robosurgeon").withStyle(ChatFormatting.AQUA));
+            event.getToolTip().add(Component.translatable("tooltip.createcybernetics.robosurgeon.energy").withStyle(ChatFormatting.DARK_RED));
+        }
+        if (stack.getItem() == ModBlocks.SURGERY_TABLE.asItem()) {
+            event.getToolTip().add(Component.translatable("tooltip.createcybernetics.surgery_table").withStyle(ChatFormatting.AQUA));
+        }
+        if (stack.getItem() == ModBlocks.ENGINEERING_TABLE.asItem()) {
+            event.getToolTip().add(Component.translatable("tooltip.createcybernetics.engineering_table").withStyle(ChatFormatting.AQUA));
+        }
+        if (stack.getItem() == ModBlocks.GRAFTING_TABLE.asItem()) {
+            event.getToolTip().add(Component.translatable("tooltip.createcybernetics.grafting_table").withStyle(ChatFormatting.AQUA));
+        }
+
     }
 }

@@ -14,6 +14,7 @@ import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.PlayerModelPart;
 
 public final class SkinHighlightLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
 
@@ -30,6 +31,22 @@ public final class SkinHighlightLayer extends RenderLayer<AbstractClientPlayer, 
         }
 
         return !target.isInvisible();
+    }
+
+    private static void applyHighlightVisibility(AbstractClientPlayer player, PlayerModel<AbstractClientPlayer> model) {
+        model.head.visible = true;
+        model.body.visible = true;
+        model.leftArm.visible = true;
+        model.rightArm.visible = true;
+        model.leftLeg.visible = true;
+        model.rightLeg.visible = true;
+
+        model.hat.visible = SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.HAT);
+        model.jacket.visible = SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.JACKET);
+        model.leftSleeve.visible = SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.LEFT_SLEEVE);
+        model.rightSleeve.visible = SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.RIGHT_SLEEVE);
+        model.leftPants.visible = SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.LEFT_PANTS_LEG);
+        model.rightPants.visible = SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.RIGHT_PANTS_LEG);
     }
 
     @Override
@@ -56,24 +73,13 @@ public final class SkinHighlightLayer extends RenderLayer<AbstractClientPlayer, 
         boolean prevRightLeg = model.rightLeg.visible;
         boolean prevRightPants = model.rightPants.visible;
 
-        model.head.visible = true;
-        model.hat.visible = true;
-        model.body.visible = true;
-        model.jacket.visible = true;
-        model.leftArm.visible = true;
-        model.leftSleeve.visible = true;
-        model.rightArm.visible = true;
-        model.rightSleeve.visible = true;
-        model.leftLeg.visible = true;
-        model.leftPants.visible = true;
-        model.rightLeg.visible = true;
-        model.rightPants.visible = true;
-
         SkinVanillaWearVisibility.pushSuppress();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
         try {
+            applyHighlightVisibility(player, model);
+
             PlayerSkin.Model modelType = player.getSkin().model();
 
             for (SkinHighlight highlight : state.getHighlights()) {

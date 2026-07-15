@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "minecraft:netherite_ingot"
+  },
+  "base": {
+    "item": "createcybernetics:armupgrades_mantisblade_diamond"
+  },
+  "result": {
+    "count": 1,
+    "id": "createcybernetics:armupgrades_mantisblade_netherite"
+  },
+  "template": {
+    "item": "minecraft:netherite_upgrade_smithing_template"
+  }
+}

@@ -116,6 +116,10 @@ public class SmasherModel<T extends SmasherEntity> extends HierarchicalModel<T> 
 
         this.animateWalk(SmasherAnimations.WALK_ANIM, limbSwing, limbSwingAmount, 2f, 2.5f);
         this.animate(entity.idleAnimationState, SmasherAnimations.IDLE_ANIM, ageInTicks, 1f);
+        this.animate(entity.smashAttackAnimationState, SmasherAnimations.SMASHATTACK_ANIM, ageInTicks, 1f);
+        this.animate(entity.knockbackAnimationState, SmasherAnimations.KNOCKBACK_ANIM, ageInTicks, 1f);
+        this.animate(entity.kickAttackAnimationState, SmasherAnimations.KICKATTACK_ANIM, ageInTicks, 1f);
+        this.animate(entity.grabAndSlamAnimationState, SmasherAnimations.GRAB_AND_SLAM_ANIM, ageInTicks, 1f);
     }
 
     private void applyHeadRotation(float headYaw, float headPitch) {

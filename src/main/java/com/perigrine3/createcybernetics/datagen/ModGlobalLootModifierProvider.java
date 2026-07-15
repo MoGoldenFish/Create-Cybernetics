@@ -519,6 +519,77 @@ public class ModGlobalLootModifierProvider extends GlobalLootModifierProvider {
                             new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/nether_bridge")).build(),
                             LootItemRandomChanceCondition.randomChance(0.65f).build()}, ModItems.NEUROPOZYNE_AUTOINJECTOR.get()));
 
+//BASTION TREASURE
+            this.add("bastion_treasure_netherite_qpu",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_treasure")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.45f).build()}, ModItems.NETHERITE_QPU.get()));
+            this.add("bastion_treasure_goldplated_cyberarm_r",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_treasure")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.25f).build()}, ModItems.BASECYBERWARE_RIGHTARM_GOLDPLATED.get()));
+            this.add("bastion_treasure_goldplated_cyberarm_l",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_treasure")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.25f).build()}, ModItems.BASECYBERWARE_LEFTARM_GOLDPLATED.get()));
+            this.add("bastion_treasure_goldplated_cyberleg_r",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_treasure")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.25f).build()}, ModItems.BASECYBERWARE_RIGHTLEG_GOLDPLATED.get()));
+            this.add("bastion_treasure_goldplated_cyberleg_l",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_treasure")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.25f).build()}, ModItems.BASECYBERWARE_LEFTLEG_GOLDPLATED.get()));
+            this.add("bastion_treasure_gold_template",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_treasure")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.35f).build()}, ModItems.GOLD_UPGRADE_TEMPLATE.get()));
+            this.add("bastion_treasure_gold_mantis",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_treasure")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.25f).build()}, ModItems.ARMUPGRADES_MANTISBLADE_GOLD.get()));
+
+
+//BASTION OTHER
+            this.add("bastion_other_netherite_qpu",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_other")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.25f).build()}, ModItems.NETHERITE_QPU.get()));
+            this.add("bastion_other_gold_template",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_treasure")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.35f).build()}, ModItems.GOLD_UPGRADE_TEMPLATE.get()));
+            this.add("bastion_other_gold_mantis_scav",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_treasure")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.35f).build()}, ModItems.SCAVENGED_MANTISBLADE_GOLD.get()));
+            this.add("bastion_other_gold_mantis",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_treasure")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.2f).build()}, ModItems.ARMUPGRADES_MANTISBLADE_GOLD.get()));
+
+
+
+//BASTION BRIDGE
+            this.add("bastion_bridge_netherite_qpu",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_bridge")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.25f).build()}, ModItems.NETHERITE_QPU.get()));
+            this.add("bastion_bridge_gold_template",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_treasure")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.35f).build()}, ModItems.GOLD_UPGRADE_TEMPLATE.get()));
+            this.add("bastion_bridge_gold_mantis_scav",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_treasure")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.35f).build()}, ModItems.SCAVENGED_MANTISBLADE_GOLD.get()));
+            this.add("bastion_bridge_gold_mantis",
+                    new AddItemModifier(new LootItemCondition[]{
+                            new LootTableIdCondition.Builder(ResourceLocation.withDefaultNamespace("chests/bastion_treasure")).build(),
+                            LootItemRandomChanceCondition.randomChance(0.2f).build()}, ModItems.ARMUPGRADES_MANTISBLADE_GOLD.get()));
+
+
+
 //SIMPLE DUNGEON
             this.add("simple_dungeon_cybereyes",
                     new AddItemModifier(new LootItemCondition[]{

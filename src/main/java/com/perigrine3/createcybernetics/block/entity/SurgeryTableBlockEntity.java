@@ -1,7 +1,10 @@
 package com.perigrine3.createcybernetics.block.entity;
 
+import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.block.ModBlocks;
 import com.perigrine3.createcybernetics.block.SurgeryTableBlock;
+import com.perigrine3.createcybernetics.common.surgery.DefaultOrgans;
+import com.perigrine3.createcybernetics.common.surgery.RobosurgeonSlotMap;
 import com.perigrine3.createcybernetics.common.surgery.SurgeryController;
 import com.perigrine3.createcybernetics.screen.custom.surgery.surgery_table.SurgeryTableMenu;
 import com.perigrine3.createcybernetics.sound.ModSounds;
@@ -454,6 +457,91 @@ public class SurgeryTableBlockEntity extends BlockEntity implements MenuProvider
         }
     }
 
+    public int getComparatorOutput() {
+        SurgeryTableBlockEntity controller = getController();
+
+        if (controller != null && controller != this) {
+            return controller.getComparatorOutput();
+        }
+
+        return Math.min(15, countNonDefaultImplants());
+    }
+
+    private int countNonDefaultImplants() {
+        int count = 0;
+
+        for (CyberwareSlot slot : CyberwareSlot.values()) {
+            int mappedSize = RobosurgeonSlotMap.mappedSize(slot);
+
+            for (int slotIndex = 0; slotIndex < mappedSize; slotIndex++) {
+                int inventoryIndex = RobosurgeonSlotMap.toInventoryIndex(
+                        slot,
+                        slotIndex
+                );
+
+                if (inventoryIndex < 0 || inventoryIndex >= inventory.getSlots()) {
+                    continue;
+                }
+
+                ItemStack stack = inventory.getStackInSlot(inventoryIndex);
+
+                if (stack.isEmpty()) {
+                    continue;
+                }
+
+                ItemStack defaultStack = DefaultOrgans.get(slot, slotIndex);
+
+                if (defaultStack == null || defaultStack.isEmpty()) {
+                    count++;
+                    continue;
+                }
+
+                if (!ItemStack.isSameItemSameComponents(stack, defaultStack)) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    private void updateComparatorOutput() {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+
+        BlockState state = getBlockState();
+
+        if (!state.is(ModBlocks.SURGERY_TABLE.get())
+                || !state.hasProperty(SurgeryTableBlock.PART)
+                || !state.hasProperty(SurgeryTableBlock.FACING)) {
+            return;
+        }
+
+        Direction facing = state.getValue(SurgeryTableBlock.FACING);
+
+        BlockPos headPos;
+        BlockPos footPos;
+
+        if (state.getValue(SurgeryTableBlock.PART) == BedPart.HEAD) {
+            headPos = worldPosition;
+            footPos = worldPosition.relative(facing.getOpposite());
+        } else {
+            footPos = worldPosition;
+            headPos = worldPosition.relative(facing);
+        }
+
+        level.updateNeighbourForOutputSignal(
+                headPos,
+                ModBlocks.SURGERY_TABLE.get()
+        );
+
+        level.updateNeighbourForOutputSignal(
+                footPos,
+                ModBlocks.SURGERY_TABLE.get()
+        );
+    }
+
     public void dropStagedItems(Level level, BlockPos pos) {
         SurgeryTableBlockEntity controller = getController();
         if (controller != null && controller != this) {
@@ -498,6 +586,8 @@ public class SurgeryTableBlockEntity extends BlockEntity implements MenuProvider
 
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+
+            updateComparatorOutput();
         }
     }
 

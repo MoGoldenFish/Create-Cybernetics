@@ -3,23 +3,31 @@ package com.perigrine3.createcybernetics.component;
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.UnaryOperator;
 
-public class ModDataComponents {
+public final class ModDataComponents {
+    private ModDataComponents() {}
+
     public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENT_TYPES =
             DeferredRegister.createDataComponents(CreateCybernetics.MODID);
 
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<BlockPos>> COORDINATES = register("coordinates",
-            builder -> builder.persistent(BlockPos.CODEC));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<BlockPos>> COORDINATES =
+            register("coordinates", builder -> builder.persistent(BlockPos.CODEC));
 
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<PotionContents>> POTION_AUTOINJECTOR_CONTENTS =
+            register("potion_autoinjector_contents", builder -> builder
+                    .persistent(PotionContents.CODEC)
+                    .networkSynchronized(PotionContents.STREAM_CODEC));
 
-
-
-    private static <T>DeferredHolder<DataComponentType<?>, DataComponentType<T>> register(String name, UnaryOperator<DataComponentType.Builder<T>> builderOperator) {
+    private static <T> DeferredHolder<DataComponentType<?>, DataComponentType<T>> register(
+            String name,
+            UnaryOperator<DataComponentType.Builder<T>> builderOperator
+    ) {
         return DATA_COMPONENT_TYPES.register(name, () -> builderOperator.apply(DataComponentType.builder()).build());
     }
 

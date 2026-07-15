@@ -11,16 +11,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.AbstractFish;
 import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.animal.PolarBear;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.ElderGuardian;
-import net.minecraft.world.entity.monster.Ghast;
-import net.minecraft.world.entity.monster.Guardian;
-import net.minecraft.world.entity.monster.Pillager;
-import net.minecraft.world.entity.monster.Witch;
+import net.minecraft.world.entity.monster.*;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.item.Item;
@@ -70,7 +67,11 @@ public record HarvesterEnchantmentEffect() implements EnchantmentEntityEffect {
     }
 
     private static boolean isMonsterSpecialDrop(Entity entity) {
-        return entity instanceof Warden || entity instanceof Guardian || entity instanceof ElderGuardian || entity instanceof Ghast || entity instanceof EnderDragon || entity instanceof Axolotl;
+        return entity instanceof Warden || entity instanceof Guardian ||
+                entity instanceof ElderGuardian || entity instanceof Ghast ||
+                entity instanceof EnderDragon || entity instanceof Axolotl ||
+                entity instanceof Spider || entity instanceof Ravager ||
+                entity instanceof PolarBear;
     }
 
     private static ItemStack fixedDropFor(Entity entity) {
@@ -92,6 +93,15 @@ public record HarvesterEnchantmentEffect() implements EnchantmentEntityEffect {
         }
         if (entity instanceof Axolotl) {
             return new ItemStack(ModItems.BODYPART_AXOLOTLMARROW.get());
+        }
+        if (entity instanceof Spider) {
+            return new ItemStack(ModItems.BODYPART_SPINNERETTE.get());
+        }
+        if (entity instanceof Ravager) {
+            return new ItemStack(ModItems.WETWARE_RAVAGERTENDONS.get());
+        }
+        if (entity instanceof PolarBear) {
+            return new ItemStack(ModItems.WETWARE_POLARBEARFUR.get());
         }
         return ItemStack.EMPTY;
     }

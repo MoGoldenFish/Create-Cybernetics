@@ -4,11 +4,15 @@ import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.item.ModItems;
 import com.perigrine3.createcybernetics.potion.ModPotions;
 import com.perigrine3.createcybernetics.util.ModTags;
+import com.simibubi.create.AllTags;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -28,6 +32,10 @@ public class ModItemTagProvider extends ItemTagsProvider {
         return ResourceLocation.parse(id);
     }
 
+    private static final TagKey<Item> LAB_STANDARD_DATA_SHARDS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "lab_loot/standard_data_shards"));
+    private static final TagKey<Item> LAB_FINISHED_CYBERWARE = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "lab_loot/finished_cyberware"));
+    private static final TagKey<Item> LAB_SCAVENGED_ENERGY_GENERATORS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "lab_loot/scavenged_energy_generators"));
+
     @Override
     protected void addTags(HolderLookup.Provider provider) {
 //TOGGLEABLE CYBERWARE
@@ -45,6 +53,13 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.LEGUPGRADES_JUMPBOOST.get())
                 .add(ModItems.SKINUPGRADES_SYNTHETICSETULES.get())
                 .add(ModItems.ARMUPGRADES_ARCCANNON.get())
+
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_IRON.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_COPPER.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_TITANIUM.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_GOLD.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_DIAMOND.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_NETHERITE.get())
 
                 .add(ModItems.WETWARE_FIREBREATHINGLUNGS.get())
                 .add(ModItems.WETWARE_SCULKLUNGS.get())
@@ -81,6 +96,15 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(Items.FIREWORK_ROCKET)
                 .add(Items.WIND_CHARGE);
 
+//MANTIS BLADES
+        tag(ModTags.Items.MANTIS_BLADES)
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_IRON.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_COPPER.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_TITANIUM.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_GOLD.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_DIAMOND.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_NETHERITE.get());
+
 //DATA SHARDS
         tag(ModTags.Items.DATA_SHARDS)
                 .add(ModItems.DATA_SHARD_RED.get())
@@ -94,8 +118,95 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.DATA_SHARD_BROWN.get())
                 .add(ModItems.DATA_SHARD_GRAY.get())
                 .add(ModItems.DATA_SHARD_BLACK.get())
+
                 .add(ModItems.DATA_SHARD_BIOCHIP.get())
-                .add(ModItems.DATA_SHARD_INFOLOG.get());
+                .add(ModItems.DATA_SHARD_INFOLOG.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_GETTING_STARTED.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_ROBOSURGEON_MANUAL.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_SURGERY_TABLE_MANUAL.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_FBC_GUIDE.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_CYBERBESTIARY.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_CYBERDECK.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_HARVESTER_ENCHANTMENT.get())
+
+                .add(ModItems.DATA_SHARD_INFOLOG_SUNSET_SHIFT.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_HOUSE_RULES.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_DENSE_BATTERY_AD.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_IMMUNOSUPPRESSOR_ADVISORY.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_CHROMATOPHORE_FIELD_NOTE.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_THE_RAISE.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_OMNISCIENT_OPTICS_AD.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_PRIVATE_WARD_REPORT.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_DRILLFIST_AD.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_IDEM_ARTICLE.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_MOM_IM_FINE.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_CYBERDECK_SECURITY_BRIEF.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_LUNCH_BREAK.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_DATURA.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_WAIT_YOUR_TURN.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_THE_BREACH.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_AI_CHAT.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_CYBERPSYCHO_TRANSCRIPT.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_CPU_INSTALL.get())
+
+                .add(ModItems.DATA_SHARD_GAME_MINESWEEPER.get())
+                .add(ModItems.DATA_SHARD_GAME_CHESS.get())
+
+                .addOptional(resourceLocation("createcybernetics:data_shard_infolog_cyberchems"));
+
+//SKILL SHARDS
+        tag(ModTags.Items.SKILL_SHARDS)
+                .add(ModItems.DATA_SHARD_RED.get())
+                .add(ModItems.DATA_SHARD_ORANGE.get())
+                .add(ModItems.DATA_SHARD_YELLOW.get())
+                .add(ModItems.DATA_SHARD_GREEN.get())
+                .add(ModItems.DATA_SHARD_CYAN.get())
+                .add(ModItems.DATA_SHARD_BLUE.get())
+                .add(ModItems.DATA_SHARD_PURPLE.get())
+                .add(ModItems.DATA_SHARD_PINK.get())
+                .add(ModItems.DATA_SHARD_BROWN.get())
+                .add(ModItems.DATA_SHARD_GRAY.get())
+                .add(ModItems.DATA_SHARD_BLACK.get());
+
+//TUTORIAL SHARDS
+        tag(ModTags.Items.TUTORIAL_SHARDS)
+                .add(ModItems.DATA_SHARD_INFOLOG_GETTING_STARTED.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_ROBOSURGEON_MANUAL.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_SURGERY_TABLE_MANUAL.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_FBC_GUIDE.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_CYBERBESTIARY.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_CYBERDECK.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_HARVESTER_ENCHANTMENT.get())
+
+                .addOptional(resourceLocation("createcybernetics:data_shard_infolog_cyberchems"));
+
+//LORE SHARDS
+        tag(ModTags.Items.LORE_SHARDS)
+                .add(ModItems.DATA_SHARD_INFOLOG_SUNSET_SHIFT.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_HOUSE_RULES.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_DENSE_BATTERY_AD.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_IMMUNOSUPPRESSOR_ADVISORY.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_CHROMATOPHORE_FIELD_NOTE.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_THE_RAISE.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_OMNISCIENT_OPTICS_AD.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_PRIVATE_WARD_REPORT.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_DRILLFIST_AD.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_IDEM_ARTICLE.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_MOM_IM_FINE.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_CYBERDECK_SECURITY_BRIEF.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_LUNCH_BREAK.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_DATURA.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_WAIT_YOUR_TURN.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_THE_BREACH.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_AI_CHAT.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_CYBERPSYCHO_TRANSCRIPT.get())
+                .add(ModItems.DATA_SHARD_INFOLOG_CPU_INSTALL.get());
+
+//GAME SHARDS
+        tag(ModTags.Items.GAME_SHARDS)
+                .add(ModItems.DATA_SHARD_GAME_MINESWEEPER.get())
+                .add(ModItems.DATA_SHARD_GAME_CHESS.get());
+
 
 //QUICKHACK SHARDS
         tag(ModTags.Items.QUICKHACK_SHARDS)
@@ -158,6 +269,7 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.EYEUPGRADES_TARGETING.get())
                 .add(ModItems.EYEUPGRADES_UNDERWATERVISION.get())
                 .add(ModItems.EYEUPGRADES_ZOOM.get())
+                .add(ModItems.EYEUPGRADES_TRAJECTORYCALCULATOR.get())
                 .add(ModItems.ARMUPGRADES_ARMCANNON.get())
                 .add(ModItems.ARMUPGRADES_FLYWHEEL.get())
                 .add(ModItems.ARMUPGRADES_CLAWS.get())
@@ -168,6 +280,12 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.ARMUPGRADES_REINFORCEDKNUCKLES.get())
                 .add(ModItems.ARMUPGRADES_RIPPERCLAW.get())
                 .add(ModItems.ARMUPGRADES_ARCCANNON.get())
+                .add(ModItems.SCAVENGED_MANTISBLADE_TITANIUM.get())
+                .add(ModItems.SCAVENGED_MANTISBLADE_IRON.get())
+                .add(ModItems.SCAVENGED_MANTISBLADE_GOLD.get())
+                .add(ModItems.SCAVENGED_MANTISBLADE_COPPER.get())
+                .add(ModItems.SCAVENGED_MANTISBLADE_DIAMOND.get())
+                .add(ModItems.SCAVENGED_MANTISBLADE_NETHERITE.get())
                 .add(ModItems.LEGUPGRADES_METALDETECTOR.get())
                 .add(ModItems.LEGUPGRADES_ANKLEBRACERS.get())
                 .add(ModItems.LEGUPGRADES_JUMPBOOST.get())
@@ -177,6 +295,7 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.BONEUPGRADES_BONEBATTERY.get())
                 .add(ModItems.BONEUPGRADES_BONEFLEX.get())
                 .add(ModItems.BONEUPGRADES_BONELACING.get())
+                .add(ModItems.EYEUPGRADES_TRAJECTORYCALCULATOR.get())
                 .add(ModItems.BONEUPGRADES_PIEZO.get())
                 .add(ModItems.BONEUPGRADES_SPINALINJECTOR.get())
                 .add(ModItems.BONEUPGRADES_SANDEVISTAN.get())
@@ -199,6 +318,7 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.HEARTUPGRADES_PLATELETS.get())
                 .add(ModItems.LUNGSUPGRADES_HYPEROXYGENATION.get())
                 .add(ModItems.LUNGSUPGRADES_OXYGEN.get())
+                .add(ModItems.LUNGSUPGRADES_SYNTHLUNGS.get())
                 .add(ModItems.ORGANSUPGRADES_ADRENALINE.get())
                 .add(ModItems.ORGANSUPGRADES_BATTERY.get())
                 .add(ModItems.ORGANSUPGRADES_DIAMONDWAFERSTACK.get())
@@ -208,6 +328,7 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.ORGANSUPGRADES_METABOLIC.get())
                 .add(ModItems.ORGANSUPGRADES_DENSEBATTERY.get())
                 .add(ModItems.ORGANSUPGRADES_HEATENGINE.get())
+                .add(ModItems.ORGANSUPGRADES_OREGRINDER.get())
                 .add(ModItems.SKINUPGRADES_ARTERIALTURBINE.get())
                 .add(ModItems.SKINUPGRADES_CHROMATOPHORES.get())
                 .add(ModItems.SKINUPGRADES_SYNTHSKIN.get())
@@ -229,7 +350,8 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .addOptional(resourceLocation("createcybernetics:brainupgrades_consciousnesstransmitter"))
                 .addOptional(resourceLocation("createcybernetics:brainupgrades_corticalstack"))
                 .addOptional(resourceLocation("createcybernetics:brainupgrades_spelljammer"))
-                .addOptional(resourceLocation("createcybernetics:organsupgrades_manabattery"));
+                .addOptional(resourceLocation("createcybernetics:organsupgrades_manabattery"))
+                .addOptional(resourceLocation("createcybernetics:heartupgrades_anomaly"));
 
 //BODYPART DROPS
         tag(ModTags.Items.BODYPART_DROPS)
@@ -365,7 +487,13 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.ARMUPGRADES_PNEUMATICWRIST.get())
                 .add(ModItems.ARMUPGRADES_REINFORCEDKNUCKLES.get())
                 .add(ModItems.ARMUPGRADES_RIPPERCLAW.get())
-                .add(ModItems.ARMUPGRADES_ARCCANNON.get());
+                .add(ModItems.ARMUPGRADES_ARCCANNON.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_IRON.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_COPPER.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_TITANIUM.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_GOLD.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_DIAMOND.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_NETHERITE.get());
 //LEG UPGRADES
         tag(ModTags.Items.LEG_UPGRADES)
                 .add(ModItems.LEGUPGRADES_METALDETECTOR.get())
@@ -410,6 +538,7 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.ORGANSUPGRADES_METABOLIC.get())
                 .add(ModItems.ORGANSUPGRADES_DENSEBATTERY.get())
                 .add(ModItems.ORGANSUPGRADES_HEATENGINE.get())
+                .add(ModItems.ORGANSUPGRADES_OREGRINDER.get())
                 .addOptional(resourceLocation("createcybernetics:organsupgrades_manabattery"));
 //HEART UPGRADES
         tag(ModTags.Items.HEART_UPGRADES)
@@ -418,11 +547,14 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.HEARTUPGRADES_CREEPERHEART.get())
                 .add(ModItems.HEARTUPGRADES_DEFIBRILLATOR.get())
                 .add(ModItems.HEARTUPGRADES_STEMCELL.get())
-                .add(ModItems.HEARTUPGRADES_PLATELETS.get());
+                .add(ModItems.HEARTUPGRADES_PLATELETS.get())
+                .addOptional(resourceLocation("createcybernetics:heartupgrades_anomaly"));
+
 //LUNG UPGRADES
         tag(ModTags.Items.LUNG_UPGRADES)
                 .add(ModItems.LUNGSUPGRADES_HYPEROXYGENATION.get())
-                .add(ModItems.LUNGSUPGRADES_OXYGEN.get());
+                .add(ModItems.LUNGSUPGRADES_OXYGEN.get())
+                .add(ModItems.LUNGSUPGRADES_SYNTHLUNGS.get());
 //EYE UPGRADES
         tag(ModTags.Items.EYE_UPGRADES)
                 .add(ModItems.EYEUPGRADES_HUDLENS.get())
@@ -432,6 +564,7 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.EYEUPGRADES_UNDERWATERVISION.get())
                 .add(ModItems.EYEUPGRADES_ZOOM.get())
                 .add(ModItems.EYEUPGRADES_TRAJECTORYCALCULATOR.get())
+                .add(ModItems.EYEUPGRADES_BIOMONITOR.get())
                 .addOptional(resourceLocation("createcybernetics:eyeupgrades_navigationchip"));
 //BRAIN UPGRADES
         tag(ModTags.Items.BRAIN_UPGRADES)
@@ -471,6 +604,7 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.SCAVENGED_UNDERWATERVISION.get())
                 .add(ModItems.SCAVENGED_ZOOM.get())
                 .add(ModItems.SCAVENGED_TRAJECTORYCALCULATOR.get())
+                .add(ModItems.SCAVENGED_BIOMONITOR.get())
 
                 .add(ModItems.SCAVENGED_ARMCANNON.get())
                 .add(ModItems.SCAVENGED_FLYWHEEL.get())
@@ -481,6 +615,12 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.SCAVENGED_PNEUMATICWRIST.get())
                 .add(ModItems.SCAVENGED_REINFORCEDKNUCKLES.get())
                 .add(ModItems.SCAVENGED_ARCCANNON.get())
+                .add(ModItems.SCAVENGED_MANTISBLADE_TITANIUM.get())
+                .add(ModItems.SCAVENGED_MANTISBLADE_IRON.get())
+                .add(ModItems.SCAVENGED_MANTISBLADE_COPPER.get())
+                .add(ModItems.SCAVENGED_MANTISBLADE_GOLD.get())
+                .add(ModItems.SCAVENGED_MANTISBLADE_DIAMOND.get())
+                .add(ModItems.SCAVENGED_MANTISBLADE_NETHERITE.get())
 
                 .add(ModItems.SCAVENGED_METALDETECTOR.get())
                 .add(ModItems.SCAVENGED_ANKLEBRACERS.get())
@@ -525,6 +665,7 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.SCAVENGED_METABOLIC.get())
                 .add(ModItems.SCAVENGED_DENSEBATTERY.get())
                 .add(ModItems.SCAVENGED_HEATENGINE.get())
+                .add(ModItems.SCAVENGED_OREGRINDER.get())
 
                 .add(ModItems.SCAVENGED_ARTERIALTURBINE.get())
                 .add(ModItems.SCAVENGED_CHROMATOPHORES.get())
@@ -593,12 +734,14 @@ public class ModItemTagProvider extends ItemTagsProvider {
         tag(ModTags.Items.HEART_ITEMS)
                 .add(ModItems.HEARTUPGRADES_CYBERHEART.get())
                 .add(ModItems.WETWARE_SCULKHEART.get())
-                .add(ModItems.BODYPART_HEART.get());
+                .add(ModItems.BODYPART_HEART.get())
+                .addOptional(resourceLocation("createcybernetics:heartupgrades_anomaly"));
 
         tag(ModTags.Items.LUNGS_ITEMS)
                 .add(ModItems.WETWARE_SCULKLUNGS.get())
                 .add(ModItems.WETWARE_AEROSTASISGYROBLADDER.get())
                 .add(ModItems.WETWARE_FIREBREATHINGLUNGS.get())
+                .add(ModItems.LUNGSUPGRADES_SYNTHLUNGS.get())
                 .add(ModItems.BODYPART_LUNGS.get());
 
         tag(ModTags.Items.LIVER_ITEMS)
@@ -610,6 +753,7 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.WETWARE_TACTICALINKSAC.get())
                 .add(ModItems.WETWARE_GRASSFEDSTOMACH.get())
                 .add(ModItems.WETWARE_WEBSHOOTINGINTESTINES.get())
+                .add(ModItems.ORGANSUPGRADES_OREGRINDER.get())
                 .add(ModItems.BODYPART_SCULKINTESTINES.get())
                 .add(ModItems.BODYPART_INTESTINES.get());
 
@@ -686,7 +830,11 @@ public class ModItemTagProvider extends ItemTagsProvider {
 
         tag(ModTags.Items.HEART_REPLACEMENTS)
                 .add(ModItems.HEARTUPGRADES_CYBERHEART.get())
-                .add(ModItems.WETWARE_SCULKHEART.get());
+                .add(ModItems.WETWARE_SCULKHEART.get())
+                .addOptional(resourceLocation("createcybernetics:heartupgrades_anomaly"));
+
+        tag(ModTags.Items.LUNGS_REPLACEMENTS)
+                .add(ModItems.LUNGSUPGRADES_SYNTHLUNGS.get());
 
         tag(ModTags.Items.LIVER_REPLACEMENTS)
                 .add(ModItems.BODYPART_SCULKLIVER.get())
@@ -783,9 +931,135 @@ public class ModItemTagProvider extends ItemTagsProvider {
 
 
 
+        //LAB LOOT: ORDINARY DATA SHARDS ONLY
+        tag(LAB_STANDARD_DATA_SHARDS)
+                .add(ModItems.DATA_SHARD_RED.get())
+                .add(ModItems.DATA_SHARD_ORANGE.get())
+                .add(ModItems.DATA_SHARD_YELLOW.get())
+                .add(ModItems.DATA_SHARD_GREEN.get())
+                .add(ModItems.DATA_SHARD_CYAN.get())
+                .add(ModItems.DATA_SHARD_BLUE.get())
+                .add(ModItems.DATA_SHARD_PURPLE.get())
+                .add(ModItems.DATA_SHARD_PINK.get())
+                .add(ModItems.DATA_SHARD_BROWN.get())
+                .add(ModItems.DATA_SHARD_GRAY.get())
+                .add(ModItems.DATA_SHARD_BLACK.get());
+
+//LAB LOOT: FINISHED CYBERWARE WITH SCAVENGED COUNTERPARTS
+        tag(LAB_FINISHED_CYBERWARE)
+                .add(ModItems.BASECYBERWARE_RIGHTLEG.get())
+                .add(ModItems.BASECYBERWARE_LEFTLEG.get())
+                .add(ModItems.BASECYBERWARE_RIGHTARM.get())
+                .add(ModItems.BASECYBERWARE_LEFTARM.get())
+                .add(ModItems.BASECYBERWARE_CYBEREYES.get())
+                .add(ModItems.BASECYBERWARE_LINEARFRAME.get())
+
+                .add(ModItems.EYEUPGRADES_HUDLENS.get())
+                .add(ModItems.EYEUPGRADES_HUDJACK.get())
+                .add(ModItems.EYEUPGRADES_NIGHTVISION.get())
+                .add(ModItems.EYEUPGRADES_TARGETING.get())
+                .add(ModItems.EYEUPGRADES_UNDERWATERVISION.get())
+                .add(ModItems.EYEUPGRADES_ZOOM.get())
+                .add(ModItems.EYEUPGRADES_TRAJECTORYCALCULATOR.get())
+                .add(ModItems.EYEUPGRADES_BIOMONITOR.get())
+
+                .add(ModItems.ARMUPGRADES_ARMCANNON.get())
+                .add(ModItems.ARMUPGRADES_FLYWHEEL.get())
+                .add(ModItems.ARMUPGRADES_CLAWS.get())
+                .add(ModItems.ARMUPGRADES_CRAFTHANDS.get())
+                .add(ModItems.ARMUPGRADES_DRILLFIST.get())
+                .add(ModItems.ARMUPGRADES_FIRESTARTER.get())
+                .add(ModItems.ARMUPGRADES_PNEUMATICWRIST.get())
+                .add(ModItems.ARMUPGRADES_REINFORCEDKNUCKLES.get())
+                .add(ModItems.ARMUPGRADES_ARCCANNON.get())
+
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_IRON.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_COPPER.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_TITANIUM.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_GOLD.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_DIAMOND.get())
+                .add(ModItems.ARMUPGRADES_MANTISBLADE_NETHERITE.get())
+
+                .add(ModItems.LEGUPGRADES_METALDETECTOR.get())
+                .add(ModItems.LEGUPGRADES_ANKLEBRACERS.get())
+                .add(ModItems.LEGUPGRADES_JUMPBOOST.get())
+                .add(ModItems.LEGUPGRADES_PROPELLERS.get())
+                .add(ModItems.LEGUPGRADES_SPURS.get())
+                .add(ModItems.LEGUPGRADES_OCELOTPAWS.get())
+
+                .add(ModItems.BONEUPGRADES_BONEBATTERY.get())
+                .add(ModItems.BONEUPGRADES_BONEFLEX.get())
+                .add(ModItems.BONEUPGRADES_BONELACING.get())
+                .add(ModItems.BONEUPGRADES_CAPACITORFRAME.get())
+                .add(ModItems.BONEUPGRADES_PIEZO.get())
+                .add(ModItems.BONEUPGRADES_SPINALINJECTOR.get())
+                .add(ModItems.BONEUPGRADES_SANDEVISTAN.get())
+
+                .add(ModItems.BRAINUPGRADES_EYEOFDEFENDER.get())
+                .add(ModItems.BRAINUPGRADES_ENDERJAMMER.get())
+                .add(ModItems.BRAINUPGRADES_MATRIX.get())
+                .add(ModItems.BRAINUPGRADES_NEURALCONTEXTUALIZER.get())
+                .add(ModItems.BRAINUPGRADES_CYBERDECK.get())
+                .add(ModItems.BRAINUPGRADES_IDEM.get())
+                .add(ModItems.BRAINUPGRADES_CHIPWARESLOTS.get())
+                .add(ModItems.BRAINUPGRADES_NEURALPROCESSOR.get())
+                .add(ModItems.BRAINUPGRADES_ICEPROTOCOL.get())
+
+                .add(ModItems.HEARTUPGRADES_CYBERHEART.get())
+                .add(ModItems.HEARTUPGRADES_COUPLER.get())
+                .add(ModItems.HEARTUPGRADES_CREEPERHEART.get())
+                .add(ModItems.HEARTUPGRADES_DEFIBRILLATOR.get())
+                .add(ModItems.HEARTUPGRADES_STEMCELL.get())
+                .add(ModItems.HEARTUPGRADES_PLATELETS.get())
+
+                .add(ModItems.LUNGSUPGRADES_HYPEROXYGENATION.get())
+                .add(ModItems.LUNGSUPGRADES_OXYGEN.get())
+
+                .add(ModItems.ORGANSUPGRADES_ADRENALINE.get())
+                .add(ModItems.ORGANSUPGRADES_BATTERY.get())
+                .add(ModItems.ORGANSUPGRADES_DIAMONDWAFERSTACK.get())
+                .add(ModItems.ORGANSUPGRADES_DUALISTICCONVERTER.get())
+                .add(ModItems.ORGANSUPGRADES_LIVERFILTER.get())
+                .add(ModItems.ORGANSUPGRADES_MAGICCATALYST.get())
+                .add(ModItems.ORGANSUPGRADES_METABOLIC.get())
+                .add(ModItems.ORGANSUPGRADES_DENSEBATTERY.get())
+                .add(ModItems.ORGANSUPGRADES_HEATENGINE.get())
+                .add(ModItems.ORGANSUPGRADES_OREGRINDER.get())
+
+                .add(ModItems.SKINUPGRADES_ARTERIALTURBINE.get())
+                .add(ModItems.SKINUPGRADES_CHROMATOPHORES.get())
+                .add(ModItems.SKINUPGRADES_SYNTHSKIN.get())
+                .add(ModItems.SKINUPGRADES_IMMUNO.get())
+                .add(ModItems.SKINUPGRADES_FACEPLATE.get())
+                .add(ModItems.SKINUPGRADES_NETHERITEPLATING.get())
+                .add(ModItems.SKINUPGRADES_SOLARSKIN.get())
+                .add(ModItems.SKINUPGRADES_SUBDERMALARMOR.get())
+                .add(ModItems.SKINUPGRADES_SUBDERMALSPIKES.get())
+                .add(ModItems.SKINUPGRADES_SYNTHETICSETULES.get())
+                .add(ModItems.SKINUPGRADES_METALPLATING.get())
+
+                .add(ModItems.MUSCLEUPGRADES_SYNTHMUSCLE.get())
+                .add(ModItems.MUSCLEUPGRADES_WIREDREFLEXES.get());
+
+//LAB LOOT: SCAVENGED ENERGY-GENERATING CYBERWARE ONLY
+        tag(LAB_SCAVENGED_ENERGY_GENERATORS)
+                .add(ModItems.SCAVENGED_PIEZO.get())
+                .add(ModItems.SCAVENGED_DIAMONDWAFERSTACK.get())
+                .add(ModItems.SCAVENGED_COUPLER.get())
+                .add(ModItems.SCAVENGED_DUALISTICCONVERTER.get())
+                .add(ModItems.SCAVENGED_METABOLIC.get())
+                .add(ModItems.SCAVENGED_SOLARSKIN.get())
+                .add(ModItems.SCAVENGED_ARTERIALTURBINE.get())
+                .add(ModItems.SCAVENGED_HEATENGINE.get());
+
+
+// CREATE
+        tag(ModTags.Items.CRUSHED_RAW_MATERIALS)
+                .addOptionalTag(ResourceLocation.fromNamespaceAndPath("create", "crushed_raw_materials"));
 // VANILLA
         tag(Tags.Items.POTIONS)
-                .add(ModItems.NEUROPOZYNE_AUTOINJECTOR.get());
+                .add(ModItems.NEUROPOZYNE_AUTOINJECTOR.get())
+                .add(ModItems.DYNAMIC_POTION_AUTOINJECTOR.get());
 
         tag(Tags.Items.NUGGETS)
                 .add(ModItems.TITANIUMNUGGET.get());
@@ -834,5 +1108,8 @@ public class ModItemTagProvider extends ItemTagsProvider {
 
         tag(ModTags.Items.C_TITANIUM)
                 .add(ModItems.TITANIUMINGOT.get());
+
+        tag(Tags.Items.RAW_MATERIALS)
+                .add(ModItems.RAWTITANIUM.get());
     }
 }

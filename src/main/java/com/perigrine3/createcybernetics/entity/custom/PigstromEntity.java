@@ -4,6 +4,8 @@ import com.perigrine3.createcybernetics.entity.ai.goal.CyberPiglinGangItemIntere
 import com.perigrine3.createcybernetics.entity.ai.goal.CyberentityFirestarterAttackGoal;
 import com.perigrine3.createcybernetics.entity.ai.goal.CyberentityPneumaticCalvesJumpGoal;
 import com.perigrine3.createcybernetics.entity.ai.goal.CyberentitySandevistanGoal;
+import com.perigrine3.createcybernetics.sound.ModSounds;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -59,6 +61,11 @@ public class PigstromEntity extends AbstractCyberPiglinGangEntity {
     @Override
     protected String getGangTextureFolder() {
         return "pigstrom";
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return ModSounds.PIGSTROM_IDLE.get();
     }
 
     @Override

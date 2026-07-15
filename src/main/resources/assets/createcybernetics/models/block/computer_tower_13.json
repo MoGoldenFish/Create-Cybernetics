@@ -1,0 +1,6 @@
+{
+  "parent": "createcybernetics:block/computer_tower_model",
+  "textures": {
+    "front": "createcybernetics:block/computer_tower_13"
+  }
+}

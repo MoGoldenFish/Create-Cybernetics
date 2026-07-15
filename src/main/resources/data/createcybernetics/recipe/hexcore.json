@@ -1,0 +1,35 @@
+{
+  "type": "createcybernetics:engineering_table",
+  "accept_mirrored": true,
+
+  "key": {
+    "R": {
+      "tag": "irons_spellbooks:inscribed_rune"
+    },
+    "X": {
+      "item": "irons_spellbooks:energized_core"
+    },
+    "A": {
+      "item": "irons_spellbooks:arcane_ingot"
+    },
+    "E": {
+      "item": "irons_spellbooks:arcane_essence"
+    },
+    "T": {
+      "item": "createcybernetics:titaniumsheet"
+    }
+  },
+
+  "pattern": [
+    "RERER",
+    "EATAE",
+    "RTXTR",
+    "EATAE",
+    "RERER"
+  ],
+
+  "result": {
+    "count": 1,
+    "id": "createcybernetics:hexcore"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "values": [
+    "createcybernetics:data_shard_infolog_getting_started",
+    "createcybernetics:data_shard_infolog_robosurgeon_manual",
+    "createcybernetics:data_shard_infolog_surgery_table_manual",
+    "createcybernetics:data_shard_infolog_fbc_guide",
+    "createcybernetics:data_shard_infolog_cyberbestiary",
+    "createcybernetics:data_shard_infolog_cyberdeck",
+    "createcybernetics:data_shard_infolog_harvester_enchantment",
+    {
+      "id": "createcybernetics:data_shard_infolog_cyberchems",
+      "required": false
+    }
+  ]
+}

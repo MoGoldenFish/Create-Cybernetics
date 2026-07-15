@@ -109,13 +109,13 @@ public class CreeperheartItem extends Item implements ICyberwareItem {
 
             if (!hasSpecificItem(living, ModItems.HEARTUPGRADES_CREEPERHEART.get(), CyberwareSlot.HEART)) return;
 
-            if (hasSpecificItem(living, ModItems.ORGANSUPGRADES_MAGICCATALYST.get(), CyberwareSlot.ORGANS)) {
+            if (hasSpecificItem(living, ModItems.ORGANSUPGRADES_MAGICCATALYST.get(), CyberwareSlot.HEART)) {
                 level.explode(living, living.getX(), living.getY() - 2, living.getZ(), 50, true, Level.ExplosionInteraction.MOB);
 
                 if (living instanceof ServerPlayer sp) {
                     ModCriteria.DESTROYER_OF_WORLDS.get().trigger(sp);
                 }
-            } else if (hasSpecificItem(living, ModItems.ORGANSUPGRADES_DUALISTICCONVERTER.get(), CyberwareSlot.ORGANS)) {
+            } else if (hasSpecificItem(living, ModItems.ORGANSUPGRADES_DUALISTICCONVERTER.get(), CyberwareSlot.HEART)) {
                 level.explode(living, living.getX(), living.getY() - 2, living.getZ(), 25, true, Level.ExplosionInteraction.MOB);
             } else {
                 level.explode(living, living.getX(), living.getY(), living.getZ(), 6, false, Level.ExplosionInteraction.MOB);

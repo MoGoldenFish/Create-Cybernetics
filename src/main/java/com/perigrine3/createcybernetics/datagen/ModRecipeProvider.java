@@ -278,6 +278,39 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .unlocks("has_gold_template", has(ModItems.GOLD_UPGRADE_TEMPLATE.get()))
                 .save(recipeOutput, "createcybernetics:goldplated_rightleg");
 
+//COPPER MANTIS BLADE
+        SmithingTransformRecipeBuilder.smithing(
+                        Ingredient.of(ModItems.COPPER_UPGRADE_TEMPLATE),
+                        Ingredient.of(ModItems.ARMUPGRADES_MANTISBLADE_TITANIUM.get()),
+                        Ingredient.of(Items.COPPER_INGOT),
+                        RecipeCategory.MISC, ModItems.ARMUPGRADES_MANTISBLADE_COPPER.get())
+                .unlocks("has_mantis_titanium", has(ModItems.ARMUPGRADES_MANTISBLADE_TITANIUM.get()))
+                .save(recipeOutput, "createcybernetics:armupgrades_mantisblade_copper");
+//GOLD MANTIS BLADE
+        SmithingTransformRecipeBuilder.smithing(
+                        Ingredient.of(ModItems.GOLD_UPGRADE_TEMPLATE),
+                        Ingredient.of(ModItems.ARMUPGRADES_MANTISBLADE_TITANIUM.get()),
+                        Ingredient.of(Items.GOLD_INGOT),
+                        RecipeCategory.MISC, ModItems.ARMUPGRADES_MANTISBLADE_GOLD.get())
+                .unlocks("has_mantis_titanium", has(ModItems.ARMUPGRADES_MANTISBLADE_TITANIUM.get()))
+                .save(recipeOutput, "createcybernetics:armupgrades_mantisblade_gold");
+//IRON MANTIS BLADE
+        SmithingTransformRecipeBuilder.smithing(
+                        Ingredient.of(ModItems.IRON_UPGRADE_TEMPLATE),
+                        Ingredient.of(ModItems.ARMUPGRADES_MANTISBLADE_TITANIUM.get()),
+                        Ingredient.of(ModItems.TITANIUMINGOT),
+                        RecipeCategory.MISC, ModItems.ARMUPGRADES_MANTISBLADE_IRON.get())
+                .unlocks("has_mantis_titanium", has(ModItems.ARMUPGRADES_MANTISBLADE_TITANIUM.get()))
+                .save(recipeOutput, "createcybernetics:armupgrades_mantisblade_iron");
+//NETHERITE MANTIS BLADE
+        SmithingTransformRecipeBuilder.smithing(
+                        Ingredient.of(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE),
+                        Ingredient.of(ModItems.ARMUPGRADES_MANTISBLADE_DIAMOND.get()),
+                        Ingredient.of(Items.NETHERITE_INGOT),
+                        RecipeCategory.MISC, ModItems.ARMUPGRADES_MANTISBLADE_NETHERITE.get())
+                .unlocks("has_mantis_diamond", has(ModItems.ARMUPGRADES_MANTISBLADE_DIAMOND.get()))
+                .save(recipeOutput, "createcybernetics:armupgrades_mantisblade_netherite");
+
 
 //FOOD COOKING
         SimpleCookingRecipeBuilder.smelting(Ingredient.of(ModItems.BODYPART_BRAIN.get()),

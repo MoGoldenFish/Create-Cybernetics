@@ -2,6 +2,7 @@ package com.perigrine3.createcybernetics.compat.corpse;
 
 import com.perigrine3.createcybernetics.client.skin.CybereyeOverlayHandler;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 
@@ -20,7 +21,9 @@ public final class CorpseVisualSnapshotClientCache {
     }
 
     public static void put(UUID corpseEntityUuid, CompoundTag snapshotBundle) {
-        if (corpseEntityUuid == null) return;
+        if (corpseEntityUuid == null) {
+            return;
+        }
 
         if (snapshotBundle == null || snapshotBundle.isEmpty()) {
             SNAPSHOTS.remove(corpseEntityUuid);
@@ -31,14 +34,63 @@ public final class CorpseVisualSnapshotClientCache {
     }
 
     public static CompoundTag get(UUID corpseEntityUuid) {
-        if (corpseEntityUuid == null) return new CompoundTag();
+        if (corpseEntityUuid == null) {
+            return new CompoundTag();
+        }
 
         CompoundTag tag = SNAPSHOTS.get(corpseEntityUuid);
         return tag == null ? new CompoundTag() : tag.copy();
     }
 
+    public static boolean has(UUID corpseEntityUuid) {
+        if (corpseEntityUuid == null) {
+            return false;
+        }
+
+        CompoundTag tag = SNAPSHOTS.get(corpseEntityUuid);
+        return tag != null && !tag.isEmpty();
+    }
+
+    public static CompoundTag getSnapshotTag(UUID corpseEntityUuid) {
+        CompoundTag bundle = get(corpseEntityUuid);
+        if (bundle.isEmpty()) {
+            return new CompoundTag();
+        }
+
+        return bundle.contains(NBT_SNAPSHOT)
+                ? bundle.getCompound(NBT_SNAPSHOT).copy()
+                : new CompoundTag();
+    }
+
+    public static CompoundTag getCybereyeRootTag(UUID corpseEntityUuid) {
+        CompoundTag bundle = get(corpseEntityUuid);
+        if (bundle.isEmpty()) {
+            return new CompoundTag();
+        }
+
+        return bundle.contains(NBT_CYBEREYE_ROOT)
+                ? bundle.getCompound(NBT_CYBEREYE_ROOT).copy()
+                : new CompoundTag();
+    }
+
+    public static PlayerCyberwareData getCyberwareData(UUID corpseEntityUuid, HolderLookup.Provider provider) {
+        if (corpseEntityUuid == null || provider == null) {
+            return null;
+        }
+
+        CompoundTag snapshot = getSnapshotTag(corpseEntityUuid);
+        if (snapshot.isEmpty()) {
+            return null;
+        }
+
+        return PlayerCyberwareData.fromSnapshotTag(snapshot, provider);
+    }
+
     public static void remove(UUID corpseEntityUuid) {
-        if (corpseEntityUuid == null) return;
+        if (corpseEntityUuid == null) {
+            return;
+        }
+
         SNAPSHOTS.remove(corpseEntityUuid);
     }
 
@@ -47,7 +99,9 @@ public final class CorpseVisualSnapshotClientCache {
     }
 
     public static void applyToPlayer(Player visualPlayer, UUID corpseEntityUuid) {
-        if (visualPlayer == null) return;
+        if (visualPlayer == null) {
+            return;
+        }
 
         CompoundTag pd = visualPlayer.getPersistentData();
 
@@ -60,28 +114,32 @@ public final class CorpseVisualSnapshotClientCache {
             return;
         }
 
-        CompoundTag bundle = get(corpseEntityUuid);
-        if (bundle.isEmpty()) {
-            CybereyeOverlayHandler.invalidate(visualPlayer);
+        CompoundTag snapshot = getSnapshotTag(corpseEntityUuid);
+        if (!snapshot.isEmpty()) {
+            // IMPORTANT:
+            // HOLO_SNAPSHOT_FLAG is "cc_holo_snapshot" and must stay a boolean.
+            pd.putBoolean(PlayerCyberwareData.HOLO_SNAPSHOT_FLAG, true);
+            pd.put(PlayerCyberwareData.HOLO_SNAPSHOT_CYBERWARE, snapshot.copy());
+        }
+
+        CompoundTag cybereyeRoot = getCybereyeRootTag(corpseEntityUuid);
+        if (!cybereyeRoot.isEmpty()) {
+            pd.put(CybereyeOverlayHandler.NBT_ROOT, cybereyeRoot);
+        }
+
+        CybereyeOverlayHandler.invalidate(visualPlayer);
+    }
+
+    public static void clearFromPlayer(Player visualPlayer) {
+        if (visualPlayer == null) {
             return;
         }
 
-        CompoundTag snapshot = bundle.contains(NBT_SNAPSHOT)
-                ? bundle.getCompound(NBT_SNAPSHOT).copy()
-                : new CompoundTag();
+        CompoundTag pd = visualPlayer.getPersistentData();
 
-        if (!snapshot.isEmpty()) {
-            pd.putBoolean(PlayerCyberwareData.HOLO_SNAPSHOT_FLAG, true);
-            pd.put(PlayerCyberwareData.HOLO_SNAPSHOT_CYBERWARE, snapshot);
-        }
-
-        CompoundTag eyeRoot = bundle.contains(NBT_CYBEREYE_ROOT)
-                ? bundle.getCompound(NBT_CYBEREYE_ROOT).copy()
-                : new CompoundTag();
-
-        if (!eyeRoot.isEmpty()) {
-            pd.put(CybereyeOverlayHandler.NBT_ROOT, eyeRoot);
-        }
+        pd.remove(PlayerCyberwareData.HOLO_SNAPSHOT_FLAG);
+        pd.remove(PlayerCyberwareData.HOLO_SNAPSHOT_CYBERWARE);
+        pd.remove(CybereyeOverlayHandler.NBT_ROOT);
 
         CybereyeOverlayHandler.invalidate(visualPlayer);
     }

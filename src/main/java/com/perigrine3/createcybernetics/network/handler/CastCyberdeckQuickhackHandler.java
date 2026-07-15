@@ -3,6 +3,8 @@ package com.perigrine3.createcybernetics.network.handler;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.effect.quickhacks.BehindYouQuickhackEffect;
+import com.perigrine3.createcybernetics.effect.quickhacks.CyberpsychosisQuickhackEffect;
 import com.perigrine3.createcybernetics.effect.quickhacks.OpticMalfunctionQuickhackEffect;
 import com.perigrine3.createcybernetics.effect.quickhacks.OverheatQuickhackEffect;
 import com.perigrine3.createcybernetics.effect.quickhacks.RebootQuickhackEffect;
@@ -80,7 +82,9 @@ public final class CastCyberdeckQuickhackHandler {
         return quickhack.is(ModItems.QUICKHACK_OVERHEAT.get())
                 || quickhack.is(ModItems.QUICKHACK_REBOOT.get())
                 || quickhack.is(ModItems.QUICKHACK_SCRAMBLE.get())
-                || quickhack.is(ModItems.QUICKHACK_OPTICMALFUNCTION.get());
+                || quickhack.is(ModItems.QUICKHACK_OPTICMALFUNCTION.get())
+                || quickhack.is(ModItems.QUICKHACK_BEHINDYOU.get())
+                || quickhack.is(ModItems.QUICKHACK_CYBERPSYCHOSIS.get());
     }
 
     private static boolean applyQuickhack(ItemStack quickhack, LivingEntity target) {
@@ -98,6 +102,14 @@ public final class CastCyberdeckQuickhackHandler {
 
         if (quickhack.is(ModItems.QUICKHACK_OPTICMALFUNCTION.get())) {
             return OpticMalfunctionQuickhackEffect.applyQuickhack(target);
+        }
+
+        if (quickhack.is(ModItems.QUICKHACK_BEHINDYOU.get())) {
+            return BehindYouQuickhackEffect.applyQuickhack(target);
+        }
+
+        if (quickhack.is(ModItems.QUICKHACK_CYBERPSYCHOSIS.get())) {
+            return CyberpsychosisQuickhackEffect.applyQuickhack(target);
         }
 
         return false;

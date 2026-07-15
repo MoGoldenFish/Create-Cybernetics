@@ -1,0 +1,31 @@
+{
+  "type": "create:mechanical_crafting",
+  "accept_mirrored": true,
+  "category": "misc",
+
+  "key": {
+    "T": {
+      "item": "createcybernetics:titaniumsheet"
+    },
+    "I": {
+      "item": "createcybernetics:titaniumingot"
+    },
+    "A": {
+      "item": "createcybernetics:component_actuator"
+    }
+  },
+
+  "pattern": [
+    "   I ",
+    " TTTI",
+    "TT T ",
+    "T  AA",
+    "   II"
+  ],
+
+  "result": {
+    "count": 1,
+    "id": "createcybernetics:armupgrades_mantisblade_titanium"
+  },
+  "show_notification": false
+}

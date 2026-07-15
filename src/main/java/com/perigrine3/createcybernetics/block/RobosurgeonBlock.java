@@ -2,14 +2,17 @@ package com.perigrine3.createcybernetics.block;
 
 import com.mojang.serialization.MapCodec;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
+import com.perigrine3.createcybernetics.block.entity.ModBlockEntities;
 import com.perigrine3.createcybernetics.block.entity.RobosurgeonBlockEntity;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.common.energy.ConditionalBlockPower;
 import com.perigrine3.createcybernetics.item.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -19,6 +22,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -29,6 +34,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class RobosurgeonBlock extends BaseEntityBlock {
     public static final MapCodec<RobosurgeonBlock> CODEC = simpleCodec(RobosurgeonBlock::new);
+
+    public static final int ENERGY_REQUIRED_TO_OPEN = 100;
+    public static final int ENERGY_USED_PER_GUI_TICK = 100;
 
     public RobosurgeonBlock(Properties properties) {
         super(properties);
@@ -47,6 +55,34 @@ public class RobosurgeonBlock extends BaseEntityBlock {
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new RobosurgeonBlockEntity(pos, state);
+    }
+
+    @Override
+    protected boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        if (!(level.getBlockEntity(pos) instanceof RobosurgeonBlockEntity blockEntity)) {
+            return 0;
+        }
+
+        return blockEntity.getComparatorOutput();
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
+        if (level.isClientSide) {
+            return null;
+        }
+
+        return createTickerHelper(
+                blockEntityType,
+                ModBlockEntities.ROBOSURGEON_BLOCKENTITY.get(),
+                RobosurgeonBlockEntity::serverTick
+        );
     }
 
     @Override
@@ -122,21 +158,57 @@ public class RobosurgeonBlock extends BaseEntityBlock {
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (level.isClientSide()) {
+        if (tryOpenPoweredMenu(level, pos, player)) {
             return ItemInteractionResult.SUCCESS;
+        }
+
+        return ItemInteractionResult.CONSUME;
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        if (tryOpenPoweredMenu(level, pos, player)) {
+            return InteractionResult.SUCCESS;
+        }
+
+        return InteractionResult.CONSUME;
+    }
+
+    private boolean tryOpenPoweredMenu(Level level, BlockPos pos, Player player) {
+        if (level.isClientSide()) {
+            return true;
         }
 
         if (!(player instanceof ServerPlayer serverPlayer)) {
-            return ItemInteractionResult.SUCCESS;
+            return true;
         }
 
-        if (level.getBlockEntity(pos) instanceof RobosurgeonBlockEntity robosurgeonBlockEntity) {
-            serverPlayer.openMenu(
-                    new SimpleMenuProvider(robosurgeonBlockEntity, Component.literal("_" + player.getName().getString() + ".exe")),
-                    pos
-            );
+        if (!(level.getBlockEntity(pos) instanceof RobosurgeonBlockEntity robosurgeonBlockEntity)) {
+            return true;
         }
 
-        return ItemInteractionResult.SUCCESS;
+        boolean powered = ConditionalBlockPower.hasRequiredPower(
+                level,
+                pos,
+                robosurgeonBlockEntity.getMutableEnergyStorage(),
+                ENERGY_REQUIRED_TO_OPEN
+        );
+
+        if (!powered) {
+            if (ConditionalBlockPower.shouldUseEnergyInsteadOfRedstone()) {
+                player.displayClientMessage(Component.translatable("message.createcybernetics.block.requires_energy"), true);
+            } else {
+                player.displayClientMessage(Component.translatable("message.createcybernetics.block.requires_redstone"), true);
+            }
+
+            return false;
+        }
+
+        serverPlayer.openMenu(
+                new SimpleMenuProvider(robosurgeonBlockEntity, Component.literal("_" + player.getName().getString() + ".exe")),
+                pos
+        );
+
+        return true;
     }
 }

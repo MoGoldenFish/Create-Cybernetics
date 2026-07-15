@@ -284,6 +284,80 @@ public final class PlayerAttachmentManager {
         return item == null ? null : item;
     }
 
+    // =========================
+    // MANTIS BLADE
+    // =========================
+    private static final ResourceLocation MANTIS_BLADE_IRON_ITEM_ID =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "armupgrades_mantisblade_iron");
+    private static final ResourceLocation MANTIS_BLADE_COPPER_ITEM_ID =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "armupgrades_mantisblade_copper");
+    private static final ResourceLocation MANTIS_BLADE_TITANIUM_ITEM_ID =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "armupgrades_mantisblade_titanium");
+    private static final ResourceLocation MANTIS_BLADE_GOLD_ITEM_ID =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "armupgrades_mantisblade_gold");
+    private static final ResourceLocation MANTIS_BLADE_DIAMOND_ITEM_ID =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "armupgrades_mantisblade_diamond");
+    private static final ResourceLocation MANTIS_BLADE_NETHERITE_ITEM_ID =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "armupgrades_mantisblade_netherite");
+
+    public static final ResourceLocation MANTIS_BLADE_CLOSED_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/mantis_blade_closed.png");
+    public static final ResourceLocation MANTIS_BLADE_IRON_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/mantis_blade_iron.png");
+    public static final ResourceLocation MANTIS_BLADE_COPPER_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/mantis_blade_copper.png");
+    public static final ResourceLocation MANTIS_BLADE_TITANIUM_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/mantis_blade_titanium.png");
+    public static final ResourceLocation MANTIS_BLADE_GOLD_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/mantis_blade_gold.png");
+    public static final ResourceLocation MANTIS_BLADE_DIAMOND_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/mantis_blade_diamond.png");
+    public static final ResourceLocation MANTIS_BLADE_NETHERITE_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/mantis_blade_netherite.png");
+
+    private static MantisBladeAttachmentModel MANTIS_BLADE_MODEL;
+
+    public static MantisBladeAttachmentModel mantisBladeModel() {
+        if (MANTIS_BLADE_MODEL == null) {
+            var baked = Minecraft.getInstance().getEntityModels().bakeLayer(MantisBladeAttachmentModel.LAYER);
+            MANTIS_BLADE_MODEL = new MantisBladeAttachmentModel(baked);
+        }
+        return MANTIS_BLADE_MODEL;
+    }
+
+    private static boolean mantisBladeItemsRegistered() {
+        return BuiltInRegistries.ITEM.containsKey(MANTIS_BLADE_IRON_ITEM_ID)
+                || BuiltInRegistries.ITEM.containsKey(MANTIS_BLADE_COPPER_ITEM_ID)
+                || BuiltInRegistries.ITEM.containsKey(MANTIS_BLADE_TITANIUM_ITEM_ID)
+                || BuiltInRegistries.ITEM.containsKey(MANTIS_BLADE_GOLD_ITEM_ID)
+                || BuiltInRegistries.ITEM.containsKey(MANTIS_BLADE_DIAMOND_ITEM_ID)
+                || BuiltInRegistries.ITEM.containsKey(MANTIS_BLADE_NETHERITE_ITEM_ID);
+    }
+
+    private static boolean isMantisBladeItem(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return false;
+
+        return stack.is(ModItems.ARMUPGRADES_MANTISBLADE_IRON.get())
+                || stack.is(ModItems.ARMUPGRADES_MANTISBLADE_COPPER.get())
+                || stack.is(ModItems.ARMUPGRADES_MANTISBLADE_TITANIUM.get())
+                || stack.is(ModItems.ARMUPGRADES_MANTISBLADE_GOLD.get())
+                || stack.is(ModItems.ARMUPGRADES_MANTISBLADE_DIAMOND.get())
+                || stack.is(ModItems.ARMUPGRADES_MANTISBLADE_NETHERITE.get());
+    }
+
+    public static ResourceLocation mantisBladeTextureFor(ItemStack stack, boolean enabled) {
+        if (!enabled) return MANTIS_BLADE_CLOSED_TEXTURE;
+
+        if (stack.is(ModItems.ARMUPGRADES_MANTISBLADE_IRON.get())) return MANTIS_BLADE_IRON_TEXTURE;
+        if (stack.is(ModItems.ARMUPGRADES_MANTISBLADE_COPPER.get())) return MANTIS_BLADE_COPPER_TEXTURE;
+        if (stack.is(ModItems.ARMUPGRADES_MANTISBLADE_TITANIUM.get())) return MANTIS_BLADE_TITANIUM_TEXTURE;
+        if (stack.is(ModItems.ARMUPGRADES_MANTISBLADE_GOLD.get())) return MANTIS_BLADE_GOLD_TEXTURE;
+        if (stack.is(ModItems.ARMUPGRADES_MANTISBLADE_DIAMOND.get())) return MANTIS_BLADE_DIAMOND_TEXTURE;
+        if (stack.is(ModItems.ARMUPGRADES_MANTISBLADE_NETHERITE.get())) return MANTIS_BLADE_NETHERITE_TEXTURE;
+
+        return MANTIS_BLADE_CLOSED_TEXTURE;
+    }
+
 
 
 
@@ -313,7 +387,8 @@ public final class PlayerAttachmentManager {
         Item arcCannonItem = arcCannonItemOrNull();
 
         if (clawsItem == null && drillItem == null && ripperClawItem == null && pawsItem == null && calfPropellerItem == null
-                && spurItem == null && guardianEyeItem == null && wardenAntlersItem == null && arcCannonItem == null) return state;
+                && spurItem == null && guardianEyeItem == null && wardenAntlersItem == null && arcCannonItem == null
+                && !mantisBladeItemsRegistered()) return state;
 
         for (var entry : data.getAll().entrySet()) {
             CyberwareSlot slot = entry.getKey();
@@ -329,13 +404,19 @@ public final class PlayerAttachmentManager {
 
 
 
+                if (isMantisBladeItem(stack)) {
+                    boolean enabled = data.isEnabled(slot, idx);
+                    state.add(new MantisBladeAttachment(anchor, mantisBladeTextureFor(stack, enabled)));
+                    continue;
+                }
+
                 if (arcCannonItem != null && stack.is(arcCannonItem)) {
                     state.add(new ArcCannonAttachment(anchor));
                 }
 
 
 
-            if (!data.isEnabled(slot, idx)) continue;
+                if (!data.isEnabled(slot, idx)) continue;
 
                 if (clawsItem != null && stack.is(clawsItem)) {
                     state.add(new ClawAttachment(anchor));
@@ -532,6 +613,22 @@ public final class PlayerAttachmentManager {
         }
 
         pose.scale(1.0F, 1.0F, 1.0F);
+    }
+
+    public static void applyMantisBladeTransform(PoseStack pose, AttachmentAnchor armAnchor) {
+        pose.translate(0F, -0.1F, 0.0F);
+        pose.scale(1F, 1F, 1F);
+
+        if (armAnchor == AttachmentAnchor.LEFT_ARM) {
+            pose.translate(-0.3F, 0.0F, 0.0F);
+            pose.mulPose(Axis.ZP.rotationDegrees(0.0F));
+            pose.scale(-1.0F, 1.0F, 1.0F);
+        } else if (armAnchor == AttachmentAnchor.RIGHT_ARM) {
+            pose.translate(0.3F, 0.0F, 0.0F);
+            pose.mulPose(Axis.ZP.rotationDegrees(0.0F));
+        }
+
+        pose.scale(1F, 1F, 1F);
     }
 
 
@@ -952,6 +1049,46 @@ public final class PlayerAttachmentManager {
         @Override
         public void setupPose(PoseStack poseStack, AbstractClientPlayer player, PlayerModel<AbstractClientPlayer> parentModel, PlayerSkin.Model modelType, float partialTick) {
             applyArcCannonProngsTransform(poseStack, anchor);
+        }
+    }
+
+    private static final class MantisBladeAttachment implements PlayerAttachment {
+        private final AttachmentAnchor anchor;
+        private final ResourceLocation texture;
+
+        private MantisBladeAttachment(AttachmentAnchor anchor, ResourceLocation texture) {
+            this.anchor = anchor;
+            this.texture = texture;
+        }
+
+        @Override
+        public AttachmentAnchor anchor() {
+            return anchor;
+        }
+
+        @Override
+        public ResourceLocation texture(PlayerSkin.Model modelType) {
+            return texture;
+        }
+
+        @Override
+        public Model model(PlayerSkin.Model modelType) {
+            return mantisBladeModel();
+        }
+
+        @Override
+        public int color() {
+            return 0xFFFFFFFF;
+        }
+
+        @Override
+        public boolean thirdPersonOnly() {
+            return false;
+        }
+
+        @Override
+        public void setupPose(PoseStack poseStack, AbstractClientPlayer player, PlayerModel<AbstractClientPlayer> parentModel, PlayerSkin.Model modelType, float partialTick) {
+            applyMantisBladeTransform(poseStack, anchor);
         }
     }
 }

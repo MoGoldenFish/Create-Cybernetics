@@ -1,10 +1,5 @@
 {
-  "type": "neoforge:add_spawns",
+  "type": "createcybernetics:configurable_entity_spawn",
   "biomes": "minecraft:crimson_forest",
-  "spawners": {
-    "type": "createcybernetics:pigstrom",
-    "maxCount": 4,
-    "minCount": 2,
-    "weight": 3
-  }
+  "spawn_id": "pigstrom"
 }

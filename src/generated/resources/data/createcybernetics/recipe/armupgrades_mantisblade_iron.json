@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "createcybernetics:titaniumingot"
+  },
+  "base": {
+    "item": "createcybernetics:armupgrades_mantisblade_titanium"
+  },
+  "result": {
+    "count": 1,
+    "id": "createcybernetics:armupgrades_mantisblade_iron"
+  },
+  "template": {
+    "item": "createcybernetics:iron_upgrade_template"
+  }
+}

@@ -38,7 +38,7 @@ public class ModBlocks {
             () -> new Block(BlockBehaviour.Properties.of()
                     .strength(6f).requiresCorrectToolForDrops().sound(SoundType.METAL)), true);
     public static final DeferredBlock<Block> TITANIUM_GRATE = registerBlock("titanium_grate",
-            () -> new Block(BlockBehaviour.Properties.of().noOcclusion()
+            () -> new TitaniumGrateBlock(BlockBehaviour.Properties.of().noOcclusion()
                     .strength(6f).requiresCorrectToolForDrops().sound(SoundType.METAL)), true);
     public static final DeferredBlock<Block> TITANIUM_CLAD_COPPER = registerBlock("titanium_clad_copper",
             () -> new TitaniumCladCopperBlock(BlockBehaviour.Properties.of()
@@ -50,21 +50,21 @@ public class ModBlocks {
 //NON-BLOCK BLOCKS
     public static final DeferredBlock<StairBlock> SMOOTH_TITANIUM_STAIRS = registerBlock("smooth_titanium_stairs",
             () -> new StairBlock(ModBlocks.SMOOTH_TITANIUM.get().defaultBlockState(),
-                    BlockBehaviour.Properties.of().strength(6f).requiresCorrectToolForDrops()), true);
+                    BlockBehaviour.Properties.of().strength(6f).requiresCorrectToolForDrops().sound(SoundType.METAL)), true);
     public static final DeferredBlock<SlabBlock> SMOOTH_TITANIUM_SLAB = registerBlock("smooth_titanium_slab",
-            () -> new SlabBlock(BlockBehaviour.Properties.of().strength(6f).requiresCorrectToolForDrops()), true);
+            () -> new SlabBlock(BlockBehaviour.Properties.of().strength(6f).requiresCorrectToolForDrops().sound(SoundType.METAL)), true);
 
     public static final DeferredBlock<StairBlock> TITANIUM_CLAD_COPPER_STAIRS = registerBlock("titanium_clad_copper_stairs",
             () -> new StairBlock(ModBlocks.SMOOTH_TITANIUM.get().defaultBlockState(),
-                    BlockBehaviour.Properties.of().strength(6f).requiresCorrectToolForDrops()), true);
+                    BlockBehaviour.Properties.of().strength(6f).requiresCorrectToolForDrops().sound(SoundType.METAL)), true);
     public static final DeferredBlock<SlabBlock> TITANIUM_CLAD_COPPER_SLAB = registerBlock("titanium_clad_copper_slab",
-            () -> new SlabBlock(BlockBehaviour.Properties.of().strength(6f).requiresCorrectToolForDrops()), true);
+            () -> new SlabBlock(BlockBehaviour.Properties.of().strength(6f).requiresCorrectToolForDrops().sound(SoundType.METAL)), true);
 
     public static final DeferredBlock<StairBlock> ETCHED_TITANIUM_COPPER_STAIRS = registerBlock("etched_titanium_copper_stairs",
             () -> new StairBlock(ModBlocks.SMOOTH_TITANIUM.get().defaultBlockState(),
-                    BlockBehaviour.Properties.of().strength(6f).requiresCorrectToolForDrops()), true);
+                    BlockBehaviour.Properties.of().strength(6f).requiresCorrectToolForDrops().sound(SoundType.METAL)), true);
     public static final DeferredBlock<SlabBlock> ETCHED_TITANIUM_COPPER_SLAB = registerBlock("etched_titanium_copper_slab",
-            () -> new SlabBlock(BlockBehaviour.Properties.of().strength(6f).requiresCorrectToolForDrops()), true);
+            () -> new SlabBlock(BlockBehaviour.Properties.of().strength(6f).requiresCorrectToolForDrops().sound(SoundType.METAL)), true);
 
 //FUNCTIONAL BLOCKS
     public static final DeferredBlock<Block> SURGERY_CHAMBER_BOTTOM = registerBlock("surgery_chamber",
@@ -90,15 +90,28 @@ public class ModBlocks {
                     .noOcclusion().sound(SoundType.METAL)), true);
     public static final DeferredBlock<Block> SURGERY_TABLE = registerBlock("surgery_table",
             () -> new SurgeryTableBlock(BlockBehaviour.Properties.of().strength(2.5F, 3)
-                            .noOcclusion().sound(SoundType.METAL)), true);
+                    .noOcclusion().sound(SoundType.METAL)), true);
 
+
+    public static final DeferredBlock<Block> COMPUTER = registerBlock("computer",
+            () -> new ComputerBlock(BlockBehaviour.Properties.of().strength(3, 4)
+                    .noOcclusion().sound(SoundType.METAL)
+                    .lightLevel(state -> state.getValue(ComputerBlock.POWERED) ? 5 : 0)), true);
+    public static final DeferredBlock<Block> COMPUTER_TOWER = registerBlock("computer_tower",
+            () -> new ComputerTowerBlock(BlockBehaviour.Properties.of().strength(3, 4)
+                    .noOcclusion().sound(SoundType.METAL)), true);
 //PLANT BLOCKS
     public static final DeferredBlock<Block> DATURA_BUSH = BLOCKS.register("datura_bush",
             () -> new DaturaBushBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.SWEET_BERRY_BUSH)));
+    public static final DeferredBlock<Block> POTTED_DATURA = BLOCKS.register("potted_datura",
+            () -> new PottedDaturaBlock(() -> (FlowerPotBlock) Blocks.FLOWER_POT, BlockBehaviour.Properties.ofFullCopy(Blocks.POTTED_POPPY).noOcclusion()));
 
     private static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block, boolean registerItem) {
         DeferredBlock<T> toReturn = BLOCKS.register(name, block);
-        registerBlockItem(name, toReturn);
+
+        if (registerItem) {
+            registerBlockItem(name, toReturn);
+        }
 
         return toReturn;
     }

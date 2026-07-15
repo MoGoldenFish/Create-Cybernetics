@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "minecraft:gold_ingot"
+  },
+  "base": {
+    "item": "createcybernetics:armupgrades_mantisblade_titanium"
+  },
+  "result": {
+    "count": 1,
+    "id": "createcybernetics:armupgrades_mantisblade_gold"
+  },
+  "template": {
+    "item": "createcybernetics:gold_upgrade_template"
+  }
+}

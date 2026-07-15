@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:mod_loaded",
+        "modid": "create"
+      }
+    }
+  ],
+  "type": "createcybernetics:engineering_table",
+  "accept_mirrored": true,
+
+  "key": {
+    "T": {
+      "item": "createcybernetics:titaniumsheet"
+    },
+    "I": {
+      "item": "createcybernetics:titaniumingot"
+    },
+    "A": {
+      "item": "createcybernetics:component_actuator"
+    }
+  },
+
+  "pattern": [
+    "   I ",
+    " TTTI",
+    "TT T ",
+    "T  AA",
+    "   II"
+  ],
+
+  "result": {
+    "count": 1,
+    "id": "createcybernetics:armupgrades_mantisblade_titanium"
+  }
+}

@@ -26,7 +26,9 @@ public final class CyberentitySpawnEvents {
 
         EntityCyberwareData data = mob.getData(ModMobAttachments.CYBERENTITY_CYBERWARE);
         CyberentityRolls.generateRandomCyberware(mob, data, mob.getRandom());
-        mob.addEffect(new MobEffectInstance(MobEffects.HEAL, 1, 20, false, false, false));
+
+        mob.setHealth(mob.getMaxHealth());
+
         data.setDirty();
 
         mob.getPersistentData().putBoolean(NBT_CYBERWARE_ROLLED, true);

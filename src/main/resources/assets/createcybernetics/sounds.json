@@ -90,5 +90,42 @@
     "sounds": [
       {"name": "createcybernetics:surgery_table"}
     ]
+  },
+  "autoinjector": {
+    "subtitle": "sounds.createcybernetics.autoinjector",
+    "sounds": [
+      {"name": "createcybernetics:autoinjector"}
+    ]
+  },
+  "smasher_idle": {
+    "subtitle": "sounds.createcybernetics.smasher_idle",
+    "sounds": [
+      {"name": "createcybernetics:smasher_idle1"},
+      {"name": "createcybernetics:smasher_idle2"},
+      {"name": "createcybernetics:smasher_idle3"},
+      {"name": "createcybernetics:smasher_idle4"},
+      {"name": "createcybernetics:smasher_idle5"}
+    ]
+  },
+  "smasher_step": {
+    "subtitle": "sounds.createcybernetics.smasher_step",
+    "sounds": [
+      {"name": "createcybernetics:smasher_step1"},
+      {"name": "createcybernetics:smasher_step2"},
+      {"name": "createcybernetics:smasher_step3"}
+    ]
+  },
+  "pigstrom_idle": {
+    "subtitle": "sounds.createcybernetics.pigstrom_idle",
+    "sounds": [
+      {"name": "createcybernetics:pigstrom_idle"}
+    ]
+  },
+  "mantis_open": {
+    "subtitle": "sounds.createcybernetics.mantis_open",
+    "sounds": [
+      {"name": "createcybernetics:mantis_open1"},
+      {"name": "createcybernetics:mantis_open2"}
+    ]
   }
 }

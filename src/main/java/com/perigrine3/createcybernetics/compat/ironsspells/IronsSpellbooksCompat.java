@@ -120,4 +120,10 @@ public final class IronsSpellbooksCompat {
         if (src == null) return false;
         return src.is(DamageTypes.LIGHTNING_BOLT) || isLightningMagic(src);
     }
+
+    public static final String GECKOLIB_MODID = "geckolib";
+
+    public static boolean canRegisterHexCore() {
+        return isLoaded() && ModList.get().isLoaded(GECKOLIB_MODID);
+    }
 }

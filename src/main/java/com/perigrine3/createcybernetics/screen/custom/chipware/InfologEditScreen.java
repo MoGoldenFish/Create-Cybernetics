@@ -2,30 +2,46 @@ package com.perigrine3.createcybernetics.screen.custom.chipware;
 
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.item.generic.InfologFormatting;
+import com.perigrine3.createcybernetics.mixin.client.MultiLineEditBoxAccessor;
 import com.perigrine3.createcybernetics.network.payload.InfologSaveChipwarePayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
+import net.minecraft.client.gui.components.MultilineTextField;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.List;
+
 public final class InfologEditScreen extends Screen {
 
-    private static final int GUI_W = 256;
-    private static final int GUI_H = 256;
+    private static final int GUI_WIDTH = 390;
+    private static final int GUI_HEIGHT = 256;
 
-    private static final int PAD_L = 14;
-    private static final int PAD_T = 14;
-    private static final int PAD_R = 14;
-    private static final int PAD_B = 42;
+    private static final int PAD_LEFT = 14;
+    private static final int PAD_TOP = 14;
+    private static final int PAD_BOTTOM = 42;
 
-    // Neon green (ARGB)
-    private static final int NEON_GREEN = 0xFF00FF66;
+    private static final int FORMAT_PANEL_WIDTH = 128;
+    private static final int FORMAT_PANEL_GAP = 8;
+
+    private static final int FORMAT_PANEL_BORDER_HEIGHT = 204;
+
+    private static final int PREVIEW_PADDING = 5;
+    private static final int PREVIEW_Y_OFFSET = 124;
+    private static final int PREVIEW_HEIGHT = 74;
+    private static final int PREVIEW_LINE_HEIGHT = 10;
+
+    private static final int MAX_TEXT_LENGTH = 32_000;
 
     private final int chipwareSlot;
     private final String initialText;
@@ -33,93 +49,735 @@ public final class InfologEditScreen extends Screen {
     private int leftPos;
     private int topPos;
 
-    private int editX, editY, editW, editH;
+    private int editorX;
+    private int editorY;
+    private int editorWidth;
+    private int editorHeight;
 
-    private int accentColor = 0xFFFFFFFF; // defaults to white (ARGB)
+    private int formatPanelX;
+    private int formatPanelY;
+
+    private int accentColor = 0xFFFFFFFF;
+    private int previewScrollOffset;
+
     private MultiLineEditBox editor;
 
-    public InfologEditScreen(int chipwareSlot, String initialText) {
-        super(Component.translatable("gui.infolog.title"));
+    public InfologEditScreen(
+            int chipwareSlot,
+            String initialText
+    ) {
+        super(
+                Component.translatable(
+                        "gui.infolog.title"
+                )
+        );
+
         this.chipwareSlot = chipwareSlot;
-        this.initialText = initialText == null ? "" : initialText;
+
+        this.initialText =
+                InfologFormatting.toEditorText(
+                        initialText
+                );
     }
 
     @Override
     protected void init() {
-        this.leftPos = (this.width - GUI_W) / 2;
-        this.topPos = (this.height - GUI_H) / 2;
+        leftPos =
+                (width - GUI_WIDTH) / 2;
 
-        this.editX = leftPos + PAD_L;
-        this.editY = topPos + PAD_T;
-        this.editW = GUI_W - PAD_L - PAD_R;
-        this.editH = GUI_H - PAD_T - PAD_B;
+        topPos =
+                (height - GUI_HEIGHT) / 2;
 
-        this.accentColor = resolveChipDyeOrWhite();
+        editorX =
+                leftPos + PAD_LEFT;
 
-        this.editor = new MultiLineEditBox(
-                this.font,
-                editX, editY,
-                editW, editH,
+        editorY =
+                topPos + PAD_TOP;
+
+        editorWidth =
+                GUI_WIDTH
+                        - PAD_LEFT
+                        - FORMAT_PANEL_WIDTH
+                        - FORMAT_PANEL_GAP
+                        - PAD_LEFT;
+
+        editorHeight =
+                GUI_HEIGHT
+                        - PAD_TOP
+                        - PAD_BOTTOM;
+
+        formatPanelX =
+                editorX
+                        + editorWidth
+                        + FORMAT_PANEL_GAP;
+
+        formatPanelY =
+                editorY;
+
+        accentColor =
+                resolveChipDyeOrWhite();
+
+        previewScrollOffset = 0;
+
+        editor = new MultiLineEditBox(
+                font,
+                editorX,
+                editorY,
+                editorWidth,
+                editorHeight,
                 Component.empty(),
                 Component.empty()
         );
 
-        this.editor.setValue(this.initialText);
+        editor.setCharacterLimit(
+                MAX_TEXT_LENGTH
+        );
 
-        this.addRenderableWidget(this.editor);
-        this.setInitialFocus(this.editor);
+        editor.setValue(
+                initialText
+        );
 
-        // Center the buttons under the edit box.
-        int btnY = editY + editH + 10;
-        int btnW = 90;
-        int gap = 10;
-        int totalW = btnW + gap + btnW;
-        int startX = editX + (editW - totalW) / 2;
+        addRenderableWidget(
+                editor
+        );
 
-        this.addRenderableWidget(new AccentButton(
-                startX, btnY, btnW, 20,
-                Component.translatable("gui.cancel"),
-                b -> onClose(),
-                accentColor
-        ));
+        setInitialFocus(
+                editor
+        );
 
-        this.addRenderableWidget(new AccentButton(
-                startX + btnW + gap, btnY, btnW, 20,
-                Component.translatable("gui.done"),
-                b -> {
-                    sendSave();
-                    onClose();
-                },
-                accentColor
-        ));
+        addFormattingButtons();
+        addBottomButtons();
+    }
+
+    private void addFormattingButtons() {
+        int buttonWidth = 25;
+        int buttonHeight = 18;
+        int gap = 3;
+
+        int firstColumn =
+                formatPanelX;
+
+        int secondColumn =
+                formatPanelX
+                        + buttonWidth
+                        + gap;
+
+        int rowY =
+                formatPanelY;
+
+        addFormattingButton(
+                firstColumn,
+                rowY,
+                buttonWidth,
+                buttonHeight,
+                Component.literal("B"),
+                "l",
+                Component.translatable(
+                        "gui.infolog.format.bold"
+                )
+        );
+
+        addFormattingButton(
+                secondColumn,
+                rowY,
+                buttonWidth,
+                buttonHeight,
+                Component.literal("I"),
+                "o",
+                Component.translatable(
+                        "gui.infolog.format.italic"
+                )
+        );
+
+        rowY += buttonHeight + gap;
+
+        addFormattingButton(
+                firstColumn,
+                rowY,
+                buttonWidth,
+                buttonHeight,
+                Component.literal("U"),
+                "n",
+                Component.translatable(
+                        "gui.infolog.format.underline"
+                )
+        );
+
+        addFormattingButton(
+                secondColumn,
+                rowY,
+                buttonWidth,
+                buttonHeight,
+                Component.literal("S"),
+                "m",
+                Component.translatable(
+                        "gui.infolog.format.strikethrough"
+                )
+        );
+
+        rowY += buttonHeight + gap;
+
+        addFormattingButton(
+                firstColumn,
+                rowY,
+                buttonWidth * 2 + gap,
+                buttonHeight,
+                Component.literal("RESET"),
+                "r",
+                Component.translatable(
+                        "gui.infolog.format.reset"
+                )
+        );
+
+        rowY += buttonHeight + 7;
+
+        addColorButtons(
+                rowY
+        );
+    }
+
+    private void addFormattingButton(
+            int x,
+            int y,
+            int width,
+            int height,
+            Component label,
+            String code,
+            Component tooltip
+    ) {
+        FormattingButton button =
+                new FormattingButton(
+                        x,
+                        y,
+                        width,
+                        height,
+                        label,
+                        pressed -> insertFormattingCode(code),
+                        accentColor
+                );
+
+        button.setTooltip(
+                Tooltip.create(tooltip)
+        );
+
+        addRenderableWidget(
+                button
+        );
+    }
+
+    private void addColorButtons(
+            int startY
+    ) {
+        String[] codes = {
+                "0", "1", "2", "3",
+                "4", "5", "6", "7",
+                "8", "9", "a", "b",
+                "c", "d", "e", "f"
+        };
+
+        int[] colors = {
+                0xFF000000,
+                0xFF0000AA,
+                0xFF00AA00,
+                0xFF00AAAA,
+                0xFFAA0000,
+                0xFFAA00AA,
+                0xFFFFAA00,
+                0xFFAAAAAA,
+                0xFF555555,
+                0xFF5555FF,
+                0xFF55FF55,
+                0xFF55FFFF,
+                0xFFFF5555,
+                0xFFFF55FF,
+                0xFFFFFF55,
+                0xFFFFFFFF
+        };
+
+        String[] translationSuffixes = {
+                "black",
+                "dark_blue",
+                "dark_green",
+                "dark_aqua",
+                "dark_red",
+                "dark_purple",
+                "gold",
+                "gray",
+                "dark_gray",
+                "blue",
+                "green",
+                "aqua",
+                "red",
+                "light_purple",
+                "yellow",
+                "white"
+        };
+
+        int size = 11;
+        int gap = 2;
+
+        for (int index = 0;
+             index < codes.length;
+             index++) {
+            int column =
+                    index % 4;
+
+            int row =
+                    index / 4;
+
+            String formattingCode =
+                    codes[index];
+
+            ColorFormattingButton button =
+                    new ColorFormattingButton(
+                            formatPanelX
+                                    + column * (size + gap),
+                            startY
+                                    + row * (size + gap),
+                            size,
+                            size,
+                            colors[index],
+                            pressed -> insertFormattingCode(
+                                    formattingCode
+                            )
+                    );
+
+            button.setTooltip(
+                    Tooltip.create(
+                            Component.translatable(
+                                    "gui.infolog.format.color."
+                                            + translationSuffixes[index]
+                            )
+                    )
+            );
+
+            addRenderableWidget(
+                    button
+            );
+        }
+    }
+
+    private void addBottomButtons() {
+        int buttonY =
+                editorY
+                        + editorHeight
+                        + 10;
+
+        int buttonWidth = 70;
+        int gap = 6;
+
+        int totalWidth =
+                buttonWidth * 3
+                        + gap * 2;
+
+        int startX =
+                editorX
+                        + (editorWidth - totalWidth) / 2;
+
+        addRenderableWidget(
+                new AccentButton(
+                        startX,
+                        buttonY,
+                        buttonWidth,
+                        20,
+                        Component.translatable(
+                                "gui.cancel"
+                        ),
+                        button -> onClose(),
+                        accentColor
+                )
+        );
+
+        addRenderableWidget(
+                new AccentButton(
+                        startX + buttonWidth + gap,
+                        buttonY,
+                        buttonWidth,
+                        20,
+                        Component.translatable(
+                                "gui.done"
+                        ),
+                        button -> {
+                            saveDraft();
+                            onClose();
+                        },
+                        accentColor
+                )
+        );
+
+        addRenderableWidget(
+                new AccentButton(
+                        startX + (buttonWidth + gap) * 2,
+                        buttonY,
+                        buttonWidth,
+                        20,
+                        Component.translatable(
+                                "gui.infolog.save"
+                        ),
+                        button -> openSaveScreen(),
+                        accentColor
+                )
+        );
+    }
+
+    private void insertFormattingCode(
+            String code
+    ) {
+        if (editor == null ||
+                code == null ||
+                code.isBlank()) {
+            return;
+        }
+
+        MultilineTextField textField =
+                ((MultiLineEditBoxAccessor) editor)
+                        .createCybernetics$getTextField();
+
+        textField.insertText(
+                Character.toString(
+                        InfologFormatting.EDITOR_PREFIX
+                ) + code
+        );
+
+        editor.setFocused(true);
+        setFocused(editor);
     }
 
     private int resolveChipDyeOrWhite() {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) return 0xFFFFFFFF;
-        if (!mc.player.hasData(ModAttachments.CYBERWARE)) return 0xFFFFFFFF;
+        Minecraft minecraft =
+                Minecraft.getInstance();
 
-        PlayerCyberwareData data = mc.player.getData(ModAttachments.CYBERWARE);
-        if (data == null) return 0xFFFFFFFF;
+        if (minecraft.player == null) {
+            return 0xFFFFFFFF;
+        }
 
-        if (chipwareSlot < 0 || chipwareSlot >= PlayerCyberwareData.CHIPWARE_SLOT_COUNT) return 0xFFFFFFFF;
+        if (!minecraft.player.hasData(
+                ModAttachments.CYBERWARE
+        )) {
+            return 0xFFFFFFFF;
+        }
 
-        ItemStack st = data.getChipwareStack(chipwareSlot);
-        if (st.isEmpty()) return 0xFFFFFFFF;
+        PlayerCyberwareData data =
+                minecraft.player.getData(
+                        ModAttachments.CYBERWARE
+                );
 
-        DyedItemColor dyed = st.get(DataComponents.DYED_COLOR);
-        if (dyed == null) return 0xFFFFFFFF;
+        if (data == null) {
+            return 0xFFFFFFFF;
+        }
 
-        // dyed.rgb() is 0xRRGGBB; convert to opaque ARGB
-        return 0xFF000000 | (dyed.rgb() & 0x00FFFFFF);
+        if (chipwareSlot < 0 ||
+                chipwareSlot >=
+                        PlayerCyberwareData.CHIPWARE_SLOT_COUNT) {
+            return 0xFFFFFFFF;
+        }
+
+        ItemStack stack =
+                data.getChipwareStack(
+                        chipwareSlot
+                );
+
+        if (stack.isEmpty()) {
+            return 0xFFFFFFFF;
+        }
+
+        DyedItemColor dyed =
+                stack.get(
+                        DataComponents.DYED_COLOR
+                );
+
+        if (dyed == null) {
+            return 0xFFFFFFFF;
+        }
+
+        return 0xFF000000
+                | (dyed.rgb() & 0x00FFFFFF);
     }
 
-    private void sendSave() {
-        String text = this.editor.getValue();
-        if (text == null) text = "";
-        if (text.length() > 32000) text = text.substring(0, 32000);
+    private String getEditorText() {
+        String text =
+                editor.getValue();
 
-        PacketDistributor.sendToServer(new InfologSaveChipwarePayload(this.chipwareSlot, text, false));
+        if (text == null) {
+            return "";
+        }
+
+        text =
+                InfologFormatting.toSavedText(
+                        text
+                );
+
+        if (text.length() > MAX_TEXT_LENGTH) {
+            return text.substring(
+                    0,
+                    MAX_TEXT_LENGTH
+            );
+        }
+
+        return text;
+    }
+
+    private void saveDraft() {
+        PacketDistributor.sendToServer(
+                new InfologSaveChipwarePayload(
+                        chipwareSlot,
+                        getEditorText(),
+                        "",
+                        false
+                )
+        );
+    }
+
+    private void openSaveScreen() {
+        Minecraft.getInstance().setScreen(
+                new InfologTitleScreen(
+                        chipwareSlot,
+                        getEditorText(),
+                        accentColor
+                )
+        );
+    }
+
+    private void renderPreview(
+            GuiGraphics guiGraphics
+    ) {
+        int previewX =
+                formatPanelX;
+
+        int previewY =
+                formatPanelY
+                        + PREVIEW_Y_OFFSET;
+
+        int previewWidth =
+                FORMAT_PANEL_WIDTH - 6;
+
+        guiGraphics.fill(
+                previewX,
+                previewY,
+                previewX + previewWidth,
+                previewY + PREVIEW_HEIGHT,
+                0xDD000000
+        );
+
+        drawBorder(
+                guiGraphics,
+                previewX,
+                previewY,
+                previewWidth,
+                PREVIEW_HEIGHT,
+                accentColor
+        );
+
+        guiGraphics.drawString(
+                font,
+                Component.translatable(
+                        "gui.infolog.format.preview"
+                ),
+                previewX + PREVIEW_PADDING,
+                previewY + PREVIEW_PADDING,
+                accentColor,
+                false
+        );
+
+        String editorText =
+                editor == null
+                        ? ""
+                        : editor.getValue();
+
+        List<FormattedCharSequence> previewLines =
+                font.split(
+                        InfologFormatting.parseEditorText(
+                                editorText
+                        ),
+                        previewWidth
+                                - PREVIEW_PADDING * 2
+                                - 3
+                );
+
+        int textAreaY =
+                previewY + 17;
+
+        int textAreaHeight =
+                PREVIEW_HEIGHT - 21;
+
+        int visibleLines =
+                Math.max(
+                        1,
+                        textAreaHeight
+                                / PREVIEW_LINE_HEIGHT
+                );
+
+        int maximumScroll =
+                Math.max(
+                        0,
+                        previewLines.size()
+                                - visibleLines
+                );
+
+        previewScrollOffset =
+                Mth.clamp(
+                        previewScrollOffset,
+                        0,
+                        maximumScroll
+                );
+
+        int endIndex =
+                Math.min(
+                        previewLines.size(),
+                        previewScrollOffset
+                                + visibleLines
+                );
+
+        guiGraphics.enableScissor(
+                previewX + 1,
+                textAreaY,
+                previewX + previewWidth - 1,
+                previewY + PREVIEW_HEIGHT - 2
+        );
+
+        int renderY =
+                textAreaY;
+
+        for (int index = previewScrollOffset;
+             index < endIndex;
+             index++) {
+            guiGraphics.drawString(
+                    font,
+                    previewLines.get(index),
+                    previewX + PREVIEW_PADDING,
+                    renderY,
+                    0xFFFFFFFF,
+                    false
+            );
+
+            renderY += PREVIEW_LINE_HEIGHT;
+        }
+
+        guiGraphics.disableScissor();
+    }
+
+    @Override
+    public void render(
+            GuiGraphics guiGraphics,
+            int mouseX,
+            int mouseY,
+            float partialTick
+    ) {
+        super.render(
+                guiGraphics,
+                mouseX,
+                mouseY,
+                partialTick
+        );
+
+        drawBorder(
+                guiGraphics,
+                editorX - 1,
+                editorY - 1,
+                editorWidth + 2,
+                editorHeight + 2,
+                accentColor
+        );
+
+        drawBorder(
+                guiGraphics,
+                formatPanelX - 3,
+                formatPanelY - 3,
+                FORMAT_PANEL_WIDTH,
+                FORMAT_PANEL_BORDER_HEIGHT,
+                accentColor
+        );
+
+        renderPreview(
+                guiGraphics
+        );
+    }
+
+    @Override
+    public boolean mouseScrolled(
+            double mouseX,
+            double mouseY,
+            double scrollX,
+            double scrollY
+    ) {
+        int previewX =
+                formatPanelX;
+
+        int previewY =
+                formatPanelY
+                        + PREVIEW_Y_OFFSET;
+
+        int previewWidth =
+                FORMAT_PANEL_WIDTH - 6;
+
+        boolean overPreview =
+                mouseX >= previewX
+                        && mouseX < previewX + previewWidth
+                        && mouseY >= previewY
+                        && mouseY < previewY + PREVIEW_HEIGHT;
+
+        if (!overPreview) {
+            return super.mouseScrolled(
+                    mouseX,
+                    mouseY,
+                    scrollX,
+                    scrollY
+            );
+        }
+
+        int direction =
+                scrollY > 0.0D
+                        ? -1
+                        : 1;
+
+        previewScrollOffset =
+                Math.max(
+                        0,
+                        previewScrollOffset
+                                + direction
+                );
+
+        return true;
+    }
+
+    @Override
+    public boolean keyPressed(
+            int keyCode,
+            int scanCode,
+            int modifiers
+    ) {
+        boolean inventoryKey =
+                Minecraft.getInstance()
+                        .options
+                        .keyInventory
+                        .matches(
+                                keyCode,
+                                scanCode
+                        );
+
+        if (editor != null &&
+                editor.isFocused() &&
+                inventoryKey) {
+            return true;
+        }
+
+        if (keyCode == 256) {
+            onClose();
+            return true;
+        }
+
+        return super.keyPressed(
+                keyCode,
+                scanCode,
+                modifiers
+        );
+    }
+
+    @Override
+    public void onClose() {
+        Minecraft.getInstance().setScreen(
+                null
+        );
     }
 
     @Override
@@ -127,72 +785,209 @@ public final class InfologEditScreen extends Screen {
         return false;
     }
 
-    @Override
-    public void render(GuiGraphics gg, int mouseX, int mouseY, float partialTick) {
-        super.render(gg, mouseX, mouseY, partialTick);
+    private static void drawBorder(
+            GuiGraphics guiGraphics,
+            int x,
+            int y,
+            int width,
+            int height,
+            int color
+    ) {
+        guiGraphics.fill(
+                x,
+                y,
+                x + width,
+                y + 1,
+                color
+        );
 
-        // Draw a 1px outline around the editor using the chip dye (or white).
-        drawBorder(gg, editX - 1, editY - 1, editW + 2, editH + 2, accentColor);
+        guiGraphics.fill(
+                x,
+                y + height - 1,
+                x + width,
+                y + height,
+                color
+        );
+
+        guiGraphics.fill(
+                x,
+                y,
+                x + 1,
+                y + height,
+                color
+        );
+
+        guiGraphics.fill(
+                x + width - 1,
+                y,
+                x + width,
+                y + height,
+                color
+        );
     }
 
-    private static void drawBorder(GuiGraphics gg, int x, int y, int w, int h, int argb) {
-        // top
-        gg.fill(x, y, x + w, y + 1, argb);
-        // bottom
-        gg.fill(x, y + h - 1, x + w, y + h, argb);
-        // left
-        gg.fill(x, y, x + 1, y + h, argb);
-        // right
-        gg.fill(x + w - 1, y, x + w, y + h, argb);
-    }
+    private static class AccentButton extends Button {
+        protected final int accentColor;
 
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == 256) { // ESC
-            this.onClose();
-            return true;
-        }
-        return super.keyPressed(keyCode, scanCode, modifiers);
-    }
+        private AccentButton(
+                int x,
+                int y,
+                int width,
+                int height,
+                Component message,
+                OnPress onPress,
+                int accentColor
+        ) {
+            super(
+                    x,
+                    y,
+                    width,
+                    height,
+                    message,
+                    onPress,
+                    DEFAULT_NARRATION
+            );
 
-    @Override
-    public void onClose() {
-        Minecraft.getInstance().setScreen(null);
-    }
-
-    /**
-     * Simple black button with 1px accent border and accent-colored label.
-     */
-    private static final class AccentButton extends Button {
-        private final int accent;
-
-        private AccentButton(int x, int y, int w, int h, Component msg, OnPress onPress, int accent) {
-            super(x, y, w, h, msg, onPress, DEFAULT_NARRATION);
-            this.accent = accent;
+            this.accentColor = accentColor;
         }
 
         @Override
-        protected void renderWidget(GuiGraphics gg, int mouseX, int mouseY, float partialTick) {
+        protected void renderWidget(
+                GuiGraphics guiGraphics,
+                int mouseX,
+                int mouseY,
+                float partialTick
+        ) {
             int x = getX();
             int y = getY();
-            int w = getWidth();
-            int h = getHeight();
+            int width = getWidth();
+            int height = getHeight();
 
-            // Black fill
-            gg.fill(x, y, x + w, y + h, 0xFF000000);
+            guiGraphics.fill(
+                    x,
+                    y,
+                    x + width,
+                    y + height,
+                    0xFF000000
+            );
 
-            // Accent border
-            drawBorder(gg, x, y, w, h, accent);
+            drawBorder(
+                    guiGraphics,
+                    x,
+                    y,
+                    width,
+                    height,
+                    accentColor
+            );
 
-            // Slight hover tint (still dark)
-            if (this.isHoveredOrFocused()) {
-                gg.fill(x + 1, y + 1, x + w - 1, y + h - 1, 0x22000000);
+            if (isHoveredOrFocused()) {
+                guiGraphics.fill(
+                        x + 1,
+                        y + 1,
+                        x + width - 1,
+                        y + height - 1,
+                        0x22000000
+                );
             }
 
-            // Centered label in accent color
-            int textX = x + w / 2;
-            int textY = y + (h - 8) / 2;
-            gg.drawCenteredString(Minecraft.getInstance().font, getMessage(), textX, textY, accent);
+            guiGraphics.drawCenteredString(
+                    Minecraft.getInstance().font,
+                    getMessage(),
+                    x + width / 2,
+                    y + (height - 8) / 2,
+                    accentColor
+            );
+        }
+    }
+
+    private static final class FormattingButton
+            extends AccentButton {
+
+        private FormattingButton(
+                int x,
+                int y,
+                int width,
+                int height,
+                Component message,
+                OnPress onPress,
+                int accentColor
+        ) {
+            super(
+                    x,
+                    y,
+                    width,
+                    height,
+                    message,
+                    onPress,
+                    accentColor
+            );
+        }
+    }
+
+    private static final class ColorFormattingButton
+            extends Button {
+
+        private final int color;
+
+        private ColorFormattingButton(
+                int x,
+                int y,
+                int width,
+                int height,
+                int color,
+                OnPress onPress
+        ) {
+            super(
+                    x,
+                    y,
+                    width,
+                    height,
+                    Component.empty(),
+                    onPress,
+                    DEFAULT_NARRATION
+            );
+
+            this.color = color;
+        }
+
+        @Override
+        protected void renderWidget(
+                GuiGraphics guiGraphics,
+                int mouseX,
+                int mouseY,
+                float partialTick
+        ) {
+            int x = getX();
+            int y = getY();
+            int width = getWidth();
+            int height = getHeight();
+
+            guiGraphics.fill(
+                    x,
+                    y,
+                    x + width,
+                    y + height,
+                    0xFFFFFFFF
+            );
+
+            guiGraphics.fill(
+                    x + 1,
+                    y + 1,
+                    x + width - 1,
+                    y + height - 1,
+                    color
+            );
+
+            if (isHoveredOrFocused()) {
+                drawBorder(
+                        guiGraphics,
+                        x,
+                        y,
+                        width,
+                        height,
+                        0xFFFFFF55
+                );
+            }
         }
     }
 }

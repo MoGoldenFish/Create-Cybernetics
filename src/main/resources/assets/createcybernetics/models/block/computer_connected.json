@@ -1,0 +1,7 @@
+{
+  "parent": "createcybernetics:block/computer_model",
+  "textures": {
+    "0": "createcybernetics:block/computer_connected",
+    "particle": "createcybernetics:block/computer_connected"
+  }
+}

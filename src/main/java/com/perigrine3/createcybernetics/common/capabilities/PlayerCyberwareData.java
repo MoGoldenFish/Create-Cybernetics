@@ -10,6 +10,9 @@ import com.perigrine3.createcybernetics.common.humanity.HumanityAttributeModifie
 import com.perigrine3.createcybernetics.common.surgery.DefaultOrgans;
 import com.perigrine3.createcybernetics.item.cyberware.arm.ArmCannonItem;
 import com.perigrine3.createcybernetics.item.cyberware.bone.SpinalInjectorItem;
+import com.perigrine3.createcybernetics.item.cyberware.brain.ChipwareSlotsItem;
+import com.perigrine3.createcybernetics.item.cyberware.brain.CyberdeckItem;
+import com.perigrine3.createcybernetics.item.cyberware.organs.HeatEngineItem;
 import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
@@ -47,6 +50,9 @@ public class PlayerCyberwareData implements ICyberwareData {
     private static final String NBT_HUMANITY_BONUS = "HumanityBonus";
     private static final String NBT_HUMANITY_PENALTIES = "HumanityPenalties";
     private static final String NBT_ENERGY = "Energy";
+    private static final String NBT_DATA_INTEGRITY = "DataIntegrity";
+    private static final String NBT_TICKS_SINCE_INTEGRITY_BOOT_DOWN = "TicksSinceIntegrityBootDown";
+    private static final String NBT_INTEGRITY_BED_TICKS = "IntegrityBedTicks";
 
     private boolean forcedChamberCrouch = false;
 
@@ -106,6 +112,10 @@ public class PlayerCyberwareData implements ICyberwareData {
     private int legacyHumanity = ConfigValues.BASE_HUMANITY;
     private int legacyHumanityBonus = 0;
     private final Map<String, Integer> legacyHumanityPenalties = new HashMap<>();
+
+    private double dataIntegrity = -1.0D;
+    private int ticksSinceIntegrityBootDown = 0;
+    private int integrityBedTicks = 0;
 
     private int energyStored = 0;
 
@@ -222,7 +232,7 @@ public class PlayerCyberwareData implements ICyberwareData {
     }
 
     public int getHumanityBase(Player player) {
-        return ConfigValues.BASE_HUMANITY;
+        return HumanityAttributeModifiers.getBase(player);
     }
 
     public int getHumanityBonus() {
@@ -314,6 +324,68 @@ public class PlayerCyberwareData implements ICyberwareData {
         return sum;
     }
 
+    public boolean hasInitializedDataIntegrity() {
+        return dataIntegrity >= 0.0D;
+    }
+
+    public int getDataIntegrity() {
+        return Mth.ceil((float) getDataIntegrityPrecise());
+    }
+
+    public double getDataIntegrityPrecise() {
+        if (dataIntegrity < 0.0D) {
+            return HumanityAttributeModifiers.getConfiguredBaseHumanity();
+        }
+
+        return dataIntegrity;
+    }
+
+    public void setDataIntegrity(int value) {
+        setDataIntegrityPrecise(value);
+    }
+
+    public void setDataIntegrityPrecise(double value) {
+        int maxIntegrity = HumanityAttributeModifiers.getConfiguredBaseHumanity();
+        double clamped = Mth.clamp(value, 0.0D, maxIntegrity);
+
+        if (Double.compare(dataIntegrity, clamped) == 0) {
+            return;
+        }
+
+        dataIntegrity = clamped;
+        dirty = true;
+    }
+
+    public int getTicksSinceIntegrityBootDown() {
+        return Math.max(0, ticksSinceIntegrityBootDown);
+    }
+
+    public void setTicksSinceIntegrityBootDown(int value) {
+        int clamped = Math.max(0, value);
+
+        if (ticksSinceIntegrityBootDown == clamped) {
+            return;
+        }
+
+        ticksSinceIntegrityBootDown = clamped;
+        dirty = true;
+    }
+
+    public int getIntegrityBedTicks() {
+        return Math.max(0, integrityBedTicks);
+    }
+
+    public void setIntegrityBedTicks(int value) {
+        int clamped = Math.max(0, value);
+
+        if (integrityBedTicks == clamped) {
+            return;
+        }
+
+        integrityBedTicks = clamped;
+        dirty = true;
+    }
+
     public void recomputeHumanityBaseFromInstalled() {
         refreshLegacyHumanitySnapshot();
         dirty = true;
@@ -344,7 +416,7 @@ public class PlayerCyberwareData implements ICyberwareData {
     }
 
     private void refreshLegacyHumanitySnapshot() {
-        int base = ConfigValues.BASE_HUMANITY;
+        int base = HumanityAttributeModifiers.getConfiguredBaseHumanity();
 
         for (var entry : slots.entrySet()) {
             InstalledCyberware[] arr = entry.getValue();
@@ -357,7 +429,7 @@ public class PlayerCyberwareData implements ICyberwareData {
                 if (stack == null || stack.isEmpty()) continue;
 
                 if (stack.getItem() instanceof ICyberwareItem item) {
-                    base -= Math.max(0, item.getHumanityCost());
+                    base -= item.getHumanityCost();
                 }
             }
         }
@@ -922,6 +994,10 @@ public class PlayerCyberwareData implements ICyberwareData {
         legacyHumanityBonus = 0;
         legacyHumanityPenalties.clear();
 
+        dataIntegrity = -1.0D;
+        ticksSinceIntegrityBootDown = 0;
+        integrityBedTicks = 0;
+
         energyStored = 0;
         neuropozyneApplyCount = 0;
 
@@ -1156,6 +1232,102 @@ public class PlayerCyberwareData implements ICyberwareData {
         dirty = true;
     }
 
+    /* ---------------- IMPLANT INVENTORY EJECTION ---------------- */
+
+    public void ejectInventoryForRemovedCyberware(Player player, ItemStack removedCyberware) {
+        if (player == null) return;
+        if (removedCyberware == null || removedCyberware.isEmpty()) return;
+        if (player.level().isClientSide) return;
+
+        Item item = removedCyberware.getItem();
+
+        if (item instanceof ChipwareSlotsItem) {
+            ejectChipwareInventory(player);
+            return;
+        }
+
+        if (item instanceof CyberdeckItem) {
+            ejectCyberdeckInventory(player);
+            return;
+        }
+
+        if (item instanceof SpinalInjectorItem) {
+            ejectSpinalInjectorInventory(player);
+            return;
+        }
+
+        if (item instanceof ArmCannonItem) {
+            ejectArmCannonInventory(player);
+            return;
+        }
+
+        if (item instanceof HeatEngineItem) {
+            ejectHeatEngineInventory(player);
+        }
+    }
+
+    public void ejectChipwareInventory(Player player) {
+        for (int slot = 0; slot < chipwareInv.length; slot++) {
+            giveOrDropStoredStack(player, chipwareInv[slot]);
+            chipwareInv[slot] = ItemStack.EMPTY;
+        }
+
+        dirty = true;
+    }
+
+    public void ejectCyberdeckInventory(Player player) {
+        for (int slot = 0; slot < cyberdeckInv.length; slot++) {
+            giveOrDropStoredStack(player, cyberdeckInv[slot]);
+            cyberdeckInv[slot] = ItemStack.EMPTY;
+        }
+
+        dirty = true;
+    }
+
+    public void ejectSpinalInjectorInventory(Player player) {
+        for (int slot = 0; slot < spinalInjectorInv.length; slot++) {
+            giveOrDropStoredStack(player, spinalInjectorInv[slot]);
+            spinalInjectorInv[slot] = ItemStack.EMPTY;
+        }
+
+        dirty = true;
+    }
+
+    public void ejectArmCannonInventory(Player player) {
+        for (int slot = 0; slot < armCannonInv.length; slot++) {
+            giveOrDropStoredStack(player, armCannonInv[slot]);
+            armCannonInv[slot] = ItemStack.EMPTY;
+        }
+
+        armCannonSelected = 0;
+        dirty = true;
+    }
+
+    public void ejectHeatEngineInventory(Player player) {
+        for (int slot = 0; slot < heatEngineInv.length; slot++) {
+            giveOrDropStoredStack(player, heatEngineInv[slot]);
+            heatEngineInv[slot] = ItemStack.EMPTY;
+        }
+
+        heatEngineBurnTime = 0;
+        heatEngineBurnTimeTotal = 0;
+        heatEngineCookTime = 0;
+        heatEngineCookTimeTotal = 200;
+
+        dirty = true;
+    }
+
+    private static void giveOrDropStoredStack(Player player, ItemStack storedStack) {
+        if (player == null) return;
+        if (storedStack == null || storedStack.isEmpty()) return;
+
+        ItemStack remaining = storedStack.copy();
+
+        if (!player.getInventory().add(remaining)) {
+            player.drop(remaining, false);
+        }
+    }
+
     /* ---------------- DATA AND RESET ---------------- */
 
     @Override
@@ -1341,6 +1513,9 @@ public class PlayerCyberwareData implements ICyberwareData {
         tag.putInt(NBT_HUMANITY, legacyHumanity);
         tag.putInt(NBT_HUMANITY_BONUS, legacyHumanityBonus);
         tag.putInt(NBT_ENERGY, energyStored);
+        tag.putDouble(NBT_DATA_INTEGRITY, dataIntegrity);
+        tag.putInt(NBT_TICKS_SINCE_INTEGRITY_BOOT_DOWN, ticksSinceIntegrityBootDown);
+        tag.putInt(NBT_INTEGRITY_BED_TICKS, integrityBedTicks);
 
         CompoundTag penalties = new CompoundTag();
         for (Map.Entry<String, Integer> e : legacyHumanityPenalties.entrySet()) {
@@ -1467,6 +1642,18 @@ public class PlayerCyberwareData implements ICyberwareData {
         refreshLegacyHumanitySnapshot();
 
         energyStored = tag.contains(NBT_ENERGY, Tag.TAG_INT) ? tag.getInt(NBT_ENERGY) : 0;
+
+        dataIntegrity = tag.contains(NBT_DATA_INTEGRITY, Tag.TAG_DOUBLE)
+                ? Mth.clamp(tag.getDouble(NBT_DATA_INTEGRITY), 0.0D, HumanityAttributeModifiers.getConfiguredBaseHumanity())
+                : -1.0D;
+
+        ticksSinceIntegrityBootDown = tag.contains(NBT_TICKS_SINCE_INTEGRITY_BOOT_DOWN, Tag.TAG_INT)
+                ? Math.max(0, tag.getInt(NBT_TICKS_SINCE_INTEGRITY_BOOT_DOWN))
+                : 0;
+
+        integrityBedTicks = tag.contains(NBT_INTEGRITY_BED_TICKS, Tag.TAG_INT)
+                ? Math.max(0, tag.getInt(NBT_INTEGRITY_BED_TICKS))
+                : 0;
 
         legacyHumanityPenalties.clear();
         if (tag.contains(NBT_HUMANITY_PENALTIES, Tag.TAG_COMPOUND)) {

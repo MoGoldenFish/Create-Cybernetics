@@ -1,7 +1,7 @@
 package com.perigrine3.createcybernetics.client.event;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
-import com.perigrine3.createcybernetics.screen.custom.TattooOverlayBrowserScreen;
+import com.perigrine3.createcybernetics.screen.custom.tattoo_system.TattooOverlayBrowserScreen;
 import com.perigrine3.createcybernetics.tattoo.client.ClientTattooAccess;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;

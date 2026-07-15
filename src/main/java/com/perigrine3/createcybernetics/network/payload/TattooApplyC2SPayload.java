@@ -1,7 +1,7 @@
 package com.perigrine3.createcybernetics.network.payload;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
-import com.perigrine3.createcybernetics.screen.custom.TattooMenu;
+import com.perigrine3.createcybernetics.screen.custom.tattoo_system.TattooMenu;
 import com.perigrine3.createcybernetics.tattoo.TattooApplicationService;
 import com.perigrine3.createcybernetics.tattoo.TattooLayer;
 import net.minecraft.network.RegistryFriendlyByteBuf;

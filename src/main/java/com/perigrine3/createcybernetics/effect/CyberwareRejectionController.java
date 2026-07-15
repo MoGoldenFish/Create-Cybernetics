@@ -1,11 +1,8 @@
 package com.perigrine3.createcybernetics.effect;
 
-import com.perigrine3.createcybernetics.ConfigValues;
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
-import com.perigrine3.createcybernetics.common.humanity.HumanityAttributeModifiers;
-import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -15,11 +12,11 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 @EventBusSubscriber(modid = CreateCybernetics.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class CyberwareRejectionController {
 
-    private static final float THRESHOLD_PERCENT = 0.25f;
     private static final int REFRESH_EVERY_TICKS = 20;
-    private static final int DURATION = 100;
+    private static final int DURATION = 120;
 
-    private CyberwareRejectionController() {}
+    private CyberwareRejectionController() {
+    }
 
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
@@ -29,40 +26,48 @@ public final class CyberwareRejectionController {
             return;
         }
 
-        if (player.tickCount % REFRESH_EVERY_TICKS != 0) {
-            return;
-        }
-
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
         if (data == null) {
             player.removeEffect(ModEffects.CYBERWARE_REJECTION);
+            CyberpsychosisFugueController.clear(player);
             return;
         }
 
-        int currentHumanity = HumanityAttributeModifiers.get(player);
-        int maxHumanity = Math.max(1, ConfigValues.BASE_HUMANITY);
-        int thresholdHumanity = Mth.ceil(maxHumanity * THRESHOLD_PERCENT);
+        CyberpsychosisSeverity severity = CyberpsychosisSeverity.fromPlayer(player);
 
-        if (currentHumanity < thresholdHumanity) {
-            MobEffectInstance existing = player.getEffect(ModEffects.CYBERWARE_REJECTION);
-            int amplifier = existing != null ? existing.getAmplifier() : 0;
-
-            if (existing == null || existing.getDuration() <= DURATION - REFRESH_EVERY_TICKS) {
-                player.addEffect(new MobEffectInstance(
-                        ModEffects.CYBERWARE_REJECTION,
-                        DURATION,
-                        amplifier,
-                        false,
-                        true,
-                        true
-                ));
+        if (severity == CyberpsychosisSeverity.NONE) {
+            if (player.hasEffect(ModEffects.CYBERWARE_REJECTION)) {
+                player.removeEffect(ModEffects.CYBERWARE_REJECTION);
             }
 
+            CyberpsychosisFugueController.clear(player);
             return;
         }
 
-        if (player.hasEffect(ModEffects.CYBERWARE_REJECTION)) {
-            player.removeEffect(ModEffects.CYBERWARE_REJECTION);
+        if (player.tickCount % REFRESH_EVERY_TICKS == 0) {
+            refreshRejectionEffect(player, severity);
+        }
+
+        if (severity == CyberpsychosisSeverity.LEVEL_3) {
+            CyberpsychosisFugueController.tick(player);
+        } else {
+            CyberpsychosisFugueController.clear(player);
+        }
+    }
+
+    private static void refreshRejectionEffect(Player player, CyberpsychosisSeverity severity) {
+        MobEffectInstance existing = player.getEffect(ModEffects.CYBERWARE_REJECTION);
+        int amplifier = severity.id() - 1;
+
+        if (existing == null || existing.getDuration() <= DURATION - REFRESH_EVERY_TICKS || existing.getAmplifier() != amplifier) {
+            player.addEffect(new MobEffectInstance(
+                    ModEffects.CYBERWARE_REJECTION,
+                    DURATION,
+                    amplifier,
+                    false,
+                    true,
+                    true
+            ));
         }
     }
 }

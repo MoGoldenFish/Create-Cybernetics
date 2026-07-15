@@ -1,0 +1,91 @@
+{
+	"credit": "Made with Blockbench, cleaned for vanilla block model loading",
+	"texture_size": [64, 64],
+	"textures": {
+		"0": "createcybernetics:block/anomaly_block",
+		"particle": "createcybernetics:block/anomaly_block"
+	},
+	"elements": [
+		{
+			"name": "outer_core",
+			"from": [5.1, 5.1, 5.1],
+			"to": [10.9, 10.9, 10.9],
+			"faces": {
+				"north": { "uv": [1.25, 3.75, 2.5, 5], "texture": "#0" },
+				"east": { "uv": [0, 3.75, 1.25, 5], "texture": "#0" },
+				"south": { "uv": [3.75, 3.75, 5, 5], "texture": "#0" },
+				"west": { "uv": [2.5, 3.75, 3.75, 5], "texture": "#0" },
+				"up": { "uv": [2.5, 3.75, 1.25, 2.5], "texture": "#0" },
+				"down": { "uv": [3.75, 2.5, 2.5, 3.75], "texture": "#0" }
+			}
+		},
+		{
+			"name": "inner_core",
+			"from": [5.2, 5.2, 5.2],
+			"to": [10.8, 10.8, 10.8],
+			"faces": {
+				"north": { "uv": [1.25, 9, 2.5, 10.25], "texture": "#0" },
+				"east": { "uv": [0, 9, 1.25, 10.25], "texture": "#0" },
+				"south": { "uv": [3.75, 9, 5, 10.25], "texture": "#0" },
+				"west": { "uv": [2.5, 9, 3.75, 10.25], "texture": "#0" },
+				"up": { "uv": [2.5, 9, 1.25, 7.75], "texture": "#0" },
+				"down": { "uv": [3.75, 7.75, 2.5, 9], "texture": "#0" }
+			}
+		},
+		{
+			"name": "vertical_plane_north_south",
+			"from": [5.18, 5.18, 7.95],
+			"to": [10.82, 10.82, 8.05],
+			"faces": {
+				"north": { "uv": [5, 0, 10, 5], "texture": "#0" },
+				"south": { "uv": [5, 0, 10, 5], "texture": "#0" }
+			}
+		},
+		{
+			"name": "vertical_plane_east_west",
+			"from": [7.95, 5.18, 5.18],
+			"to": [8.05, 10.82, 10.82],
+			"faces": {
+				"east": { "uv": [5, 0, 10, 5], "texture": "#0" },
+				"west": { "uv": [5, 0, 10, 5], "texture": "#0" }
+			}
+		},
+		{
+			"name": "horizontal_plane",
+			"from": [5.18, 7.95, 5.18],
+			"to": [10.82, 8.05, 10.82],
+			"faces": {
+				"up": { "uv": [5, 0, 10, 5], "texture": "#0" },
+				"down": { "uv": [5, 0, 10, 5], "texture": "#0" }
+			}
+		},
+		{
+			"name": "diagonal_plane_positive",
+			"from": [4.35, 7.95, 6.0],
+			"to": [11.65, 8.05, 10.0],
+			"rotation": {
+				"angle": 45,
+				"axis": "y",
+				"origin": [8, 8, 8]
+			},
+			"faces": {
+				"up": { "uv": [5, 1.25, 10, 3.75], "texture": "#0" },
+				"down": { "uv": [5, 1.25, 10, 3.75], "texture": "#0" }
+			}
+		},
+		{
+			"name": "diagonal_plane_negative",
+			"from": [4.35, 7.95, 6.0],
+			"to": [11.65, 8.05, 10.0],
+			"rotation": {
+				"angle": -45,
+				"axis": "y",
+				"origin": [8, 8, 8]
+			},
+			"faces": {
+				"up": { "uv": [5, 2.5, 10, 5], "texture": "#0" },
+				"down": { "uv": [5, 2.5, 10, 5], "texture": "#0" }
+			}
+		}
+	]
+}

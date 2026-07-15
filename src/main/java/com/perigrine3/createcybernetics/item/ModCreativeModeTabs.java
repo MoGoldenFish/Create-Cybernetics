@@ -2,6 +2,9 @@ package com.perigrine3.createcybernetics.item;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.block.ModBlocks;
+import com.perigrine3.createcybernetics.compat.ModCompats;
+import com.perigrine3.createcybernetics.compat.ironsspells.IronsSpellbooksCompat;
+import com.perigrine3.createcybernetics.compat.ironsspells.IronsSpellbooksCompatBlocks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -27,11 +30,19 @@ public class ModCreativeModeTabs {
                         output.accept(ModBlocks.ENGINEERING_TABLE);
                         output.accept(ModBlocks.GRAFTING_TABLE);
                         output.accept(ModBlocks.CHARGING_BLOCK);
+                        output.accept(ModBlocks.COMPUTER);
+                        output.accept(ModBlocks.COMPUTER_TOWER);
                         output.accept(ModBlocks.HOLOPROJECTOR);
 
                         output.accept(ModItems.NEUROPOZYNE_AUTOINJECTOR);
 
                         output.accept(ModItems.EMPTY_AUTOINJECTOR);
+
+                        if (IronsSpellbooksCompat.isLoaded()) {
+                            output.accept(IronsSpellbooksCompatBlocks.HEXCORE_ITEM.get());
+                            output.accept(IronsSpellbooksCompatBlocks.ANOMALY_CORE_ITEM.get());
+                            output.accept(ModItems.ANOMALOUS_STAFF.get());
+                        }
 
                         output.accept(ModItems.RAWTITANIUM);
                         output.accept(ModItems.CRUSHEDTITANIUM);
@@ -59,30 +70,6 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.MUSIC_DISC_NEON_OVERLORDS);
                         output.accept(ModItems.MUSIC_DISC_NEUROHACK);
                         output.accept(ModItems.MUSIC_DISC_THE_GRID);
-
-                        //DATA SHARDS
-                        output.accept(ModItems.DATA_SHARD_RED);
-                        output.accept(ModItems.DATA_SHARD_ORANGE);
-                        output.accept(ModItems.DATA_SHARD_YELLOW);
-                        output.accept(ModItems.DATA_SHARD_GREEN);
-                        output.accept(ModItems.DATA_SHARD_CYAN);
-                        output.accept(ModItems.DATA_SHARD_BLUE);
-                        output.accept(ModItems.DATA_SHARD_PURPLE);
-                        output.accept(ModItems.DATA_SHARD_PINK);
-                        output.accept(ModItems.DATA_SHARD_BROWN);
-                        output.accept(ModItems.DATA_SHARD_GRAY);
-                        output.accept(ModItems.DATA_SHARD_BLACK);
-                        output.accept(ModItems.DATA_SHARD_BIOCHIP);
-                        output.accept(ModItems.DATA_SHARD_INFOLOG);
-
-                        //QUICKHACKS
-                        output.accept(ModItems.QUICKHACK_OVERHEAT);
-                        output.accept(ModItems.QUICKHACK_REBOOT);
-                        output.accept(ModItems.QUICKHACK_SCRAMBLE);
-                        output.accept(ModItems.QUICKHACK_OPTICMALFUNCTION);
-                        output.accept(ModItems.QUICKHACK_CYBERPSYCHOSIS);
-                        output.accept(ModItems.QUICKHACK_BEHINDYOU);
-                        output.accept(ModItems.QUICKHACK_DRAIN);
 
                         //COMPONENTS
                         output.accept(ModItems.COMPONENT_ACTUATOR);
@@ -132,6 +119,7 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.SCAVENGED_UNDERWATERVISION);
                         output.accept(ModItems.SCAVENGED_ZOOM);
                         output.accept(ModItems.SCAVENGED_TRAJECTORYCALCULATOR);
+                        output.accept(ModItems.SCAVENGED_BIOMONITOR);
                         output.accept(ModItems.SCAVENGED_ARMCANNON);
                         output.accept(ModItems.SCAVENGED_FLYWHEEL);
                         output.accept(ModItems.SCAVENGED_CLAWS);
@@ -141,6 +129,12 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.SCAVENGED_PNEUMATICWRIST);
                         output.accept(ModItems.SCAVENGED_REINFORCEDKNUCKLES);
                         output.accept(ModItems.SCAVENGED_ARCCANNON);
+                        output.accept(ModItems.SCAVENGED_MANTISBLADE_TITANIUM);
+                        output.accept(ModItems.SCAVENGED_MANTISBLADE_IRON);
+                        output.accept(ModItems.SCAVENGED_MANTISBLADE_COPPER);
+                        output.accept(ModItems.SCAVENGED_MANTISBLADE_GOLD);
+                        output.accept(ModItems.SCAVENGED_MANTISBLADE_DIAMOND);
+                        output.accept(ModItems.SCAVENGED_MANTISBLADE_NETHERITE);
                         output.accept(ModItems.SCAVENGED_METALDETECTOR);
                         output.accept(ModItems.SCAVENGED_ANKLEBRACERS);
                         output.accept(ModItems.SCAVENGED_JUMPBOOST);
@@ -182,6 +176,7 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.SCAVENGED_PLATELETS);
                         output.accept(ModItems.SCAVENGED_HYPEROXYGENATION);
                         output.accept(ModItems.SCAVENGED_OXYGEN);
+                        output.accept(ModItems.SCAVENGED_SYNTHLUNGS);
                         output.accept(ModItems.SCAVENGED_ADRENALINE);
                         output.accept(ModItems.SCAVENGED_BATTERY);
                         output.accept(ModItems.SCAVENGED_DIAMONDWAFERSTACK);
@@ -190,6 +185,7 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.SCAVENGED_METABOLIC);
                         output.accept(ModItems.SCAVENGED_DENSEBATTERY);
                         output.accept(ModItems.SCAVENGED_HEATENGINE);
+                        output.accept(ModItems.SCAVENGED_OREGRINDER);
                         output.accept(ModItems.SCAVENGED_ARTERIALTURBINE);
                         output.accept(ModItems.SCAVENGED_CHROMATOPHORES);
                         output.accept(ModItems.SCAVENGED_SYNTHSKIN);
@@ -218,7 +214,7 @@ public class ModCreativeModeTabs {
                     }).build());
 
     public static final Supplier<CreativeModeTab> CREATE_CYBERNETICS_UPGRADES_TAB = CREATIVE_MODE_TAB.register("create_cybernetics_upgrades_tab",
-            () -> CreativeModeTab.builder().icon(() -> new ItemStack(ModItems.BASECYBERWARE_CYBEREYES.get()))
+            () -> CreativeModeTab.builder().icon(() -> new ItemStack(ModItems.BASECYBERWARE_CYBEREYES.get())).withSearchBar()
                     .withTabsBefore(ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "create_cybernetics_tab"))
                     .title(Component.translatable("creativetab.createcybernetics.create_cybernetics_upgrades_tab"))
                     .displayItems((itemDisplayParameters, output) -> {
@@ -260,6 +256,7 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.EYEUPGRADES_TARGETING);
                         output.accept(ModItems.EYEUPGRADES_ZOOM);
                         output.accept(ModItems.EYEUPGRADES_TRAJECTORYCALCULATOR);
+                        output.accept(ModItems.EYEUPGRADES_BIOMONITOR);
                     //ARM UPGRADES
                         output.accept(ModItems.ARMUPGRADES_ARMCANNON);
                         output.accept(ModItems.ARMUPGRADES_CLAWS);
@@ -271,6 +268,12 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.ARMUPGRADES_REINFORCEDKNUCKLES);
                         output.accept(ModItems.ARMUPGRADES_RIPPERCLAW);
                         output.accept(ModItems.ARMUPGRADES_ARCCANNON);
+                        output.accept(ModItems.ARMUPGRADES_MANTISBLADE_TITANIUM);
+                        output.accept(ModItems.ARMUPGRADES_MANTISBLADE_IRON);
+                        output.accept(ModItems.ARMUPGRADES_MANTISBLADE_COPPER);
+                        output.accept(ModItems.ARMUPGRADES_MANTISBLADE_GOLD);
+                        output.accept(ModItems.ARMUPGRADES_MANTISBLADE_DIAMOND);
+                        output.accept(ModItems.ARMUPGRADES_MANTISBLADE_NETHERITE);
                     //LEG UPGRADES
                         output.accept(ModItems.LEGUPGRADES_METALDETECTOR);
                         output.accept(ModItems.LEGUPGRADES_ANKLEBRACERS);
@@ -319,9 +322,14 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.HEARTUPGRADES_DEFIBRILLATOR);
                         output.accept(ModItems.HEARTUPGRADES_STEMCELL);
                         output.accept(ModItems.HEARTUPGRADES_PLATELETS);
+
+                        if (ModItems.HEARTUPGRADES_ANOMALY != null) {
+                            output.accept(ModItems.HEARTUPGRADES_ANOMALY);
+                        }
                     //LUNG UPGRADES
                         output.accept(ModItems.LUNGSUPGRADES_HYPEROXYGENATION);
                         output.accept(ModItems.LUNGSUPGRADES_OXYGEN);
+                        output.accept(ModItems.LUNGSUPGRADES_SYNTHLUNGS);
                     //ORGAN UPGRADES
                         output.accept(ModItems.ORGANSUPGRADES_ADRENALINE);
                         output.accept(ModItems.ORGANSUPGRADES_BATTERY);
@@ -332,6 +340,7 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.ORGANSUPGRADES_METABOLIC);
                         output.accept(ModItems.ORGANSUPGRADES_DENSEBATTERY);
                         output.accept(ModItems.ORGANSUPGRADES_HEATENGINE);
+                        output.accept(ModItems.ORGANSUPGRADES_OREGRINDER);
 
                         if (ModItems.ORGANSUPGRADES_MANABATTERY != null) {
                             output.accept(ModItems.ORGANSUPGRADES_MANABATTERY);
@@ -401,6 +410,78 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.BASECYBERWARE_LEFTARM_GOLDPLATED);
 
 
+
+                    }).build());
+
+    public static final Supplier<CreativeModeTab> CREATE_CYBERNETICS_DATASHARDS_TAB = CREATIVE_MODE_TAB.register("create_cybernetics_datashards_tab",
+            () -> CreativeModeTab.builder().icon(() -> new ItemStack(ModItems.DATA_SHARD_BIOCHIP.get())).withSearchBar()
+                    .withTabsBefore(ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "create_cybernetics_tab"))
+                    .title(Component.translatable("creativetab.createcybernetics.create_cybernetics_datashards_tab"))
+                    .displayItems((itemDisplayParameters, output) -> {
+
+                        //SPECIAL SHARDS
+                        output.accept(ModItems.DATA_SHARD_BIOCHIP);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG);
+
+                        //DATA SHARDS
+                        output.accept(ModItems.DATA_SHARD_RED);
+                        output.accept(ModItems.DATA_SHARD_ORANGE);
+                        output.accept(ModItems.DATA_SHARD_YELLOW);
+                        output.accept(ModItems.DATA_SHARD_GREEN);
+                        output.accept(ModItems.DATA_SHARD_CYAN);
+                        output.accept(ModItems.DATA_SHARD_BLUE);
+                        output.accept(ModItems.DATA_SHARD_PURPLE);
+                        output.accept(ModItems.DATA_SHARD_PINK);
+                        output.accept(ModItems.DATA_SHARD_BROWN);
+                        output.accept(ModItems.DATA_SHARD_GRAY);
+                        output.accept(ModItems.DATA_SHARD_BLACK);
+
+                        //TUTORIAL SHARDS
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_GETTING_STARTED);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_ROBOSURGEON_MANUAL);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_SURGERY_TABLE_MANUAL);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_FBC_GUIDE);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_CYBERBESTIARY);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_CYBERDECK);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_HARVESTER_ENCHANTMENT);
+                        if (ModCompats.isInstalled("cyberchems")) {
+                            output.accept(ModItems.DATA_SHARD_INFOLOG_CYBERCHEMS);
+                        }
+
+                        //LORE SHARDS
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_SUNSET_SHIFT);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_HOUSE_RULES);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_DENSE_BATTERY_AD);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_IMMUNOSUPPRESSOR_ADVISORY);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_CHROMATOPHORE_FIELD_NOTE);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_THE_RAISE);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_OMNISCIENT_OPTICS_AD);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_PRIVATE_WARD_REPORT);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_DRILLFIST_AD);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_IDEM_ARTICLE);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_MOM_IM_FINE);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_CYBERDECK_SECURITY_BRIEF);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_LUNCH_BREAK);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_DATURA);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_WAIT_YOUR_TURN);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_THE_BREACH);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_AI_CHAT);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_CYBERPSYCHO_TRANSCRIPT);
+                        output.accept(ModItems.DATA_SHARD_INFOLOG_CPU_INSTALL);
+
+                        //GAME SHARDS
+                        output.accept(ModItems.DATA_SHARD_GAME_MINESWEEPER);
+                        output.accept(ModItems.DATA_SHARD_GAME_CHESS);
+
+
+                        //QUICKHACKS
+                        output.accept(ModItems.QUICKHACK_OVERHEAT);
+                        output.accept(ModItems.QUICKHACK_REBOOT);
+                        output.accept(ModItems.QUICKHACK_SCRAMBLE);
+                        output.accept(ModItems.QUICKHACK_OPTICMALFUNCTION);
+                        output.accept(ModItems.QUICKHACK_CYBERPSYCHOSIS);
+                        output.accept(ModItems.QUICKHACK_BEHINDYOU);
+                        output.accept(ModItems.QUICKHACK_DRAIN);
 
                     }).build());
 

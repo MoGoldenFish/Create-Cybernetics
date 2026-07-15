@@ -1,10 +1,5 @@
 {
-  "type": "neoforge:add_spawns",
+  "type": "createcybernetics:configurable_entity_spawn",
   "biomes": "minecraft:soul_sand_valley",
-  "spawners": {
-    "type": "createcybernetics:hogboy",
-    "maxCount": 2,
-    "minCount": 1,
-    "weight": 2
-  }
+  "spawn_id": "hogboy"
 }

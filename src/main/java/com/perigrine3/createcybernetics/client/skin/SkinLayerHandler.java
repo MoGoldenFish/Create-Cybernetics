@@ -1,6 +1,7 @@
 package com.perigrine3.createcybernetics.client.skin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.perigrine3.createcybernetics.client.render.CyberwareLimbHider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -13,6 +14,7 @@ import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.PlayerModelPart;
 
 public final class SkinLayerHandler extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
 
@@ -29,6 +31,36 @@ public final class SkinLayerHandler extends RenderLayer<AbstractClientPlayer, Pl
         }
 
         return !target.isInvisible();
+    }
+
+    private static void applyOverlayVisibility(AbstractClientPlayer player, PlayerModel<AbstractClientPlayer> model) {
+        boolean hasLeftArm = CyberwareLimbHider.shouldRenderLeftArm(player);
+        boolean hasRightArm = CyberwareLimbHider.shouldRenderRightArm(player);
+        boolean hasLeftLeg = CyberwareLimbHider.shouldRenderLeftLeg(player);
+        boolean hasRightLeg = CyberwareLimbHider.shouldRenderRightLeg(player);
+
+        model.head.visible = true;
+        model.body.visible = true;
+
+        model.leftArm.visible = hasLeftArm;
+        model.rightArm.visible = hasRightArm;
+        model.leftLeg.visible = hasLeftLeg;
+        model.rightLeg.visible = hasRightLeg;
+
+        model.hat.visible = SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.HAT);
+        model.jacket.visible = SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.JACKET);
+
+        model.leftSleeve.visible = hasLeftArm
+                && SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.LEFT_SLEEVE);
+
+        model.rightSleeve.visible = hasRightArm
+                && SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.RIGHT_SLEEVE);
+
+        model.leftPants.visible = hasLeftLeg
+                && SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.LEFT_PANTS_LEG);
+
+        model.rightPants.visible = hasRightLeg
+                && SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.RIGHT_PANTS_LEG);
     }
 
     @Override
@@ -55,21 +87,10 @@ public final class SkinLayerHandler extends RenderLayer<AbstractClientPlayer, Pl
         boolean prevRightLeg = model.rightLeg.visible;
         boolean prevRightPants = model.rightPants.visible;
 
-        model.head.visible = true;
-        model.hat.visible = true;
-        model.body.visible = true;
-        model.jacket.visible = true;
-        model.leftArm.visible = true;
-        model.leftSleeve.visible = true;
-        model.rightArm.visible = true;
-        model.rightSleeve.visible = true;
-        model.leftLeg.visible = true;
-        model.leftPants.visible = true;
-        model.rightLeg.visible = true;
-        model.rightPants.visible = true;
-
         SkinVanillaWearVisibility.pushSuppress();
         try {
+            applyOverlayVisibility(player, model);
+
             PlayerSkin.Model modelType = player.getSkin().model();
 
             for (SkinModifier modifier : state.getModifiers()) {

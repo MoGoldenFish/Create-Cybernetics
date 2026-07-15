@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "createcybernetics:data_shard_infolog_cyberchems",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 6
+      },
+      "entries": [
+        {
+          "type": "minecraft:tag",
+          "name": "createcybernetics:lore_shards",
+          "expand": true
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "conditions": [
+        {
+          "condition": "minecraft:random_chance",
+          "chance": 0.18
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:tag",
+          "name": "createcybernetics:game_shards",
+          "expand": true
+        }
+      ]
+    }
+  ]
+}

@@ -234,6 +234,24 @@ public final class ModPayloads {
                 ArcCannonFirePayload::handle
         );
 
+        r.playToServer(
+                BiomonitorScanRequestPayload.TYPE,
+                BiomonitorScanRequestPayload.STREAM_CODEC,
+                (payload, ctx) -> ctx.enqueueWork(() -> {
+                    if (ctx.player() instanceof ServerPlayer sp) {
+                        BiomonitorScanRequestPayload.handle(payload, sp);
+                    }
+                })
+        );
+
+        r.playToClient(
+                BiomonitorVitalsPayload.TYPE,
+                BiomonitorVitalsPayload.STREAM_CODEC,
+                (payload, ctx) -> ctx.enqueueWork(() ->
+                        BiomonitorVitalsPayload.handle(payload)
+                )
+        );
+
         // ---------------- CYBEREYE IRIS LAYOUT SYNC ----------------
 
 // Client -> Server
@@ -318,6 +336,12 @@ public final class ModPayloads {
                 TattooRejectC2SPayload.TYPE,
                 TattooRejectC2SPayload.STREAM_CODEC,
                 TattooRejectC2SPayload::handle
+        );
+
+        r.playToClient(
+                IronsManaClientSyncPayload.TYPE,
+                IronsManaClientSyncPayload.STREAM_CODEC,
+                IronsManaClientSyncPayload::handle
         );
 
 
@@ -427,6 +451,87 @@ public final class ModPayloads {
                 PlayerSurgeryCancelPayload.TYPE,
                 PlayerSurgeryCancelPayload.STREAM_CODEC,
                 PlayerSurgeryPayloadHandler::handleCancel
+        );
+
+        /* ---------------- CHATSPACE ---------------- */
+
+        r.playToServer(
+                ChatSpaceRequestSyncPayload.TYPE,
+                ChatSpaceRequestSyncPayload.STREAM_CODEC,
+                (payload, context) ->
+                        context.enqueueWork(() -> {
+                            if (context.player()
+                                    instanceof ServerPlayer player) {
+                                ChatSpacePayloadHandler.handleRequestSync(
+                                        payload,
+                                        player
+                                );
+                            }
+                        })
+        );
+
+        r.playToServer(
+                ChatSpaceAddContactPayload.TYPE,
+                ChatSpaceAddContactPayload.STREAM_CODEC,
+                (payload, context) ->
+                        context.enqueueWork(() -> {
+                            if (context.player()
+                                    instanceof ServerPlayer player) {
+                                ChatSpacePayloadHandler.handleAddContact(
+                                        payload,
+                                        player
+                                );
+                            }
+                        })
+        );
+
+        r.playToServer(
+                ChatSpaceSendMessagePayload.TYPE,
+                ChatSpaceSendMessagePayload.STREAM_CODEC,
+                (payload, context) ->
+                        context.enqueueWork(() -> {
+                            if (context.player()
+                                    instanceof ServerPlayer player) {
+                                ChatSpacePayloadHandler.handleSendMessage(
+                                        payload,
+                                        player
+                                );
+                            }
+                        })
+        );
+
+        r.playToServer(
+                ChatSpaceMarkReadPayload.TYPE,
+                ChatSpaceMarkReadPayload.STREAM_CODEC,
+                (payload, context) ->
+                        context.enqueueWork(() -> {
+                            if (context.player()
+                                    instanceof ServerPlayer player) {
+                                ChatSpacePayloadHandler.handleMarkRead(
+                                        payload,
+                                        player
+                                );
+                            }
+                        })
+        );
+
+        r.playToClient(
+                ChatSpaceSyncPayload.TYPE,
+                ChatSpaceSyncPayload.STREAM_CODEC,
+                ChatSpaceSyncPayload::handle
+        );
+
+        r.playToServer(
+                InfologSaveComputerPayload.TYPE,
+                InfologSaveComputerPayload.STREAM_CODEC,
+                (payload, ctx) -> ctx.enqueueWork(() -> {
+                    if (ctx.player() instanceof ServerPlayer sp) {
+                        InfologSaveComputerHandler.handle(
+                                payload,
+                                sp
+                        );
+                    }
+                })
         );
     }
 }

@@ -1,13 +1,12 @@
 package com.perigrine3.createcybernetics.entity.custom;
 
-import com.perigrine3.createcybernetics.screen.custom.TattooMenu;
+import com.perigrine3.createcybernetics.screen.custom.tattoo_system.TattooMenu;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;

@@ -1,8 +1,12 @@
 package com.perigrine3.createcybernetics.client.skin;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
+import net.minecraft.client.renderer.entity.ArmorStandRenderer;
+import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -25,6 +29,13 @@ public final class SkinLayerRegistration {
         if (slim != null) {
             slim.addLayer(new SkinLayerHandler(slim));
             slim.addLayer(new SkinHighlightLayer(slim));
+        }
+
+        EntityRenderer<? extends ArmorStand> armorStandRenderer =
+                event.getRenderer(EntityType.ARMOR_STAND);
+
+        if (armorStandRenderer instanceof ArmorStandRenderer renderer) {
+            renderer.addLayer(new ExosuitArmorStandLayer(renderer, event.getEntityModels()));
         }
     }
 }

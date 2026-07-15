@@ -9,6 +9,12 @@
     "createcybernetics:armupgrades_pneumaticwrist",
     "createcybernetics:armupgrades_reinforcedknuckles",
     "createcybernetics:armupgrades_ripperclaw",
-    "createcybernetics:armupgrades_arccannon"
+    "createcybernetics:armupgrades_arccannon",
+    "createcybernetics:armupgrades_mantisblade_iron",
+    "createcybernetics:armupgrades_mantisblade_copper",
+    "createcybernetics:armupgrades_mantisblade_titanium",
+    "createcybernetics:armupgrades_mantisblade_gold",
+    "createcybernetics:armupgrades_mantisblade_diamond",
+    "createcybernetics:armupgrades_mantisblade_netherite"
   ]
 }

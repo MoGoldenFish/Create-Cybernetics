@@ -118,6 +118,10 @@ public class CyberwareAttributeHelper {
                 ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "subdermal_armor_boost_3"),
                 4.0, AttributeModifier.Operation.ADD_VALUE));
 
+        registerModifier("metalplating_armor", new AttributeModifierData(armorToughnessAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "metalplating_armor"),
+                6.0, AttributeModifier.Operation.ADD_VALUE));
+
         registerModifier("bonelacing_health_1", new AttributeModifierData(maxHealthAttribute,
                 ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "bonelacing_health_boost_1"),
                 4.0, AttributeModifier.Operation.ADD_VALUE));
@@ -275,6 +279,88 @@ public class CyberwareAttributeHelper {
         registerModifier("gooeymuscle_fall", new AttributeModifierData(safeFallDistanceAttribute,
                 ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "gooeymuscle_fall"),
                 7, AttributeModifier.Operation.ADD_VALUE));
+
+        registerModifier("ironmantis_damage1", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "ironmantis_damage1"),
+                3, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("ironmantis_speed1", new AttributeModifierData(attackSpeedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "ironmantis_speed1"),
+                0.6, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("ironmantis_damage2", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "ironmantis_damage2"),
+                3, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("ironmantis_speed2", new AttributeModifierData(attackSpeedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "ironmantis_speed2"),
+                0.6, AttributeModifier.Operation.ADD_VALUE));
+
+        registerModifier("coppermantis_damage1", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "coppermantis_damage1"),
+                2, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("coppermantis_speed1", new AttributeModifierData(attackSpeedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "coppermantis_speed1"),
+                0.6, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("coppermantis_damage2", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "coppermantis_damage2"),
+                2, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("coppermantis_speed2", new AttributeModifierData(attackSpeedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "coppermantis_speed2"),
+                0.6, AttributeModifier.Operation.ADD_VALUE));
+
+        registerModifier("titaniummantis_damage1", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "titaniummantis_damage1"),
+                3, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("titaniummantis_speed1", new AttributeModifierData(attackSpeedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "titaniummantis_speed1"),
+                0.8, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("titaniummantis_damage2", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "titaniummantis_damage2"),
+                3, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("titaniummantis_speed2", new AttributeModifierData(attackSpeedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "titaniummantis_speed2"),
+                0.8, AttributeModifier.Operation.ADD_VALUE));
+
+        registerModifier("goldmantis_damage1", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "goldmantis_damage1"),
+                1, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("goldmantis_speed1", new AttributeModifierData(attackSpeedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "goldmantis_speed1"),
+                0.3, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("goldmantis_damage2", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "goldmantis_damage2"),
+                1, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("goldmantis_speed2", new AttributeModifierData(attackSpeedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "goldmantis_speed2"),
+                0.3, AttributeModifier.Operation.ADD_VALUE));
+
+        registerModifier("diamondmantis_damage1", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "diamondmantis_damage1"),
+                4, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("diamondmantis_speed1", new AttributeModifierData(attackSpeedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "diamondmantis_speed1"),
+                0.7, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("diamondmantis_damage2", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "diamondmantis_damage2"),
+                4, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("diamondmantis_speed2", new AttributeModifierData(attackSpeedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "diamondmantis_speed2"),
+                0.7, AttributeModifier.Operation.ADD_VALUE));
+
+        registerModifier("netheritemantis_damage1", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "netheritemantis_damage1"),
+                5, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("netheritemantis_speed1", new AttributeModifierData(attackSpeedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "netheritemantis_speed1"),
+                0.8, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("netheritemantis_damage2", new AttributeModifierData(attackDamageAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "netheritemantis_damage2"),
+                5, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("netheritemantis_speed2", new AttributeModifierData(attackSpeedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "netheritemantis_speed2"),
+                0.8, AttributeModifier.Operation.ADD_VALUE));
+
+        registerModifier("synthlungs_breath", new AttributeModifierData(oxygenBonusAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "synthlungs_breath"),
+                3, AttributeModifier.Operation.ADD_VALUE));
 
 
 
@@ -442,7 +528,10 @@ public class CyberwareAttributeHelper {
                 5, AttributeModifier.Operation.ADD_VALUE));
         registerModifier("dragoon_jump", new AttributeModifierData(jumpStrengthAttribute,
                 ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dragoon_jump_add"),
-                5, AttributeModifier.Operation.ADD_VALUE));
+                0.5, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("dragoon_step", new AttributeModifierData(stepHeightAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "dragoon_step_add"),
+                0.5, AttributeModifier.Operation.ADD_VALUE));
 
         registerModifier("copernicus_oxygen", new AttributeModifierData(oxygenBonusAttribute,
                 ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "copernicus_oxygen_add"),

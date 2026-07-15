@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "rendering=false": {
+      "model": "createcybernetics:block/anomaly_core"
+    },
+    "rendering=true": {
+      "model": "createcybernetics:block/anomaly_core"
+    }
+  }
+}

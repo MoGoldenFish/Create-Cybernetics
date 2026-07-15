@@ -1,0 +1,12 @@
+{
+  "values": [
+    "createcybernetics:scavenged_piezo",
+    "createcybernetics:scavenged_diamondwaferstack",
+    "createcybernetics:scavenged_coupler",
+    "createcybernetics:scavenged_dualisticconverter",
+    "createcybernetics:scavenged_metabolic",
+    "createcybernetics:scavenged_solarskin",
+    "createcybernetics:scavenged_arterialturbine",
+    "createcybernetics:scavenged_heatengine"
+  ]
+}

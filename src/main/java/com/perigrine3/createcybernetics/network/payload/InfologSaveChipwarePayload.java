@@ -7,7 +7,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record InfologSaveChipwarePayload(int chipwareSlot, String text, boolean locked) implements CustomPacketPayload {
+public record InfologSaveChipwarePayload(int chipwareSlot, String text, String title, boolean locked) implements CustomPacketPayload {
 
     public static final Type<InfologSaveChipwarePayload> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "infolog_save_chipware"));
@@ -16,6 +16,7 @@ public record InfologSaveChipwarePayload(int chipwareSlot, String text, boolean 
             StreamCodec.composite(
                     ByteBufCodecs.VAR_INT, InfologSaveChipwarePayload::chipwareSlot,
                     ByteBufCodecs.STRING_UTF8, InfologSaveChipwarePayload::text,
+                    ByteBufCodecs.STRING_UTF8, InfologSaveChipwarePayload::title,
                     ByteBufCodecs.BOOL, InfologSaveChipwarePayload::locked,
                     InfologSaveChipwarePayload::new
             );

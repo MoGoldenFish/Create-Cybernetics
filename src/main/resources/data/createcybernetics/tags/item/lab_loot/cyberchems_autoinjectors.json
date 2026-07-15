@@ -1,0 +1,25 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "cyberchems:roid_autoinjector",
+      "required": false
+    },
+    {
+      "id": "cyberchems:stim_autoinjector",
+      "required": false
+    },
+    {
+      "id": "cyberchems:warp_autoinjector",
+      "required": false
+    },
+    {
+      "id": "cyberchems:immunoboost_autoinjector",
+      "required": false
+    },
+    {
+      "id": "cyberchems:addictol_autoinjector",
+      "required": false
+    }
+  ]
+}

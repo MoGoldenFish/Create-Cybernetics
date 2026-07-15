@@ -14,7 +14,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 
 public class CyberpsychosisQuickhackEffect extends MobEffect {
-    private static final int DEFAULT_DURATION = 200;
+    private static final int DEFAULT_DURATION = 600;
     private static final int DEFAULT_AMPLIFIER = 0;
     private static final float SUCCESS_CHANCE = 0.15f;
 
@@ -26,6 +26,7 @@ public class CyberpsychosisQuickhackEffect extends MobEffect {
 
     public static boolean applyQuickhack(LivingEntity target) {
         if (target == null || !target.isAlive()) return false;
+        if (target.level().isClientSide) return false;
         if (!(target instanceof ServerPlayer player)) return false;
         if (ICEProtocolItem.negatesQuickhack(player)) return false;
         if (!player.hasData(ModAttachments.CYBERWARE)) return false;
@@ -48,10 +49,10 @@ public class CyberpsychosisQuickhackEffect extends MobEffect {
                 CyberwareSlot.RLEG
         )) return false;
 
-        RandomSource random = target.getRandom();
+        RandomSource random = player.getRandom();
         if (random.nextFloat() > SUCCESS_CHANCE) return false;
 
-        target.addEffect(new MobEffectInstance(
+        player.addEffect(new MobEffectInstance(
                 ModEffects.CYBERPSYCHOSIS_HACK,
                 DEFAULT_DURATION,
                 DEFAULT_AMPLIFIER,

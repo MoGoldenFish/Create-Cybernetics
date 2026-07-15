@@ -7,6 +7,7 @@ import com.perigrine3.createcybernetics.common.capabilities.EntityCyberwareData;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.ModMobAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -81,28 +82,17 @@ public class MechanicalHeartItem extends Item implements ICyberwareItem {
         if (entity.level().isClientSide) return;
         if (!entity.isAlive()) return;
 
-        InstalledCyberware cw;
+        InstalledCyberware current = getInstalledCyberware(entity, slot, index);
+        if (current == null) return;
 
-        if (entity instanceof Player player) {
-            if (!player.hasData(ModAttachments.CYBERWARE)) return;
-            PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
-            if (data == null) return;
-
-            cw = data.get(slot, index);
-        } else {
-            if (!entity.hasData(ModMobAttachments.CYBERENTITY_CYBERWARE)) return;
-            EntityCyberwareData data = entity.getData(ModMobAttachments.CYBERENTITY_CYBERWARE);
-            if (data == null) return;
-
-            cw = data.get(slot, index);
-        }
-
-        if (cw == null) return;
-
-        if (cw.isPowered()) {
+        if (current.isPowered()) {
             if (entity.hasEffect(MobEffects.WEAKNESS)) {
                 entity.removeEffect(MobEffects.WEAKNESS);
             }
+            return;
+        }
+
+        if (hasBackupHeart(entity, slot, index)) {
             return;
         }
 
@@ -115,5 +105,59 @@ public class MechanicalHeartItem extends Item implements ICyberwareItem {
     @Override
     public void onTick(LivingEntity entity) {
         if (entity.level().isClientSide) return;
+    }
+
+    private static InstalledCyberware getInstalledCyberware(LivingEntity entity, CyberwareSlot slot, int index) {
+        if (entity instanceof Player player) {
+            if (!player.hasData(ModAttachments.CYBERWARE)) return null;
+
+            PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
+            if (data == null) return null;
+
+            return data.get(slot, index);
+        }
+
+        if (!entity.hasData(ModMobAttachments.CYBERENTITY_CYBERWARE)) return null;
+
+        EntityCyberwareData data = entity.getData(ModMobAttachments.CYBERENTITY_CYBERWARE);
+        if (data == null) return null;
+
+        return data.get(slot, index);
+    }
+
+    private static boolean hasBackupHeart(LivingEntity entity, CyberwareSlot currentSlot, int currentIndex) {
+        if (entity instanceof Player player) {
+            if (!player.hasData(ModAttachments.CYBERWARE)) return false;
+
+            PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
+            if (data == null) return false;
+
+            return hasBackupHeart(data.getAll().get(CyberwareSlot.HEART), currentSlot, currentIndex);
+        }
+
+        if (!entity.hasData(ModMobAttachments.CYBERENTITY_CYBERWARE)) return false;
+
+        EntityCyberwareData data = entity.getData(ModMobAttachments.CYBERENTITY_CYBERWARE);
+        if (data == null) return false;
+
+        return hasBackupHeart(data.getAll().get(CyberwareSlot.HEART), currentSlot, currentIndex);
+    }
+
+    private static boolean hasBackupHeart(InstalledCyberware[] hearts, CyberwareSlot currentSlot, int currentIndex) {
+        if (hearts == null) return false;
+
+        for (InstalledCyberware installed : hearts) {
+            if (installed == null) continue;
+            if (installed.getItem().isEmpty()) continue;
+            if (!installed.getItem().is(ModTags.Items.HEART_ITEMS)) continue;
+
+            if (installed.getSlot() == currentSlot && installed.getIndex() == currentIndex) {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }

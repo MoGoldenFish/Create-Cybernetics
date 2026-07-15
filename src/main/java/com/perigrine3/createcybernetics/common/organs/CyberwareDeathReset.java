@@ -25,6 +25,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -72,6 +73,10 @@ public final class CyberwareDeathReset {
             HolderLookup.Provider provider = newPlayer.registryAccess();
             CompoundTag copied = oldData.serializeNBT(provider);
             newData.deserializeNBT(copied, provider);
+
+            repopulateMissingDefaultOrgansAfterKeepCyberwareDeath(newData);
+            restoreDefaultHeartIfUnpoweredCyberheartWouldSoftlock(newData);
+
             reapplyInstalledCyberwareHooks(newPlayer instanceof ServerPlayer sp ? sp : null, newData);
 
             newData.setDirty();
@@ -599,6 +604,138 @@ public final class CyberwareDeathReset {
                 if (st.getItem() instanceof ICyberwareItem cw) {
                     cw.onInstalled(player);
                 }
+            }
+        }
+    }
+
+    private static void repopulateMissingDefaultOrgansAfterKeepCyberwareDeath(PlayerCyberwareData data) {
+        if (data == null) return;
+
+        restoreDefaultOrganGroupIfMissing(data, ModTags.Items.BRAIN_ITEMS, CyberwareSlot.BRAIN);
+        restoreDefaultOrganGroupIfMissing(data, ModTags.Items.EYE_ITEMS, CyberwareSlot.EYES);
+        restoreDefaultOrganGroupIfMissing(data, ModTags.Items.HEART_ITEMS, CyberwareSlot.HEART);
+        restoreDefaultOrganGroupIfMissing(data, ModTags.Items.LUNGS_ITEMS, CyberwareSlot.LUNGS);
+
+        restoreDefaultOrganGroupIfMissing(data, ModTags.Items.LIVER_ITEMS, CyberwareSlot.ORGANS);
+        restoreDefaultOrganGroupIfMissing(data, ModTags.Items.INTESTINES_ITEMS, CyberwareSlot.ORGANS);
+
+        restoreDefaultOrganGroupIfMissing(data, ModTags.Items.BONE_ITEMS, CyberwareSlot.BONE);
+        restoreDefaultOrganGroupIfMissing(data, ModTags.Items.MUSCLE_ITEMS, CyberwareSlot.MUSCLE);
+        restoreDefaultOrganGroupIfMissing(data, ModTags.Items.SKIN_ITEMS, CyberwareSlot.SKIN);
+
+        restoreDefaultOrganGroupIfMissing(data, ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM);
+        restoreDefaultOrganGroupIfMissing(data, ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM);
+        restoreDefaultOrganGroupIfMissing(data, ModTags.Items.LEFTLEG_ITEMS, CyberwareSlot.LLEG);
+        restoreDefaultOrganGroupIfMissing(data, ModTags.Items.RIGHTLEG_ITEMS, CyberwareSlot.RLEG);
+    }
+
+    private static void restoreDefaultOrganGroupIfMissing(PlayerCyberwareData data, TagKey<Item> validOrganTag, CyberwareSlot slot) {
+        if (hasAnyTagged(data, validOrganTag, slot)) {
+            return;
+        }
+
+        restoreDefaultsForTag(data, validOrganTag, slot);
+    }
+
+    private static void restoreDefaultsForTag(PlayerCyberwareData data, TagKey<Item> validOrganTag, CyberwareSlot slot) {
+        int mappedSize = RobosurgeonSlotMap.mappedSize(slot);
+
+        for (int i = 0; i < mappedSize; i++) {
+            ItemStack def = DefaultOrgans.get(slot, i);
+            if (def == null || def.isEmpty()) continue;
+            if (!def.is(validOrganTag)) continue;
+
+            InstalledCyberware existing = data.get(slot, i);
+            ItemStack existingStack = existing != null && existing.getItem() != null
+                    ? existing.getItem()
+                    : ItemStack.EMPTY;
+
+            if (!existingStack.isEmpty()) {
+                continue;
+            }
+
+            ItemStack restored = def.copy();
+            restored.setCount(1);
+
+            InstalledCyberware[] arr = data.getAll().get(slot);
+            if (arr == null || i < 0 || i >= arr.length) continue;
+
+            InstalledCyberware restoredCyberware = new InstalledCyberware(restored, slot, i, 0);
+            restoredCyberware.setPowered(true);
+
+            arr[i] = restoredCyberware;
+            data.setEnabled(slot, i, true);
+        }
+    }
+
+    private static boolean hasAnyTagged(PlayerCyberwareData data, TagKey<Item> tag, CyberwareSlot... slots) {
+        if (data == null || tag == null || slots == null) return false;
+
+        for (CyberwareSlot slot : slots) {
+            InstalledCyberware[] arr = data.getAll().get(slot);
+            if (arr == null) continue;
+
+            for (InstalledCyberware installed : arr) {
+                if (installed == null) continue;
+
+                ItemStack stack = installed.getItem();
+                if (stack == null || stack.isEmpty()) continue;
+
+                if (stack.is(tag)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static void restoreDefaultHeartIfUnpoweredCyberheartWouldSoftlock(PlayerCyberwareData data) {
+        if (data == null) return;
+
+        if (!data.hasSpecificItem(ModItems.HEARTUPGRADES_CYBERHEART.get(), CyberwareSlot.HEART)) {
+            return;
+        }
+
+        if (data.hasAnyTagged(ModTags.Items.ENERGY_GENERATING_CYBERWARE, CyberwareSlot.values())) {
+            return;
+        }
+
+        installDefaultForTagIntoFirstOpenSlot(data, ModTags.Items.HEART_ITEMS, CyberwareSlot.HEART);
+    }
+
+    private static void installDefaultForTagIntoFirstOpenSlot(PlayerCyberwareData data, TagKey<Item> defaultTag, CyberwareSlot slot) {
+        if (data == null || defaultTag == null || slot == null) return;
+
+        InstalledCyberware[] arr = data.getAll().get(slot);
+        if (arr == null) return;
+
+        int mappedSize = RobosurgeonSlotMap.mappedSize(slot);
+
+        for (int defaultIndex = 0; defaultIndex < mappedSize; defaultIndex++) {
+            ItemStack def = DefaultOrgans.get(slot, defaultIndex);
+            if (def == null || def.isEmpty()) continue;
+            if (!def.is(defaultTag)) continue;
+
+            for (int installIndex = 0; installIndex < arr.length; installIndex++) {
+                InstalledCyberware existing = arr[installIndex];
+                ItemStack existingStack = existing != null && existing.getItem() != null
+                        ? existing.getItem()
+                        : ItemStack.EMPTY;
+
+                if (!existingStack.isEmpty()) {
+                    continue;
+                }
+
+                ItemStack restored = def.copy();
+                restored.setCount(1);
+
+                InstalledCyberware restoredCyberware = new InstalledCyberware(restored, slot, installIndex, 0);
+                restoredCyberware.setPowered(true);
+
+                arr[installIndex] = restoredCyberware;
+                data.setEnabled(slot, installIndex, true);
+                return;
             }
         }
     }

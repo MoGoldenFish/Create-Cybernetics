@@ -1,6 +1,8 @@
 package com.perigrine3.createcybernetics.client.skin;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.world.entity.player.PlayerModelPart;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -57,5 +59,17 @@ public final class SkinVanillaWearVisibility {
 
     public static boolean isSuppressed() {
         return SUPPRESS_DEPTH.get() > 0;
+    }
+
+    public static boolean isModelPartShownNow(AbstractClientPlayer player, PlayerModelPart part) {
+        if (player == null || part == null) return false;
+
+        Minecraft mc = Minecraft.getInstance();
+
+        if (mc.player != null && player.getUUID().equals(mc.player.getUUID())) {
+            return mc.options.isModelPartEnabled(part);
+        }
+
+        return player.isModelPartShown(part);
     }
 }

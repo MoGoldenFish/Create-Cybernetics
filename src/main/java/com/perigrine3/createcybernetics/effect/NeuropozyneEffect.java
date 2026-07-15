@@ -2,6 +2,7 @@ package com.perigrine3.createcybernetics.effect;
 
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.common.humanity.DataIntegrityHandler;
 import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
@@ -46,12 +47,14 @@ public class NeuropozyneEffect extends MobEffect {
             return true;
         }
 
-        applyHumanityBonus(player, amplifier);
+        if (!DataIntegrityHandler.usesDataIntegrity(player)) {
+            applyHumanityBonus(player, amplifier);
 
-        if ((player.tickCount % 20) == 0) {
-            MobEffectInstance rejection = player.getEffect(ModEffects.CYBERWARE_REJECTION);
-            if (rejection != null) {
-                player.removeEffect(ModEffects.CYBERWARE_REJECTION);
+            if ((player.tickCount % 20) == 0) {
+                MobEffectInstance rejection = player.getEffect(ModEffects.CYBERWARE_REJECTION);
+                if (rejection != null) {
+                    player.removeEffect(ModEffects.CYBERWARE_REJECTION);
+                }
             }
         }
 
@@ -63,7 +66,7 @@ public class NeuropozyneEffect extends MobEffect {
     }
 
     public static void applyHumanityBonus(Player player, int amplifier) {
-        if (player == null || player.level().isClientSide) {
+        if (player == null || player.level().isClientSide || DataIntegrityHandler.usesDataIntegrity(player)) {
             return;
         }
 

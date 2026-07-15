@@ -7,22 +7,22 @@
       "item": "createcybernetics:titaniumsheet"
     },
     "I": {
-      "item": "minecraft:iron_ingot"
+      "item": "minecraft:writable_book"
     },
     "S": {
       "item": "createcybernetics:component_ssd"
     },
     "X": {
-      "item": "createcybernetics:titaniumingot"
+      "tag": "createcybernetics:data_shards"
     }
   },
 
   "pattern": [
-    "XXXXX",
-    " TST ",
-    " TIT ",
-    " TST ",
-    "  TT "
+    "     ",
+    "  X  ",
+    " SIS ",
+    "  T  ",
+    "     "
   ],
 
   "result": {

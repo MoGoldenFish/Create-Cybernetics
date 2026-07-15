@@ -41,6 +41,8 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.CHARGING_BLOCK.get());
         dropSelf(ModBlocks.HOLOPROJECTOR.get());
         dropSelf(ModBlocks.SURGERY_TABLE.get());
+        dropSelf(ModBlocks.COMPUTER.get());
+        dropSelf(ModBlocks.COMPUTER_TOWER.get());
 
         dropSelf(ModBlocks.TITANIUM_BLOCK.get());
 
@@ -82,6 +84,9 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
                                 .add(LootItem.lootTableItem(ModItems.DATURA_FLOWER.get()))
                                 .apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F)))
                                 .apply(ApplyBonusCount.addUniformBonusCount(registrylookup.getOrThrow(Enchantments.FORTUNE))))));
+
+        add(ModBlocks.POTTED_DATURA.get(),
+                block -> createPotFlowerItemTable(ModItems.DATURA_FLOWER.get()));
     }
 
 

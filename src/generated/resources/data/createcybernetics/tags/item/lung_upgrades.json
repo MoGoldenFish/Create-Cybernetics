@@ -1,6 +1,7 @@
 {
   "values": [
     "createcybernetics:lungsupgrades_hyperoxygenation",
-    "createcybernetics:lungsupgrades_oxygen"
+    "createcybernetics:lungsupgrades_oxygen",
+    "createcybernetics:lungsupgrades_synthlungs"
   ]
 }

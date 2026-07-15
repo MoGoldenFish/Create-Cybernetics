@@ -42,7 +42,7 @@ public abstract class InventoryMenuChipwareSlotsMixin implements IChipwareSlotsM
     private void cc$initChipwareSlots(Inventory inv, boolean active, Player ownerParam, CallbackInfo ci) {
         this.cc_chipInv = ownerParam.level().isClientSide
                 ? new net.minecraft.world.SimpleContainer(PlayerCyberwareData.CHIPWARE_SLOT_COUNT)
-                : new com.perigrine3.createcybernetics.screen.container.ChipwareContainer(ownerParam);
+                : new com.perigrine3.createcybernetics.screen.container.InventoryMenuChipwareContainer(ownerParam);
 
         this.cc_chipStart = ((AbstractContainerMenuAccessor) (Object) this).cc$getSlots().size();
 
@@ -97,11 +97,10 @@ public abstract class InventoryMenuChipwareSlotsMixin implements IChipwareSlotsM
         if (index >= chipStart && index < chipEnd) {
             moved = invoker.cc$invokeMoveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_END_EXCL, false);
         }
-        // If shift-clicking a data shard from anywhere else -> try move into our chip slots first.
         else if (stack.is(ModTags.Items.DATA_SHARDS)) {
             moved = invoker.cc$invokeMoveItemStackTo(stack, chipStart, chipEnd, false);
         } else {
-            return; // not our concern; let vanilla handle
+            return;
         }
 
         if (!moved) {

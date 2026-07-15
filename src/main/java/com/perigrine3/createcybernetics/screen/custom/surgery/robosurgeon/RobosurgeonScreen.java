@@ -8,9 +8,12 @@ import com.perigrine3.createcybernetics.api.InstalledCyberware;
 import com.perigrine3.createcybernetics.client.render.RobosurgeonPreviewOverlayContext;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.common.humanity.DataIntegrityHandler;
+import com.perigrine3.createcybernetics.common.humanity.HumanityAttributeModifiers;
 import com.perigrine3.createcybernetics.common.surgery.RobosurgeonSlotMap;
 import com.perigrine3.createcybernetics.effect.ModEffects;
 import com.perigrine3.createcybernetics.item.ModItems;
+import com.perigrine3.createcybernetics.item.cyberware.brain.CerebralProcessingUnitItem;
 import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -318,11 +321,19 @@ public class RobosurgeonScreen extends AbstractContainerScreen<RobosurgeonMenu> 
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
         if (data == null) return;
 
-        int humanity = calculatePreviewHumanity();
-        int maxHumanity = getConfiguredBaseHumanity();
-        maxHumanity = Math.max(1, maxHumanity);
+        boolean usingDataIntegrity = usesDataIntegrityPreview(data);
 
-        float raw = humanity / (float) maxHumanity;
+        int value = usingDataIntegrity
+                ? data.getDataIntegrity()
+                : calculatePreviewHumanity();
+
+        int maxValue = usingDataIntegrity
+                ? HumanityAttributeModifiers.getConfiguredBaseHumanity()
+                : getConfiguredBaseHumanity(player);
+
+        maxValue = Math.max(1, maxValue);
+
+        float raw = value / (float) maxValue;
         float percent = Mth.clamp(raw, 0f, 1f);
 
         int x = leftPos + 10;
@@ -331,11 +342,11 @@ public class RobosurgeonScreen extends AbstractContainerScreen<RobosurgeonMenu> 
         gui.fill(x, y, x + HUMANITY_BAR_WIDTH, y + HUMANITY_BAR_HEIGHT, 0xFF202020);
 
         int filled = (int) (HUMANITY_BAR_HEIGHT * percent);
-        int color = getHumanityColor(percent);
+        int color = getHumanityColor(percent, usingDataIntegrity);
 
         gui.fill(x, y + (HUMANITY_BAR_HEIGHT - filled), x + HUMANITY_BAR_WIDTH, y + HUMANITY_BAR_HEIGHT, color);
 
-        String text = Integer.toString(humanity);
+        String text = Integer.toString(value);
 
         float labelScale = 0.5f;
         int textW = this.font.width(text);
@@ -344,23 +355,86 @@ public class RobosurgeonScreen extends AbstractContainerScreen<RobosurgeonMenu> 
         gui.pose().pushPose();
         gui.pose().scale(labelScale, labelScale, 1f);
 
-        gui.drawString(minecraft.font, text, (int) (textX / labelScale), (int) ((y - 7) / labelScale), 0xFF34D5EB, false);
+        gui.drawString(
+                minecraft.font,
+                text,
+                (int) (textX / labelScale),
+                (int) ((y - 7) / labelScale),
+                usingDataIntegrity ? 0xFF4CB8FF : 0xFF34D5EB,
+                false
+        );
 
         gui.pose().popPose();
     }
 
-    private int getConfiguredBaseHumanity() {
-        return com.perigrine3.createcybernetics.Config.HUMANITY.get();
+    private boolean isMouseOverHumanityBar(int mouseX, int mouseY) {
+        int x = leftPos + 10;
+        int y = topPos + 30;
+
+        return mouseX >= x
+                && mouseX < x + HUMANITY_BAR_WIDTH
+                && mouseY >= y
+                && mouseY < y + HUMANITY_BAR_HEIGHT;
     }
 
-    private int getHumanityColor(float percent) {
+    private int getConfiguredBaseHumanity(Player player) {
+        return HumanityAttributeModifiers.getBase(player);
+    }
+
+    private int getHumanityColor(float percent, boolean usingDataIntegrity) {
         if (percent > 0.66f) {
-            return 0xFF2AFF00;  // green
+            return usingDataIntegrity
+                    ? 0xFF218CFF
+                    : 0xFF2AFF00;  // green
         } else if (percent > 0.25f) {
             return 0xFFFFAA00;  // orange
         } else {
             return 0xFFFF0000;  // red
         }
+    }
+
+    private boolean usesDataIntegrityPreview(PlayerCyberwareData data) {
+        boolean cpuCurrentlyInstalled = DataIntegrityHandler.hasCerebralProcessingUnit(data);
+
+        boolean cpuMarkedForRemoval = false;
+        boolean cpuStagedForInstall = false;
+
+        for (int i = 0; i < CyberwareSlot.BRAIN.size; i++) {
+            int invIndex = RobosurgeonSlotMap.toInventoryIndex(CyberwareSlot.BRAIN, i);
+            if (invIndex < 0 || invIndex >= 65) continue;
+
+            InstalledCyberware installed = data.get(CyberwareSlot.BRAIN, i);
+            ItemStack installedStack = (installed != null && installed.getItem() != null)
+                    ? installed.getItem()
+                    : ItemStack.EMPTY;
+
+            if (menu.isMarkedForRemoval(invIndex)
+                    && !installedStack.isEmpty()
+                    && installedStack.getItem() instanceof CerebralProcessingUnitItem) {
+                cpuMarkedForRemoval = true;
+            }
+
+            for (Slot slot : menu.slots) {
+                if (!(slot instanceof RobosurgeonSlotItemHandler rs)) continue;
+                if (rs.getSlotIndex() != invIndex) continue;
+
+                ItemStack stagedStack = rs.getItem();
+
+                if (menu.isStaged(invIndex)
+                        && !stagedStack.isEmpty()
+                        && stagedStack.getItem() instanceof CerebralProcessingUnitItem) {
+                    cpuStagedForInstall = true;
+                }
+
+                break;
+            }
+        }
+
+        if (cpuMarkedForRemoval && !cpuStagedForInstall) {
+            return false;
+        }
+
+        return cpuCurrentlyInstalled || cpuStagedForInstall;
     }
 
     private int calculatePreviewHumanity() {
@@ -369,6 +443,10 @@ public class RobosurgeonScreen extends AbstractContainerScreen<RobosurgeonMenu> 
 
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
         if (data == null) return 100;
+
+        if (usesDataIntegrityPreview(data)) {
+            return data.getDataIntegrity();
+        }
 
         int humanity = data.getHumanity(player);
 
@@ -1202,5 +1280,38 @@ public class RobosurgeonScreen extends AbstractContainerScreen<RobosurgeonMenu> 
     private boolean isMouseOverRect(int x, int y, int w, int h, int mouseX, int mouseY) {
         return mouseX >= x && mouseX < x + w
                 && mouseY >= y && mouseY < y + h;
+    }
+
+    @Override
+    protected void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        if (isMouseOverHumanityBar(mouseX, mouseY)) {
+            Player player = minecraft.player;
+
+            if (player != null && player.hasData(ModAttachments.CYBERWARE)) {
+                PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
+
+                Component label = usesDataIntegrityPreview(data)
+                        ? Component.translatable("gui.data_integrity.tooltip")
+                        : Component.translatable("gui.humanity.tooltip");
+
+                guiGraphics.renderTooltip(this.font, label, mouseX, mouseY);
+                return;
+            }
+        }
+
+        Slot hovered = this.getSlotUnderMouse();
+
+        if (hovered != null && !isSlotVisible(hovered)) {
+            hovered = null;
+        }
+
+        if (hovered != null && hovered.hasItem() && isMouseOverSlot(hovered, mouseX, mouseY)) {
+            ItemStack stack = hovered.getItem();
+            List<Component> tooltip = getTooltipFromContainerItem(stack);
+            guiGraphics.renderTooltip(this.font, tooltip, stack.getTooltipImage(), mouseX, mouseY);
+            return;
+        }
+
+        super.renderTooltip(guiGraphics, mouseX, mouseY);
     }
 }

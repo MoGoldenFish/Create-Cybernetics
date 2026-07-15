@@ -5,6 +5,10 @@
     "createcybernetics:heartupgrades_creeperheart",
     "createcybernetics:heartupgrades_defibrillator",
     "createcybernetics:heartupgrades_stemcell",
-    "createcybernetics:heartupgrades_platelets"
+    "createcybernetics:heartupgrades_platelets",
+    {
+      "id": "createcybernetics:heartupgrades_anomaly",
+      "required": false
+    }
   ]
 }

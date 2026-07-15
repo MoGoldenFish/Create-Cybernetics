@@ -8,6 +8,7 @@ import com.perigrine3.createcybernetics.common.capabilities.EntityCyberwareData;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.ModMobAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.common.command.CommandTeleportContext;
 import com.perigrine3.createcybernetics.item.ModItems;
 import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.ChatFormatting;
@@ -145,24 +146,35 @@ public class EnderJammerItem extends Item implements ICyberwareItem {
         if (level == null || point == null) return false;
 
         AABB box = new AABB(
-                point.x - JAM_RADIUS, point.y - JAM_RADIUS, point.z - JAM_RADIUS,
-                point.x + JAM_RADIUS, point.y + JAM_RADIUS, point.z + JAM_RADIUS
+                point.x - JAM_RADIUS,
+                point.y - JAM_RADIUS,
+                point.z - JAM_RADIUS,
+                point.x + JAM_RADIUS,
+                point.y + JAM_RADIUS,
+                point.z + JAM_RADIUS
         );
 
-        List<ServerPlayer> players =
-                level.getEntitiesOfClass(ServerPlayer.class, box, EnderJammerItem::hasEnderJammerInstalledAndPowered);
+        List<ServerPlayer> players = level.getEntitiesOfClass(
+                ServerPlayer.class,
+                box,
+                EnderJammerItem::hasEnderJammerInstalledAndPowered
+        );
 
-        for (ServerPlayer p : players) {
-            if (p.position().distanceToSqr(point) <= JAM_RADIUS_SQ) {
+        for (ServerPlayer player : players) {
+            if (player.position().distanceToSqr(point) <= JAM_RADIUS_SQ) {
                 return true;
             }
         }
 
-        List<LivingEntity> entities =
-                level.getEntitiesOfClass(LivingEntity.class, box, e -> !(e instanceof ServerPlayer) && hasEnderJammerInstalledEntity(e));
+        List<LivingEntity> entities = level.getEntitiesOfClass(
+                LivingEntity.class,
+                box,
+                entity -> !(entity instanceof ServerPlayer)
+                        && hasEnderJammerInstalledEntity(entity)
+        );
 
-        for (LivingEntity e : entities) {
-            if (e.position().distanceToSqr(point) <= JAM_RADIUS_SQ) {
+        for (LivingEntity entity : entities) {
+            if (entity.position().distanceToSqr(point) <= JAM_RADIUS_SQ) {
                 return true;
             }
         }
@@ -175,8 +187,11 @@ public class EnderJammerItem extends Item implements ICyberwareItem {
 
         @SubscribeEvent
         public static void onAnyEntityTeleport(EntityTeleportEvent event) {
+            if (CommandTeleportContext.isExecutingCommand()) {
+                return;
+            }
+
             Entity entity = event.getEntity();
-            if (entity == null) return;
             if (!(entity.level() instanceof ServerLevel level)) return;
 
             Vec3 prev = event.getPrev();

@@ -1,9 +1,9 @@
 package com.perigrine3.createcybernetics.effect.quickhacks;
 
-import com.perigrine3.createcybernetics.ConfigValues;
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.common.humanity.HumanityAttributeModifiers;
 import com.perigrine3.createcybernetics.effect.ModEffects;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -22,18 +22,37 @@ public final class CyberpsychosisQuickhackController {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (player.level().isClientSide) return;
         if (!player.hasData(ModAttachments.CYBERWARE)) return;
+
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
+        if (data == null) return;
 
         if (player.hasEffect(ModEffects.CYBERPSYCHOSIS_HACK)) {
-            int maxHumanity = Math.max(1, ConfigValues.BASE_HUMANITY + data.getHumanityBonus());
+            int maxHumanity = Math.max(1, HumanityAttributeModifiers.getBase(player));
             int penalty = Mth.ceil(maxHumanity * 0.75f);
-            data.setHumanityPenalty(CyberpsychosisQuickhackEffect.HUMANITY_PENALTY_KEY, penalty);
+
+            data.setHumanityPenalty(
+                    player,
+                    CyberpsychosisQuickhackEffect.HUMANITY_PENALTY_KEY,
+                    penalty
+            );
         } else {
-            data.clearHumanityPenalty(CyberpsychosisQuickhackEffect.HUMANITY_PENALTY_KEY);
+            data.clearHumanityPenalty(
+                    player,
+                    CyberpsychosisQuickhackEffect.HUMANITY_PENALTY_KEY
+            );
         }
 
         data.setDirty();
-        //player.syncData(ModAttachments.CYBERWARE);
+        ModAttachments.syncCyberware(player);
+    }
+
+    @SubscribeEvent
+    public static void onEffectRemoved(MobEffectEvent.Remove event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        if (event.getEffectInstance() == null) return;
+        if (!event.getEffectInstance().is(ModEffects.CYBERPSYCHOSIS_HACK)) return;
+
+        clearPenalty(player);
     }
 
     @SubscribeEvent
@@ -41,13 +60,22 @@ public final class CyberpsychosisQuickhackController {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (event.getEffectInstance() == null) return;
         if (!event.getEffectInstance().is(ModEffects.CYBERPSYCHOSIS_HACK)) return;
+
+        clearPenalty(player);
+    }
+
+    private static void clearPenalty(ServerPlayer player) {
         if (!player.hasData(ModAttachments.CYBERWARE)) return;
 
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
         if (data == null) return;
 
-        data.clearHumanityPenalty(CyberpsychosisQuickhackEffect.HUMANITY_PENALTY_KEY);
+        data.clearHumanityPenalty(
+                player,
+                CyberpsychosisQuickhackEffect.HUMANITY_PENALTY_KEY
+        );
+
         data.setDirty();
-        player.syncData(ModAttachments.CYBERWARE);
+        ModAttachments.syncCyberware(player);
     }
 }

@@ -74,8 +74,7 @@ public abstract class CorpseRendererMixin {
             return;
         }
 
-        CompoundTag cached = CorpseVisualSnapshotClientCache.get(mcEntity.getUUID());
-        if (cached.isEmpty()) {
+        if (!CorpseVisualSnapshotClientCache.has(mcEntity.getUUID())) {
             if (CorpseVisualSnapshotRequestClientCache.markRequested(mcEntity.getUUID())) {
                 PacketDistributor.sendToServer(new RequestCorpseVisualSnapshotPayload(mcEntity.getUUID()));
             }

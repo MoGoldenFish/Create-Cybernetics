@@ -1,9 +1,14 @@
 package com.perigrine3.createcybernetics.block.entity;
 
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
+import com.perigrine3.createcybernetics.common.energy.ConditionalBlockPower;
+import com.perigrine3.createcybernetics.common.energy.ExternalEnergyInputTracker;
+import com.perigrine3.createcybernetics.common.energy.SyncingEnergyStorage;
 import com.perigrine3.createcybernetics.common.surgery.DefaultOrgans;
+import com.perigrine3.createcybernetics.common.surgery.RobosurgeonSlotMap;
 import com.perigrine3.createcybernetics.screen.custom.surgery.robosurgeon.RobosurgeonMenu;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -16,12 +21,15 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
-public class RobosurgeonBlockEntity extends BlockEntity implements MenuProvider {
+public class RobosurgeonBlockEntity extends BlockEntity implements MenuProvider, ExternalEnergyInputTracker {
     public final ItemStackHandler inventory = new ItemStackHandler(65) {
 
         @Override
@@ -35,18 +43,18 @@ public class RobosurgeonBlockEntity extends BlockEntity implements MenuProvider 
 
             ItemStack stack = getStackInSlot(slot);
 
-            // ----------------------------------------
-            // SLOT BECAME EMPTY → CLEAR STATES
-            // ----------------------------------------
             if (stack.isEmpty()) {
                 staged[slot] = false;
                 markedForRemoval[slot] = false;
+
                 setChanged();
+                updateComparatorOutput();
                 return;
             }
 
             if (surgeryInProgress) {
                 setChanged();
+                updateComparatorOutput();
                 return;
             }
 
@@ -55,165 +63,483 @@ public class RobosurgeonBlockEntity extends BlockEntity implements MenuProvider 
                 markedForRemoval[slot] = false;
             }
 
-
             setChanged();
+            updateComparatorOutput();
 
-            if (!level.isClientSide) {
-                level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+            if (level != null && !level.isClientSide) {
+                level.sendBlockUpdated(
+                        getBlockPos(),
+                        getBlockState(),
+                        getBlockState(),
+                        3
+                );
             }
         }
     };
 
+    private static final String TAG_ENERGY = "Energy";
+    private static final int ENERGY_PULL_PER_TICK = 4_000;
+
+    private final SyncingEnergyStorage energyStorage = new SyncingEnergyStorage(
+            this,
+            250_000,
+            4_000,
+            4_000
+    );
+
     private boolean surgeryInProgress = false;
+
     public final boolean[] installed = new boolean[65];
     public final boolean[] staged = new boolean[65];
     public final boolean[] markedForRemoval = new boolean[65];
 
     public RobosurgeonBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModBlockEntities.ROBOSURGEON_BLOCKENTITY.get(), pos, blockState);
+        super(
+                ModBlockEntities.ROBOSURGEON_BLOCKENTITY.get(),
+                pos,
+                blockState
+        );
     }
 
-    public boolean isInstalled(int i) {
-        return i >= 0 && i < installed.length && installed[i];
+    public IEnergyStorage getEnergyStorage() {
+        return energyStorage;
     }
 
-    public boolean isStaged(int i) {
-        return i >= 0 && i < staged.length && staged[i];
+    public SyncingEnergyStorage getMutableEnergyStorage() {
+        return energyStorage;
     }
 
-    public boolean isMarkedForRemoval(int i) {
-        return i >= 0 && i < markedForRemoval.length && markedForRemoval[i];
-    }
-
-    public void setInstalled(int i, boolean value) {
-        if (i < 0 || i >= installed.length) return;
-        installed[i] = value;
-        if (!value) markedForRemoval[i] = false;
+    @Override
+    public void markExternalEnergyInput() {
         setChanged();
     }
 
-    public void setStaged(int i, boolean value) {
-        if (i < 0 || i >= staged.length) return;
-        staged[i] = value;
-        if (!value) markedForRemoval[i] = false;
-        setChanged();
-    }
-
-    public void toggleMarkedForRemoval(int i) {
-        if (i < 0 || i >= markedForRemoval.length) return;
-        if (!installed[i]) return;
-        markedForRemoval[i] = !markedForRemoval[i];
-        if (markedForRemoval[i]) {
-            ItemStack stack = inventory.getStackInSlot(i);
-            if (!stack.isEmpty()) {
-            }
+    public static void serverTick(
+            Level level,
+            BlockPos pos,
+            BlockState state,
+            RobosurgeonBlockEntity blockEntity
+    ) {
+        if (level.isClientSide) {
+            return;
         }
-        setChanged();
+
+        if (!ConditionalBlockPower.shouldUseEnergyInsteadOfRedstone()) {
+            return;
+        }
+
+        blockEntity.pullEnergyFromNeighbors();
     }
 
+    private void pullEnergyFromNeighbors() {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+
+        int remainingCapacity =
+                energyStorage.getMaxEnergyStored()
+                        - energyStorage.getEnergyStored();
+
+        int remainingInput = Math.min(
+                ENERGY_PULL_PER_TICK,
+                remainingCapacity
+        );
+
+        if (remainingInput <= 0) {
+            return;
+        }
+
+        for (Direction direction : Direction.values()) {
+            if (remainingInput <= 0) {
+                return;
+            }
+
+            BlockPos neighborPos = worldPosition.relative(direction);
+
+            IEnergyStorage sidedNeighborEnergy = level.getCapability(
+                    Capabilities.EnergyStorage.BLOCK,
+                    neighborPos,
+                    direction.getOpposite()
+            );
+
+            int receivedFromSided = pullEnergyFromHandler(
+                    sidedNeighborEnergy,
+                    remainingInput
+            );
+
+            remainingInput -= receivedFromSided;
+
+            if (remainingInput <= 0) {
+                return;
+            }
+
+            IEnergyStorage unsidedNeighborEnergy = level.getCapability(
+                    Capabilities.EnergyStorage.BLOCK,
+                    neighborPos,
+                    null
+            );
+
+            if (unsidedNeighborEnergy == sidedNeighborEnergy) {
+                continue;
+            }
+
+            int receivedFromUnsided = pullEnergyFromHandler(
+                    unsidedNeighborEnergy,
+                    remainingInput
+            );
+
+            remainingInput -= receivedFromUnsided;
+        }
+    }
+
+    private int pullEnergyFromHandler(
+            IEnergyStorage neighborEnergy,
+            int maxAmount
+    ) {
+        if (neighborEnergy == null) {
+            return 0;
+        }
+
+        if (maxAmount <= 0) {
+            return 0;
+        }
+
+        if (!neighborEnergy.canExtract()) {
+            return 0;
+        }
+
+        if (!energyStorage.canReceive()) {
+            return 0;
+        }
+
+        int simulatedExtract = neighborEnergy.extractEnergy(
+                maxAmount,
+                true
+        );
+
+        if (simulatedExtract <= 0) {
+            return 0;
+        }
+
+        int simulatedReceive = energyStorage.receiveEnergy(
+                simulatedExtract,
+                true
+        );
+
+        if (simulatedReceive <= 0) {
+            return 0;
+        }
+
+        int extracted = neighborEnergy.extractEnergy(
+                simulatedReceive,
+                false
+        );
+
+        if (extracted <= 0) {
+            return 0;
+        }
+
+        int received = energyStorage.receiveEnergy(
+                extracted,
+                false
+        );
+
+        if (received < extracted && neighborEnergy.canReceive()) {
+            neighborEnergy.receiveEnergy(
+                    extracted - received,
+                    false
+            );
+        }
+
+        return received;
+    }
+
+    public boolean isInstalled(int index) {
+        return index >= 0
+                && index < installed.length
+                && installed[index];
+    }
+
+    public boolean isStaged(int index) {
+        return index >= 0
+                && index < staged.length
+                && staged[index];
+    }
+
+    public boolean isMarkedForRemoval(int index) {
+        return index >= 0
+                && index < markedForRemoval.length
+                && markedForRemoval[index];
+    }
+
+    public void setInstalled(int index, boolean value) {
+        if (index < 0 || index >= installed.length) {
+            return;
+        }
+
+        installed[index] = value;
+
+        if (!value) {
+            markedForRemoval[index] = false;
+        }
+
+        setChanged();
+        updateComparatorOutput();
+    }
+
+    public void setStaged(int index, boolean value) {
+        if (index < 0 || index >= staged.length) {
+            return;
+        }
+
+        staged[index] = value;
+
+        if (!value) {
+            markedForRemoval[index] = false;
+        }
+
+        setChanged();
+        updateComparatorOutput();
+    }
+
+    public void toggleMarkedForRemoval(int index) {
+        if (index < 0 || index >= markedForRemoval.length) {
+            return;
+        }
+
+        if (!installed[index]) {
+            return;
+        }
+
+        markedForRemoval[index] = !markedForRemoval[index];
+
+        setChanged();
+        updateComparatorOutput();
+    }
 
     public void clearSlotStates() {
-        for (int i = 0; i < 65; i++) {
-            staged[i] = false;
-            markedForRemoval[i] = false;
+        for (int index = 0; index < inventory.getSlots(); index++) {
+            staged[index] = false;
+            markedForRemoval[index] = false;
         }
+
         setChanged();
+        updateComparatorOutput();
     }
 
     public void beginSurgery() {
         surgeryInProgress = true;
+        setChanged();
     }
 
     public void endSurgery() {
         surgeryInProgress = false;
+        setChanged();
     }
 
     public void clearContents() {
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            inventory.setStackInSlot(i, ItemStack.EMPTY);
+        for (int index = 0; index < inventory.getSlots(); index++) {
+            inventory.setStackInSlot(
+                    index,
+                    ItemStack.EMPTY
+            );
         }
     }
 
     public void drops() {
-        if (level == null || level.isClientSide) return;
+        if (level == null || level.isClientSide) {
+            return;
+        }
 
-        for (int i = 0; i < inventory.getSlots(); i++) {
+        for (int index = 0; index < inventory.getSlots(); index++) {
+            if (!staged[index]) {
+                continue;
+            }
 
-            if (!staged[i]) continue;
+            ItemStack stack = inventory.getStackInSlot(index);
 
-            ItemStack stack = inventory.getStackInSlot(i);
-            if (stack.isEmpty()) continue;
+            if (stack.isEmpty()) {
+                continue;
+            }
 
-            Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), stack);
+            Containers.dropItemStack(
+                    level,
+                    worldPosition.getX(),
+                    worldPosition.getY(),
+                    worldPosition.getZ(),
+                    stack
+            );
 
-            inventory.setStackInSlot(i, ItemStack.EMPTY);
-            staged[i] = false;
+            inventory.setStackInSlot(
+                    index,
+                    ItemStack.EMPTY
+            );
+
+            staged[index] = false;
         }
 
         setChanged();
+        updateComparatorOutput();
     }
 
+    public int getComparatorOutput() {
+        return Math.min(
+                15,
+                countNonDefaultImplants()
+        );
+    }
 
-    private boolean isDefaultOrgan(ItemStack stack) {
-        if (stack.isEmpty()) return false;
+    private int countNonDefaultImplants() {
+        int count = 0;
 
         for (CyberwareSlot slot : CyberwareSlot.values()) {
-            for (int i = 0; i < slot.size; i++) {
-                ItemStack defaultStack = DefaultOrgans.get(slot, i);
-                if (!defaultStack.isEmpty() && stack.is(defaultStack.getItem())) {
-                    return true;
+            int mappedSize = RobosurgeonSlotMap.mappedSize(slot);
+
+            for (int slotIndex = 0; slotIndex < mappedSize; slotIndex++) {
+                int inventoryIndex = RobosurgeonSlotMap.toInventoryIndex(
+                        slot,
+                        slotIndex
+                );
+
+                if (inventoryIndex < 0
+                        || inventoryIndex >= inventory.getSlots()) {
+                    continue;
+                }
+
+                ItemStack stack =
+                        inventory.getStackInSlot(inventoryIndex);
+
+                if (stack.isEmpty()) {
+                    continue;
+                }
+
+                ItemStack defaultStack =
+                        DefaultOrgans.get(slot, slotIndex);
+
+                if (defaultStack == null || defaultStack.isEmpty()) {
+                    count++;
+                    continue;
+                }
+
+                if (!ItemStack.isSameItemSameComponents(
+                        stack,
+                        defaultStack
+                )) {
+                    count++;
                 }
             }
         }
-        return false;
+
+        return count;
+    }
+
+    private void updateComparatorOutput() {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+
+        level.updateNeighbourForOutputSignal(
+                worldPosition,
+                getBlockState().getBlock()
+        );
     }
 
     private static byte[] encode(boolean[] data) {
-        byte[] out = new byte[data.length];
-        for (int i = 0; i < data.length; i++) {
-            out[i] = (byte) (data[i] ? 1 : 0);
+        byte[] encoded = new byte[data.length];
+
+        for (int index = 0; index < data.length; index++) {
+            encoded[index] = (byte) (data[index] ? 1 : 0);
         }
-        return out;
+
+        return encoded;
     }
 
-    private static void decode(byte[] src, boolean[] target) {
-        int len = Math.min(src.length, target.length);
-        for (int i = 0; i < len; i++) {
-            target[i] = src[i] != 0;
+    private static void decode(
+            byte[] encoded,
+            boolean[] target
+    ) {
+        int length = Math.min(
+                encoded.length,
+                target.length
+        );
+
+        for (int index = 0; index < length; index++) {
+            target[index] = encoded[index] != 0;
         }
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+    protected void saveAdditional(
+            CompoundTag tag,
+            HolderLookup.Provider registries
+    ) {
         super.saveAdditional(tag, registries);
 
-        tag.put("inventory", inventory.serializeNBT(registries));
+        tag.put(
+                "inventory",
+                inventory.serializeNBT(registries)
+        );
 
-        tag.putByteArray("Installed", encode(installed));
-        tag.putByteArray("Staged", encode(staged));
-        tag.putByteArray("Marked", encode(markedForRemoval));
+        tag.putByteArray(
+                "Installed",
+                encode(installed)
+        );
+
+        tag.putByteArray(
+                "Staged",
+                encode(staged)
+        );
+
+        tag.putByteArray(
+                "Marked",
+                encode(markedForRemoval)
+        );
+
+        tag.putInt(
+                TAG_ENERGY,
+                energyStorage.getEnergyStored()
+        );
     }
 
-
-
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+    protected void loadAdditional(
+            CompoundTag tag,
+            HolderLookup.Provider registries
+    ) {
         super.loadAdditional(tag, registries);
 
         if (tag.contains("inventory")) {
-            inventory.deserializeNBT(registries, tag.getCompound("inventory"));
+            inventory.deserializeNBT(
+                    registries,
+                    tag.getCompound("inventory")
+            );
         }
 
         if (tag.contains("Installed")) {
-            decode(tag.getByteArray("Installed"), installed);
+            decode(
+                    tag.getByteArray("Installed"),
+                    installed
+            );
         }
 
         if (tag.contains("Staged")) {
-            decode(tag.getByteArray("Staged"), staged);
+            decode(
+                    tag.getByteArray("Staged"),
+                    staged
+            );
         }
 
         if (tag.contains("Marked")) {
-            decode(tag.getByteArray("Marked"), markedForRemoval);
+            decode(
+                    tag.getByteArray("Marked"),
+                    markedForRemoval
+            );
+        }
+
+        if (tag.contains(TAG_ENERGY)) {
+            energyStorage.setEnergyStoredSilently(
+                    tag.getInt(TAG_ENERGY)
+            );
         }
     }
 
@@ -223,21 +549,41 @@ public class RobosurgeonBlockEntity extends BlockEntity implements MenuProvider 
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider pRegistries) {
-        return saveWithoutMetadata(pRegistries);
+    public CompoundTag getUpdateTag(
+            HolderLookup.Provider registries
+    ) {
+        return saveWithoutMetadata(registries);
     }
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("gui.robosurgeon.title");
+        return Component.translatable(
+                "gui.robosurgeon.title"
+        );
     }
 
     @Override
-    public @Nullable AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
-        return new RobosurgeonMenu(i, inventory, this);
+    public @Nullable AbstractContainerMenu createMenu(
+            int containerId,
+            Inventory inventory,
+            Player player
+    ) {
+        return new RobosurgeonMenu(
+                containerId,
+                inventory,
+                this
+        );
     }
 
-    public AbstractContainerMenu getMenu(int containerId, Inventory inventory, Player player) {
-        return new RobosurgeonMenu(containerId, inventory, this);
+    public AbstractContainerMenu getMenu(
+            int containerId,
+            Inventory inventory,
+            Player player
+    ) {
+        return new RobosurgeonMenu(
+                containerId,
+                inventory,
+                this
+        );
     }
 }

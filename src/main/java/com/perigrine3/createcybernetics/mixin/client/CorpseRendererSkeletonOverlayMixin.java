@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
 import com.perigrine3.createcybernetics.compat.corpse.CorpseVisualSnapshotClientCache;
+import com.perigrine3.createcybernetics.compat.corpse.CorpseVisualSnapshotRequestClientCache;
+import com.perigrine3.createcybernetics.compat.corpse.RequestCorpseVisualSnapshotPayload;
 import com.perigrine3.createcybernetics.compat.corpse.SkeletonCorpseOverlayRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
@@ -11,9 +13,9 @@ import net.minecraft.client.model.SkeletonModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -25,8 +27,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Supplier;
 
 @Pseudo
@@ -54,11 +54,6 @@ public abstract class CorpseRendererSkeletonOverlayMixin {
     private static Method createcybernetics$isSkeletonMethod;
     @Unique
     private static boolean createcybernetics$isSkeletonMethodResolved = false;
-
-    @Unique
-    private static Method createcybernetics$getCorpseUuidMethod;
-    @Unique
-    private static boolean createcybernetics$getCorpseUuidMethodResolved = false;
 
     @Unique
     private static Method createcybernetics$getYRotMethod;
@@ -91,26 +86,54 @@ public abstract class CorpseRendererSkeletonOverlayMixin {
             int packedLightIn,
             CallbackInfo ci
     ) {
-        if (!(entity instanceof Entity corpseEntity)) return;
-        if (!createcybernetics$isCorpseEntity(entity)) return;
-        if (!createcybernetics$isSkeleton(entity)) return;
+        if (!(entity instanceof Entity corpseEntity)) {
+            return;
+        }
 
-        CompoundTag snapshot = CorpseVisualSnapshotClientCache.get(corpseEntity.getUUID());
-        if (snapshot.isEmpty()) return;
+        if (!createcybernetics$isCorpseEntity(entity)) {
+            return;
+        }
 
-        PlayerCyberwareData data = PlayerCyberwareData.fromSnapshotTag(snapshot, corpseEntity.registryAccess());
-        if (data == null) return;
+        if (!createcybernetics$isSkeleton(entity)) {
+            return;
+        }
+
+        if (!CorpseVisualSnapshotClientCache.has(corpseEntity.getUUID())) {
+            if (CorpseVisualSnapshotRequestClientCache.markRequested(corpseEntity.getUUID())) {
+                PacketDistributor.sendToServer(new RequestCorpseVisualSnapshotPayload(corpseEntity.getUUID()));
+            }
+            return;
+        }
+
+        PlayerCyberwareData data = CorpseVisualSnapshotClientCache.getCyberwareData(
+                corpseEntity.getUUID(),
+                corpseEntity.registryAccess()
+        );
+
+        if (data == null) {
+            return;
+        }
 
         Object dummySkeleton = createcybernetics$getDummySkeleton(entity);
-        if (!(dummySkeleton instanceof AbstractSkeleton skeleton)) return;
+        if (!(dummySkeleton instanceof AbstractSkeleton skeleton)) {
+            return;
+        }
 
         EntityRenderer<? super AbstractSkeleton> renderer =
                 Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(skeleton);
-        if (!(renderer instanceof LivingEntityRenderer<?, ?> livingRenderer)) return;
-        if (!(livingRenderer instanceof LivingEntityRendererAccessor<?, ?> accessor)) return;
+
+        if (!(renderer instanceof LivingEntityRenderer<?, ?> livingRenderer)) {
+            return;
+        }
+
+        if (!(livingRenderer instanceof LivingEntityRendererAccessor<?, ?> accessor)) {
+            return;
+        }
 
         EntityModel<?> rawModel = accessor.createcybernetics$getModel();
-        if (!(rawModel instanceof SkeletonModel<?> skeletonModel)) return;
+        if (!(rawModel instanceof SkeletonModel<?> skeletonModel)) {
+            return;
+        }
 
         @SuppressWarnings("unchecked")
         SkeletonModel<AbstractSkeleton> castModel = (SkeletonModel<AbstractSkeleton>) skeletonModel;
@@ -121,17 +144,23 @@ public abstract class CorpseRendererSkeletonOverlayMixin {
         matrixStack.mulPose(Axis.YP.rotationDegrees(180.0F));
         matrixStack.translate(0.0D, -1.501D, 0.0D);
         matrixStack.scale(1.001F, 1.001F, 1.001F);
+
         SkeletonCorpseOverlayRenderer.render(castModel, data, matrixStack, buffer, packedLightIn);
+
         matrixStack.popPose();
     }
 
     @Unique
     private Object createcybernetics$getDummySkeleton(Object corpseEntity) {
         Object skeletons = createcybernetics$getSkeletonsFieldValue();
-        if (skeletons == null) return null;
+        if (skeletons == null) {
+            return null;
+        }
 
         Method getMethod = createcybernetics$getCachedMapGetMethod(skeletons.getClass());
-        if (getMethod == null) return null;
+        if (getMethod == null) {
+            return null;
+        }
 
         try {
             return getMethod.invoke(skeletons, corpseEntity, (Supplier<Object>) () -> null);
@@ -143,7 +172,9 @@ public abstract class CorpseRendererSkeletonOverlayMixin {
     @Unique
     private Object createcybernetics$getSkeletonsFieldValue() {
         Field field = createcybernetics$getSkeletonsField();
-        if (field == null) return null;
+        if (field == null) {
+            return null;
+        }
 
         try {
             return field.get(this);
@@ -168,7 +199,9 @@ public abstract class CorpseRendererSkeletonOverlayMixin {
 
     @Unique
     private static boolean createcybernetics$isCorpseEntity(Object entity) {
-        if (!(entity instanceof Entity)) return false;
+        if (!(entity instanceof Entity)) {
+            return false;
+        }
 
         try {
             Class<?> corpseClass = Class.forName(CORPSE_ENTITY_CLASS);
@@ -181,7 +214,9 @@ public abstract class CorpseRendererSkeletonOverlayMixin {
     @Unique
     private static boolean createcybernetics$isSkeleton(Object corpseEntity) {
         Method method = createcybernetics$getIsSkeletonMethod(corpseEntity.getClass());
-        if (method == null) return false;
+        if (method == null) {
+            return false;
+        }
 
         try {
             Object result = method.invoke(corpseEntity);
@@ -192,28 +227,11 @@ public abstract class CorpseRendererSkeletonOverlayMixin {
     }
 
     @Unique
-    private static Optional<UUID> createcybernetics$getCorpseOwnerUuid(Object corpseEntity) {
-        Method method = createcybernetics$getCorpseUuidMethod(corpseEntity.getClass());
-        if (method == null) return Optional.empty();
-
-        try {
-            Object result = method.invoke(corpseEntity);
-            if (result instanceof Optional<?> optional) {
-                Object value = optional.orElse(null);
-                if (value instanceof UUID uuid) {
-                    return Optional.of(uuid);
-                }
-            }
-        } catch (Throwable ignored) {
-        }
-
-        return Optional.empty();
-    }
-
-    @Unique
     private static float createcybernetics$getYRot(Object corpseEntity) {
         Method method = createcybernetics$getYRotMethod(corpseEntity.getClass());
-        if (method == null) return 0.0F;
+        if (method == null) {
+            return 0.0F;
+        }
 
         try {
             Object result = method.invoke(corpseEntity);
@@ -226,20 +244,30 @@ public abstract class CorpseRendererSkeletonOverlayMixin {
     @Unique
     private static boolean createcybernetics$spawnCorpseOnFace() {
         Field mainField = createcybernetics$getMainServerConfigField();
-        if (mainField == null) return false;
+        if (mainField == null) {
+            return false;
+        }
 
         try {
             Object serverConfig = mainField.get(null);
-            if (serverConfig == null) return false;
+            if (serverConfig == null) {
+                return false;
+            }
 
             Field spawnField = createcybernetics$getSpawnCorpseOnFaceField(serverConfig.getClass());
-            if (spawnField == null) return false;
+            if (spawnField == null) {
+                return false;
+            }
 
             Object configValue = spawnField.get(serverConfig);
-            if (configValue == null) return false;
+            if (configValue == null) {
+                return false;
+            }
 
             Method getMethod = createcybernetics$getConfigGetMethod(configValue.getClass());
-            if (getMethod == null) return false;
+            if (getMethod == null) {
+                return false;
+            }
 
             Object result = getMethod.invoke(configValue);
             return result instanceof Boolean b && b;
@@ -299,23 +327,6 @@ public abstract class CorpseRendererSkeletonOverlayMixin {
         }
 
         return createcybernetics$isSkeletonMethod;
-    }
-
-    @Unique
-    private static Method createcybernetics$getCorpseUuidMethod(Class<?> corpseClass) {
-        if (createcybernetics$getCorpseUuidMethodResolved) {
-            return createcybernetics$getCorpseUuidMethod;
-        }
-
-        createcybernetics$getCorpseUuidMethodResolved = true;
-
-        try {
-            createcybernetics$getCorpseUuidMethod = corpseClass.getMethod("getCorpseUUID");
-        } catch (Throwable ignored) {
-            createcybernetics$getCorpseUuidMethod = null;
-        }
-
-        return createcybernetics$getCorpseUuidMethod;
     }
 
     @Unique

@@ -19,6 +19,8 @@ public class ModEffects {
         public static final Holder<MobEffect> CYBERWARE_REJECTION = MOB_EFFECTS.register("cyberware_rejection",
                 () -> new CyberwareRejectionEffect(MobEffectCategory.NEUTRAL, 0xA11F05)
                         .addAttributeModifier(Attributes.MOVEMENT_SPEED, ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "cyberware_rejection"), -0.17f, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+        public static final Holder<MobEffect> CYBERPSYCHOSIS_FUGUE = MOB_EFFECTS.register("cyberpsychosis_fugue",
+                () -> new CyberpsychosisFugueEffect(MobEffectCategory.NEUTRAL, 0x2A0000));
         public static final Holder<MobEffect> NEUROPOZYNE = MOB_EFFECTS.register("neuropozyne",
                 () -> new NeuropozyneEffect(MobEffectCategory.BENEFICIAL, 0xC4D925)
                         .addAttributeModifier(Attributes.MOVEMENT_SPEED, ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "neuropozyne_speed"), 0.001D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));

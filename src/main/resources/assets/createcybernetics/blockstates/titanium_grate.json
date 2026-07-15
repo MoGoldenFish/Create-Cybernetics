@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "waterlogged=false": {
+      "model": "createcybernetics:block/titanium_grate"
+    },
+    "waterlogged=true": {
+      "model": "createcybernetics:block/titanium_grate"
+    }
+  }
+}

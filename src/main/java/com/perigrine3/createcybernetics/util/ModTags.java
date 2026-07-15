@@ -4,11 +4,13 @@ import com.perigrine3.createcybernetics.CreateCybernetics;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 
 public class ModTags {
@@ -25,16 +27,27 @@ public class ModTags {
         }
     }
 
+
+
+
+
+
     public static class Items {
 
         public static final TagKey<Item> C_FOODS_RAW_MEATS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "foods/raw_meats"));
         public static final TagKey<Item> FD_KNIVES = ItemTags.create(ResourceLocation.fromNamespaceAndPath("c", "tools/knives"));
         public static final TagKey<Item> C_TITANIUM = ItemTags.create(ResourceLocation.fromNamespaceAndPath("c", "ingots/titanium"));
+        public static final TagKey<Item> CRUSHED_RAW_MATERIALS = createTag("crushed_raw_materials");
 
         public static final TagKey<Item> TOGGLEABLE_CYBERWARE = createTag("toggleable_cyberware");
         public static final TagKey<Item> ENERGY_GENERATING_CYBERWARE = createTag("energy_generating_cyberware");
         public static final TagKey<Item> ARM_CANNON_AMMO = createTag("arm_cannon_ammo");
+        public static final TagKey<Item> MANTIS_BLADES = createTag("mantis_blades");
         public static final TagKey<Item> DATA_SHARDS = createTag("data_shards");
+        public static final TagKey<Item> SKILL_SHARDS = createTag("skill_shards");
+        public static final TagKey<Item> TUTORIAL_SHARDS = createTag("tutorial_shards");
+        public static final TagKey<Item> LORE_SHARDS = createTag("lore_shards");
+        public static final TagKey<Item> GAME_SHARDS = createTag("game_shards");
         public static final TagKey<Item> QUICKHACK_SHARDS = createTag("quickhack_shards");
         public static final TagKey<Item> GRAPHENE = createTag("graphene");
 
@@ -81,6 +94,7 @@ public class ModTags {
         public static final TagKey<Item> MUSCLE_REPLACEMENTS = createTag("muscle_replacements");
         public static final TagKey<Item> BONE_REPLACEMENTS = createTag("bone_replacements");
         public static final TagKey<Item> HEART_REPLACEMENTS = createTag("heart_replacements");
+        public static final TagKey<Item> LUNGS_REPLACEMENTS = createTag("lungs_replacements");
         public static final TagKey<Item> LIVER_REPLACEMENTS = createTag("liver_replacements");
         public static final TagKey<Item> LEFTARM_REPLACEMENTS = createTag("leftarm_replacements");
         public static final TagKey<Item> LEFT_CYBERARM = createTag("left_cyberarm");
@@ -102,11 +116,44 @@ public class ModTags {
         }
     }
 
+
+
+
+
+
     public static class Enchantments {
+
         public static final TagKey<Enchantment> HARVESTER_EXCLUSIVE = createTag("harvester_exclusive");
 
         private static TagKey<Enchantment> createTag(String name) {
             return TagKey.create(Registries.ENCHANTMENT, ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, name));
+        }
+    }
+
+
+
+
+
+
+    public static final class Biomes {
+
+        public static final TagKey<Biome> CYBERMONSTER_SPAWNS = create("cybermonster_spawns");
+
+        private static TagKey<Biome> create(String name) {
+            return TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, name));
+        }
+    }
+
+
+
+
+
+    public static final class Entities {
+
+        public static final TagKey<EntityType<?>> CYBERENTITIES = createTag("cyberentities");
+
+        private static TagKey<EntityType<?>> createTag(String name) {
+            return TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, name));
         }
     }
 }

@@ -1,0 +1,379 @@
+{
+  "variants": {
+    "facing=north,stored_shards=0": {
+      "model": "createcybernetics:block/computer_tower"
+    },
+    "facing=east,stored_shards=0": {
+      "model": "createcybernetics:block/computer_tower",
+      "y": 90
+    },
+    "facing=south,stored_shards=0": {
+      "model": "createcybernetics:block/computer_tower",
+      "y": 180
+    },
+    "facing=west,stored_shards=0": {
+      "model": "createcybernetics:block/computer_tower",
+      "y": 270
+    },
+    "facing=north,stored_shards=1": {
+      "model": "createcybernetics:block/computer_tower_1"
+    },
+    "facing=east,stored_shards=1": {
+      "model": "createcybernetics:block/computer_tower_1",
+      "y": 90
+    },
+    "facing=south,stored_shards=1": {
+      "model": "createcybernetics:block/computer_tower_1",
+      "y": 180
+    },
+    "facing=west,stored_shards=1": {
+      "model": "createcybernetics:block/computer_tower_1",
+      "y": 270
+    },
+    "facing=north,stored_shards=2": {
+      "model": "createcybernetics:block/computer_tower_2"
+    },
+    "facing=east,stored_shards=2": {
+      "model": "createcybernetics:block/computer_tower_2",
+      "y": 90
+    },
+    "facing=south,stored_shards=2": {
+      "model": "createcybernetics:block/computer_tower_2",
+      "y": 180
+    },
+    "facing=west,stored_shards=2": {
+      "model": "createcybernetics:block/computer_tower_2",
+      "y": 270
+    },
+    "facing=north,stored_shards=3": {
+      "model": "createcybernetics:block/computer_tower_3"
+    },
+    "facing=east,stored_shards=3": {
+      "model": "createcybernetics:block/computer_tower_3",
+      "y": 90
+    },
+    "facing=south,stored_shards=3": {
+      "model": "createcybernetics:block/computer_tower_3",
+      "y": 180
+    },
+    "facing=west,stored_shards=3": {
+      "model": "createcybernetics:block/computer_tower_3",
+      "y": 270
+    },
+    "facing=north,stored_shards=4": {
+      "model": "createcybernetics:block/computer_tower_4"
+    },
+    "facing=east,stored_shards=4": {
+      "model": "createcybernetics:block/computer_tower_4",
+      "y": 90
+    },
+    "facing=south,stored_shards=4": {
+      "model": "createcybernetics:block/computer_tower_4",
+      "y": 180
+    },
+    "facing=west,stored_shards=4": {
+      "model": "createcybernetics:block/computer_tower_4",
+      "y": 270
+    },
+    "facing=north,stored_shards=5": {
+      "model": "createcybernetics:block/computer_tower_5"
+    },
+    "facing=east,stored_shards=5": {
+      "model": "createcybernetics:block/computer_tower_5",
+      "y": 90
+    },
+    "facing=south,stored_shards=5": {
+      "model": "createcybernetics:block/computer_tower_5",
+      "y": 180
+    },
+    "facing=west,stored_shards=5": {
+      "model": "createcybernetics:block/computer_tower_5",
+      "y": 270
+    },
+    "facing=north,stored_shards=6": {
+      "model": "createcybernetics:block/computer_tower_6"
+    },
+    "facing=east,stored_shards=6": {
+      "model": "createcybernetics:block/computer_tower_6",
+      "y": 90
+    },
+    "facing=south,stored_shards=6": {
+      "model": "createcybernetics:block/computer_tower_6",
+      "y": 180
+    },
+    "facing=west,stored_shards=6": {
+      "model": "createcybernetics:block/computer_tower_6",
+      "y": 270
+    },
+    "facing=north,stored_shards=7": {
+      "model": "createcybernetics:block/computer_tower_7"
+    },
+    "facing=east,stored_shards=7": {
+      "model": "createcybernetics:block/computer_tower_7",
+      "y": 90
+    },
+    "facing=south,stored_shards=7": {
+      "model": "createcybernetics:block/computer_tower_7",
+      "y": 180
+    },
+    "facing=west,stored_shards=7": {
+      "model": "createcybernetics:block/computer_tower_7",
+      "y": 270
+    },
+    "facing=north,stored_shards=8": {
+      "model": "createcybernetics:block/computer_tower_8"
+    },
+    "facing=east,stored_shards=8": {
+      "model": "createcybernetics:block/computer_tower_8",
+      "y": 90
+    },
+    "facing=south,stored_shards=8": {
+      "model": "createcybernetics:block/computer_tower_8",
+      "y": 180
+    },
+    "facing=west,stored_shards=8": {
+      "model": "createcybernetics:block/computer_tower_8",
+      "y": 270
+    },
+    "facing=north,stored_shards=9": {
+      "model": "createcybernetics:block/computer_tower_9"
+    },
+    "facing=east,stored_shards=9": {
+      "model": "createcybernetics:block/computer_tower_9",
+      "y": 90
+    },
+    "facing=south,stored_shards=9": {
+      "model": "createcybernetics:block/computer_tower_9",
+      "y": 180
+    },
+    "facing=west,stored_shards=9": {
+      "model": "createcybernetics:block/computer_tower_9",
+      "y": 270
+    },
+    "facing=north,stored_shards=10": {
+      "model": "createcybernetics:block/computer_tower_10"
+    },
+    "facing=east,stored_shards=10": {
+      "model": "createcybernetics:block/computer_tower_10",
+      "y": 90
+    },
+    "facing=south,stored_shards=10": {
+      "model": "createcybernetics:block/computer_tower_10",
+      "y": 180
+    },
+    "facing=west,stored_shards=10": {
+      "model": "createcybernetics:block/computer_tower_10",
+      "y": 270
+    },
+    "facing=north,stored_shards=11": {
+      "model": "createcybernetics:block/computer_tower_11"
+    },
+    "facing=east,stored_shards=11": {
+      "model": "createcybernetics:block/computer_tower_11",
+      "y": 90
+    },
+    "facing=south,stored_shards=11": {
+      "model": "createcybernetics:block/computer_tower_11",
+      "y": 180
+    },
+    "facing=west,stored_shards=11": {
+      "model": "createcybernetics:block/computer_tower_11",
+      "y": 270
+    },
+    "facing=north,stored_shards=12": {
+      "model": "createcybernetics:block/computer_tower_12"
+    },
+    "facing=east,stored_shards=12": {
+      "model": "createcybernetics:block/computer_tower_12",
+      "y": 90
+    },
+    "facing=south,stored_shards=12": {
+      "model": "createcybernetics:block/computer_tower_12",
+      "y": 180
+    },
+    "facing=west,stored_shards=12": {
+      "model": "createcybernetics:block/computer_tower_12",
+      "y": 270
+    },
+    "facing=north,stored_shards=13": {
+      "model": "createcybernetics:block/computer_tower_13"
+    },
+    "facing=east,stored_shards=13": {
+      "model": "createcybernetics:block/computer_tower_13",
+      "y": 90
+    },
+    "facing=south,stored_shards=13": {
+      "model": "createcybernetics:block/computer_tower_13",
+      "y": 180
+    },
+    "facing=west,stored_shards=13": {
+      "model": "createcybernetics:block/computer_tower_13",
+      "y": 270
+    },
+    "facing=north,stored_shards=14": {
+      "model": "createcybernetics:block/computer_tower_14"
+    },
+    "facing=east,stored_shards=14": {
+      "model": "createcybernetics:block/computer_tower_14",
+      "y": 90
+    },
+    "facing=south,stored_shards=14": {
+      "model": "createcybernetics:block/computer_tower_14",
+      "y": 180
+    },
+    "facing=west,stored_shards=14": {
+      "model": "createcybernetics:block/computer_tower_14",
+      "y": 270
+    },
+    "facing=north,stored_shards=15": {
+      "model": "createcybernetics:block/computer_tower_15"
+    },
+    "facing=east,stored_shards=15": {
+      "model": "createcybernetics:block/computer_tower_15",
+      "y": 90
+    },
+    "facing=south,stored_shards=15": {
+      "model": "createcybernetics:block/computer_tower_15",
+      "y": 180
+    },
+    "facing=west,stored_shards=15": {
+      "model": "createcybernetics:block/computer_tower_15",
+      "y": 270
+    },
+    "facing=north,stored_shards=16": {
+      "model": "createcybernetics:block/computer_tower_16"
+    },
+    "facing=east,stored_shards=16": {
+      "model": "createcybernetics:block/computer_tower_16",
+      "y": 90
+    },
+    "facing=south,stored_shards=16": {
+      "model": "createcybernetics:block/computer_tower_16",
+      "y": 180
+    },
+    "facing=west,stored_shards=16": {
+      "model": "createcybernetics:block/computer_tower_16",
+      "y": 270
+    },
+    "facing=north,stored_shards=17": {
+      "model": "createcybernetics:block/computer_tower_17"
+    },
+    "facing=east,stored_shards=17": {
+      "model": "createcybernetics:block/computer_tower_17",
+      "y": 90
+    },
+    "facing=south,stored_shards=17": {
+      "model": "createcybernetics:block/computer_tower_17",
+      "y": 180
+    },
+    "facing=west,stored_shards=17": {
+      "model": "createcybernetics:block/computer_tower_17",
+      "y": 270
+    },
+    "facing=north,stored_shards=18": {
+      "model": "createcybernetics:block/computer_tower_18"
+    },
+    "facing=east,stored_shards=18": {
+      "model": "createcybernetics:block/computer_tower_18",
+      "y": 90
+    },
+    "facing=south,stored_shards=18": {
+      "model": "createcybernetics:block/computer_tower_18",
+      "y": 180
+    },
+    "facing=west,stored_shards=18": {
+      "model": "createcybernetics:block/computer_tower_18",
+      "y": 270
+    },
+    "facing=north,stored_shards=19": {
+      "model": "createcybernetics:block/computer_tower_19"
+    },
+    "facing=east,stored_shards=19": {
+      "model": "createcybernetics:block/computer_tower_19",
+      "y": 90
+    },
+    "facing=south,stored_shards=19": {
+      "model": "createcybernetics:block/computer_tower_19",
+      "y": 180
+    },
+    "facing=west,stored_shards=19": {
+      "model": "createcybernetics:block/computer_tower_19",
+      "y": 270
+    },
+    "facing=north,stored_shards=20": {
+      "model": "createcybernetics:block/computer_tower_20"
+    },
+    "facing=east,stored_shards=20": {
+      "model": "createcybernetics:block/computer_tower_20",
+      "y": 90
+    },
+    "facing=south,stored_shards=20": {
+      "model": "createcybernetics:block/computer_tower_20",
+      "y": 180
+    },
+    "facing=west,stored_shards=20": {
+      "model": "createcybernetics:block/computer_tower_20",
+      "y": 270
+    },
+    "facing=north,stored_shards=21": {
+      "model": "createcybernetics:block/computer_tower_21"
+    },
+    "facing=east,stored_shards=21": {
+      "model": "createcybernetics:block/computer_tower_21",
+      "y": 90
+    },
+    "facing=south,stored_shards=21": {
+      "model": "createcybernetics:block/computer_tower_21",
+      "y": 180
+    },
+    "facing=west,stored_shards=21": {
+      "model": "createcybernetics:block/computer_tower_21",
+      "y": 270
+    },
+    "facing=north,stored_shards=22": {
+      "model": "createcybernetics:block/computer_tower_22"
+    },
+    "facing=east,stored_shards=22": {
+      "model": "createcybernetics:block/computer_tower_22",
+      "y": 90
+    },
+    "facing=south,stored_shards=22": {
+      "model": "createcybernetics:block/computer_tower_22",
+      "y": 180
+    },
+    "facing=west,stored_shards=22": {
+      "model": "createcybernetics:block/computer_tower_22",
+      "y": 270
+    },
+    "facing=north,stored_shards=23": {
+      "model": "createcybernetics:block/computer_tower_23"
+    },
+    "facing=east,stored_shards=23": {
+      "model": "createcybernetics:block/computer_tower_23",
+      "y": 90
+    },
+    "facing=south,stored_shards=23": {
+      "model": "createcybernetics:block/computer_tower_23",
+      "y": 180
+    },
+    "facing=west,stored_shards=23": {
+      "model": "createcybernetics:block/computer_tower_23",
+      "y": 270
+    },
+    "facing=north,stored_shards=24": {
+      "model": "createcybernetics:block/computer_tower_24"
+    },
+    "facing=east,stored_shards=24": {
+      "model": "createcybernetics:block/computer_tower_24",
+      "y": 90
+    },
+    "facing=south,stored_shards=24": {
+      "model": "createcybernetics:block/computer_tower_24",
+      "y": 180
+    },
+    "facing=west,stored_shards=24": {
+      "model": "createcybernetics:block/computer_tower_24",
+      "y": 270
+    }
+  }
+}

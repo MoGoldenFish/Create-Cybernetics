@@ -1,10 +1,8 @@
 package com.perigrine3.createcybernetics.effect;
 
-import com.perigrine3.createcybernetics.ConfigValues;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
 import com.perigrine3.createcybernetics.common.damage.ModDamageSources;
-import com.perigrine3.createcybernetics.common.humanity.HumanityAttributeModifiers;
 import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
@@ -15,15 +13,19 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
 public class CyberwareRejectionEffect extends MobEffect {
-    private static final float DANGER_THRESHOLD = 0.25f;
 
-    private static final float MIN_CHANCE = 0.10f;
-    private static final float MAX_CHANCE = 0.85f;
+    private static final int EFFECT_ROLL_INTERVAL_TICKS = 20;
 
-    private static final int DEBUFF_BASE = 80;
-    private static final int DEBUFF_EXTRA = 240;
+    private static final int LEVEL_1_DURATION = 80;
+    private static final int LEVEL_2_DURATION = 140;
+    private static final int LEVEL_3_DURATION = 220;
 
-    private static final float DAMAGE_CHANCE_PER_TICK = 0.003f;
+    private static final float LEVEL_1_BASE_CHANCE = 0.20F;
+    private static final float LEVEL_2_BASE_CHANCE = 0.55F;
+    private static final float LEVEL_3_BASE_CHANCE = 0.85F;
+
+    private static final float LEVEL_2_DAMAGE_CHANCE = 0.08F;
+    private static final float LEVEL_3_DAMAGE_CHANCE = 0.16F;
 
     public CyberwareRejectionEffect(MobEffectCategory category, int color) {
         super(category, color);
@@ -49,32 +51,69 @@ public class CyberwareRejectionEffect extends MobEffect {
             return true;
         }
 
-        int currentHumanity = HumanityAttributeModifiers.get(player);
-        int maxHumanity = Math.max(1, ConfigValues.BASE_HUMANITY);
-
-        float percent = currentHumanity / (float) maxHumanity;
-        if (percent > DANGER_THRESHOLD) {
+        CyberpsychosisSeverity severity = CyberpsychosisSeverity.fromPlayer(player);
+        if (severity == CyberpsychosisSeverity.NONE) {
             return true;
         }
 
-        float progress = (DANGER_THRESHOLD - percent) / DANGER_THRESHOLD;
-        progress = Mth.clamp(progress, 0.0F, 1.0F);
+        if (player.tickCount % EFFECT_ROLL_INTERVAL_TICKS != 0) {
+            return true;
+        }
 
-        float chance = MIN_CHANCE + progress * (MAX_CHANCE - MIN_CHANCE);
-        int durationTicks = DEBUFF_BASE + Mth.floor(progress * DEBUFF_EXTRA);
-        int debuffAmp = progress >= 0.66F ? 2 : progress >= 0.33F ? 1 : 0;
-
-        maybeApply(player, MobEffects.WEAKNESS, chance, durationTicks, debuffAmp);
-        maybeApply(player, MobEffects.DIG_SLOWDOWN, chance * 0.90F, durationTicks, debuffAmp);
-        maybeApply(player, MobEffects.CONFUSION, chance * 0.80F, durationTicks, 0);
-
-        if (player.getRandom().nextFloat() < DAMAGE_CHANCE_PER_TICK) {
-            float base = (float) (1 << Math.min(30, amplifier));
-            float scaled = base * (0.25F + 0.75F * progress);
-            player.hurt(ModDamageSources.cyberwareRejection(player.level(), player, null), scaled);
+        switch (severity) {
+            case LEVEL_1 -> applyLevelOne(player);
+            case LEVEL_2 -> applyLevelTwo(player);
+            case LEVEL_3 -> applyLevelThree(player);
+            default -> {
+            }
         }
 
         return true;
+    }
+
+    private static void applyLevelOne(Player player) {
+        float progress = CyberpsychosisSeverity.getPositiveDangerProgress(player);
+        float chance = LEVEL_1_BASE_CHANCE + progress * 0.20F;
+
+        maybeApply(player, MobEffects.WEAKNESS, chance * 0.75F, LEVEL_1_DURATION, 0);
+        maybeApply(player, MobEffects.DIG_SLOWDOWN, chance * 0.60F, LEVEL_1_DURATION, 0);
+        maybeApply(player, MobEffects.CONFUSION, chance * 0.35F, LEVEL_1_DURATION, 0);
+    }
+
+    private static void applyLevelTwo(Player player) {
+        float progress = CyberpsychosisSeverity.getPositiveDangerProgress(player);
+        float chance = LEVEL_2_BASE_CHANCE + progress * 0.20F;
+
+        int duration = LEVEL_2_DURATION + Mth.floor(progress * 80.0F);
+        int amplifier = progress >= 0.75F ? 1 : 0;
+
+        maybeApply(player, MobEffects.WEAKNESS, chance, duration, amplifier);
+        maybeApply(player, MobEffects.DIG_SLOWDOWN, chance * 0.90F, duration, amplifier);
+        maybeApply(player, MobEffects.CONFUSION, chance * 0.85F, duration, 0);
+
+        if (player.getRandom().nextFloat() < LEVEL_2_DAMAGE_CHANCE) {
+            float damage = 0.5F + progress * 1.0F;
+            player.hurt(ModDamageSources.cyberwareRejection(player.level(), player, null), damage);
+        }
+    }
+
+    private static void applyLevelThree(Player player) {
+        float negativeProgress = CyberpsychosisSeverity.getNegativeProgress(player);
+        float chance = LEVEL_3_BASE_CHANCE + negativeProgress * 0.10F;
+
+        int duration = LEVEL_3_DURATION + Mth.floor(negativeProgress * 120.0F);
+        int amplifier = negativeProgress >= 0.66F ? 2 : negativeProgress >= 0.33F ? 1 : 0;
+
+        maybeApply(player, MobEffects.MOVEMENT_SPEED, 1, duration, 1);
+        maybeApply(player, MobEffects.DAMAGE_BOOST, chance, duration, amplifier);
+        maybeApply(player, MobEffects.DAMAGE_RESISTANCE, chance, duration, amplifier);
+        maybeApply(player, MobEffects.DIG_SLOWDOWN, chance, duration, amplifier);
+        maybeApply(player, MobEffects.CONFUSION, chance, duration, 0);
+
+        if (player.getRandom().nextFloat() < LEVEL_3_DAMAGE_CHANCE) {
+            float damage = 1.0F + negativeProgress * 2.0F;
+            player.hurt(ModDamageSources.cyberwareRejection(player.level(), player, null), damage);
+        }
     }
 
     private static void maybeApply(Player player, Holder<MobEffect> effect, float chance, int duration, int amplifier) {
@@ -87,7 +126,7 @@ public class CyberwareRejectionEffect extends MobEffect {
         }
 
         MobEffectInstance existing = player.getEffect(effect);
-        if (existing != null && existing.getDuration() > duration / 2) {
+        if (existing != null && existing.getDuration() > duration / 2 && existing.getAmplifier() >= amplifier) {
             return;
         }
 

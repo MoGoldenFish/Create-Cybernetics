@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_mantis_diamond": {
+      "conditions": {
+        "items": [
+          {
+            "items": "createcybernetics:armupgrades_mantisblade_diamond"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "createcybernetics:armupgrades_mantisblade_netherite"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_mantis_diamond"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "createcybernetics:armupgrades_mantisblade_netherite"
+    ]
+  }
+}

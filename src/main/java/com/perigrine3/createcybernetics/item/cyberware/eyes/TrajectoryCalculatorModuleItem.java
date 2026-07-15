@@ -58,16 +58,6 @@ public class TrajectoryCalculatorModuleItem extends Item implements ICyberwareIt
     }
 
     @Override
-    public int getEnergyUsedPerTick(LivingEntity entity, ItemStack installedStack, CyberwareSlot slot) {
-        return 2;
-    }
-
-    @Override
-    public boolean requiresEnergyToFunction(LivingEntity entity, ItemStack installedStack, CyberwareSlot slot) {
-        return true;
-    }
-
-    @Override
     public void onInstalled(LivingEntity entity) { }
 
     @Override

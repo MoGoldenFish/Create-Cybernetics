@@ -3,11 +3,13 @@ package com.perigrine3.createcybernetics.client.render;
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.item.ModItems;
 import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
@@ -22,7 +24,7 @@ public final class CyberwareLimbHider {
 
     private static final Map<Integer, VisibilitySnapshot> SNAPSHOTS = new HashMap<>();
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onRenderLivingPre(RenderLivingEvent.Pre<?, ?> event) {
         if (!(event.getEntity() instanceof AbstractClientPlayer player)) return;
         if (!(event.getRenderer() instanceof PlayerRenderer renderer)) return;
@@ -33,9 +35,9 @@ public final class CyberwareLimbHider {
         PlayerCyberwareData data = PlayerCyberwareData.getForVisual(player, player.registryAccess());
         if (data == null) return;
 
-        boolean hasLeftArm  = data.hasAnyTagged(ModTags.Items.LEFTARM_ITEMS,  CyberwareSlot.LARM);
-        boolean hasRightArm = data.hasAnyTagged(ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM);
-        boolean hasLeftLeg  = data.hasAnyTagged(ModTags.Items.LEFTLEG_ITEMS,  CyberwareSlot.LLEG);
+        boolean hasLeftArm = data.hasAnyTagged(ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM) || data.hasSpecificItem(ModItems.ARMUPGRADES_ARCCANNON.get(), CyberwareSlot.LARM);
+        boolean hasRightArm = data.hasAnyTagged(ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM) || data.hasSpecificItem(ModItems.ARMUPGRADES_ARCCANNON.get(), CyberwareSlot.RARM);
+        boolean hasLeftLeg = data.hasAnyTagged(ModTags.Items.LEFTLEG_ITEMS, CyberwareSlot.LLEG);
         boolean hasRightLeg = data.hasAnyTagged(ModTags.Items.RIGHTLEG_ITEMS, CyberwareSlot.RLEG);
 
         setLeftArmVisible(model, hasLeftArm);
@@ -48,7 +50,7 @@ public final class CyberwareLimbHider {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onRenderLivingPost(RenderLivingEvent.Post<?, ?> event) {
         if (!(event.getEntity() instanceof AbstractClientPlayer player)) return;
         if (!(event.getRenderer() instanceof PlayerRenderer renderer)) return;
@@ -58,6 +60,26 @@ public final class CyberwareLimbHider {
         if (snap == null) return;
 
         snap.restore(model);
+    }
+
+    public static boolean shouldRenderLeftArm(AbstractClientPlayer player) {
+        PlayerCyberwareData data = PlayerCyberwareData.getForVisual(player, player.registryAccess());
+        return data == null || data.hasAnyTagged(ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM) || data.hasSpecificItem(ModItems.ARMUPGRADES_ARCCANNON.get(), CyberwareSlot.LARM);
+    }
+
+    public static boolean shouldRenderRightArm(AbstractClientPlayer player) {
+        PlayerCyberwareData data = PlayerCyberwareData.getForVisual(player, player.registryAccess());
+        return data == null || data.hasAnyTagged(ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM) || data.hasSpecificItem(ModItems.ARMUPGRADES_ARCCANNON.get(), CyberwareSlot.RARM);
+    }
+
+    public static boolean shouldRenderLeftLeg(AbstractClientPlayer player) {
+        PlayerCyberwareData data = PlayerCyberwareData.getForVisual(player, player.registryAccess());
+        return data == null || data.hasAnyTagged(ModTags.Items.LEFTLEG_ITEMS, CyberwareSlot.LLEG);
+    }
+
+    public static boolean shouldRenderRightLeg(AbstractClientPlayer player) {
+        PlayerCyberwareData data = PlayerCyberwareData.getForVisual(player, player.registryAccess());
+        return data == null || data.hasAnyTagged(ModTags.Items.RIGHTLEG_ITEMS, CyberwareSlot.RLEG);
     }
 
     public static void setLeftArmVisible(PlayerModel<?> model, boolean visible) {

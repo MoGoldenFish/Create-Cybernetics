@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "createcybernetics:cyberzombie",
+    "createcybernetics:cyberskeleton",
+    "createcybernetics:smasher",
+    "createcybernetics:ripper",
+    "createcybernetics:hogboy",
+    "createcybernetics:punklin",
+    "createcybernetics:pigstrom"
+  ]
+}

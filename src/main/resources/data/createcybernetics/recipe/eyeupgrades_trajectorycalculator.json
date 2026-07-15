@@ -2,6 +2,7 @@
   "type": "createcybernetics:engineering_table",
   "accept_mirrored": true,
   "category": "misc",
+
   "key": {
     "F": {
       "item": "createcybernetics:component_fiberoptics"
@@ -34,6 +35,7 @@
     "PGBSP",
     " FGF "
   ],
+
   "result": {
     "count": 1,
     "id": "createcybernetics:eyeupgrades_trajectorycalculator"

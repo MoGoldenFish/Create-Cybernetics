@@ -31,6 +31,27 @@ public final class ConfigValues {
         ANY_PLAYER_AUTO_APPROVE
     }
 
+    /** Entity spawning. */
+    public static int CYBERZOMBIE_SPAWN_WEIGHT = 10;
+    public static int CYBERZOMBIE_MIN_GROUP = 1;
+    public static int CYBERZOMBIE_MAX_GROUP = 3;
+
+    public static int CYBERSKELETON_SPAWN_WEIGHT = 10;
+    public static int CYBERSKELETON_MIN_GROUP = 1;
+    public static int CYBERSKELETON_MAX_GROUP = 3;
+
+    public static int HOGBOY_SPAWN_WEIGHT = 5;
+    public static int HOGBOY_MIN_GROUP = 1;
+    public static int HOGBOY_MAX_GROUP = 4;
+
+    public static int PUNKLIN_SPAWN_WEIGHT = 10;
+    public static int PUNKLIN_MIN_GROUP = 3;
+    public static int PUNKLIN_MAX_GROUP = 7;
+
+    public static int PIGSTROM_SPAWN_WEIGHT = 14;
+    public static int PIGSTROM_MIN_GROUP = 4;
+    public static int PIGSTROM_MAX_GROUP = 8;
+
     /** Engineering Table deconstruction rolls for regular cyberware. */
     public static List<EngineeringRoll> ENGINEERING_DECONSTRUCT_ROLLS = new ArrayList<>();
 

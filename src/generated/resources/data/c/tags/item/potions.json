@@ -1,5 +1,6 @@
 {
   "values": [
-    "createcybernetics:neuropozyne_autoinjector"
+    "createcybernetics:neuropozyne_autoinjector",
+    "createcybernetics:potion_autoinjector"
   ]
 }

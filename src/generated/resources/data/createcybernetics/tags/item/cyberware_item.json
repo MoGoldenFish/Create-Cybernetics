@@ -24,6 +24,7 @@
     "createcybernetics:eyeupgrades_targeting",
     "createcybernetics:eyeupgrades_underwatervision",
     "createcybernetics:eyeupgrades_zoom",
+    "createcybernetics:eyeupgrades_trajectorycalculator",
     "createcybernetics:armupgrades_armcannon",
     "createcybernetics:armupgrades_flywheel",
     "createcybernetics:armupgrades_claws",
@@ -34,6 +35,12 @@
     "createcybernetics:armupgrades_reinforcedknuckles",
     "createcybernetics:armupgrades_ripperclaw",
     "createcybernetics:armupgrades_arccannon",
+    "createcybernetics:scavenged_mantisblade_titanium",
+    "createcybernetics:scavenged_mantisblade_iron",
+    "createcybernetics:scavenged_mantisblade_gold",
+    "createcybernetics:scavenged_mantisblade_copper",
+    "createcybernetics:scavenged_mantisblade_diamond",
+    "createcybernetics:scavenged_mantisblade_netherite",
     "createcybernetics:legupgrades_metaldetector",
     "createcybernetics:legupgrades_anklebracers",
     "createcybernetics:legupgrades_jumpboost",
@@ -43,6 +50,7 @@
     "createcybernetics:boneupgrades_bonebattery",
     "createcybernetics:boneupgrades_boneflex",
     "createcybernetics:boneupgrades_bonelacing",
+    "createcybernetics:eyeupgrades_trajectorycalculator",
     "createcybernetics:boneupgrades_piezo",
     "createcybernetics:boneupgrades_spinalinjector",
     "createcybernetics:boneupgrades_sandevistan",
@@ -65,6 +73,7 @@
     "createcybernetics:heartupgrades_platelets",
     "createcybernetics:lungsupgrades_hyperoxygenation",
     "createcybernetics:lungsupgrades_oxygen",
+    "createcybernetics:lungsupgrades_synthlungs",
     "createcybernetics:organsupgrades_adrenaline",
     "createcybernetics:organsupgrades_battery",
     "createcybernetics:organsupgrades_diamondwaferstack",
@@ -74,6 +83,7 @@
     "createcybernetics:organsupgrades_metabolic",
     "createcybernetics:organsupgrade_densebattery",
     "createcybernetics:organsupgrades_heatengine",
+    "createcybernetics:organsupgrades_oregrinder",
     "createcybernetics:skinupgrades_arterialturbine",
     "createcybernetics:skinupgrades_chromatophores",
     "createcybernetics:skinupgrades_synthskin",
@@ -118,6 +128,10 @@
     },
     {
       "id": "createcybernetics:organsupgrades_manabattery",
+      "required": false
+    },
+    {
+      "id": "createcybernetics:heartupgrades_anomaly",
       "required": false
     }
   ]

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -15,11 +16,11 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RenderArmEvent;
 
 @EventBusSubscriber(modid = CreateCybernetics.MODID, value = Dist.CLIENT)
@@ -46,23 +47,10 @@ public final class SkinHighlightRender {
         state.addHighlight(new SkinHighlight(wide, slim, color, emissive, tintOnEmissive));
     }
 
-    @EventBusSubscriber(modid = CreateCybernetics.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
-    public static final class Layers {
-        private Layers() {}
-
-        @SubscribeEvent
-        public static void addLayers(EntityRenderersEvent.AddLayers event) {
-            PlayerRenderer wide = event.getSkin(PlayerSkin.Model.WIDE);
-            if (wide != null) wide.addLayer(new SkinHighlightLayer(wide));
-
-            PlayerRenderer slim = event.getSkin(PlayerSkin.Model.SLIM);
-            if (slim != null) slim.addLayer(new SkinHighlightLayer(slim));
-        }
-    }
-
     @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
     public static void onRenderArm(RenderArmEvent event) {
         AbstractClientPlayer player = event.getPlayer();
+        if (player == null) return;
 
         SkinModifierState state = SkinModifierManager.getPlayerSkinState(player);
         if (state == null || !state.hasHighlights()) return;
@@ -76,12 +64,12 @@ public final class SkinHighlightRender {
         PlayerModel<AbstractClientPlayer> model = playerRenderer.getModel();
         PlayerSkin.Model modelType = player.getSkin().model();
 
-        ModelPart armPart = (arm == HumanoidArm.RIGHT) ? model.rightArm : model.leftArm;
-        ModelPart sleevePart = (arm == HumanoidArm.RIGHT) ? model.rightSleeve : model.leftSleeve;
+        ModelPart armPart = arm == HumanoidArm.RIGHT ? model.rightArm : model.leftArm;
+        ModelPart sleevePart = arm == HumanoidArm.RIGHT ? model.rightSleeve : model.leftSleeve;
 
-        boolean hideSleeve = (arm == HumanoidArm.RIGHT)
-                ? state.getHideMask().contains(SkinModifier.HideVanilla.RIGHT_SLEEVE)
-                : state.getHideMask().contains(SkinModifier.HideVanilla.LEFT_SLEEVE);
+        boolean sleeveEnabled = isSleeveEnabled(player, arm);
+        boolean hideSleeve = shouldHideSleeve(state, arm);
+        boolean renderSleeve = sleeveEnabled && !hideSleeve;
 
         var prevRightPose = model.rightArmPose;
         var prevLeftPose = model.leftArmPose;
@@ -103,13 +91,13 @@ public final class SkinHighlightRender {
             model.crouching = false;
             model.swimAmount = 0.0F;
 
-            model.rightArmPose = net.minecraft.client.model.HumanoidModel.ArmPose.EMPTY;
-            model.leftArmPose  = net.minecraft.client.model.HumanoidModel.ArmPose.EMPTY;
+            model.rightArmPose = HumanoidModel.ArmPose.EMPTY;
+            model.leftArmPose = HumanoidModel.ArmPose.EMPTY;
 
-            model.rightArm.visible = (arm == HumanoidArm.RIGHT);
-            model.rightSleeve.visible = (arm == HumanoidArm.RIGHT);
-            model.leftArm.visible = (arm == HumanoidArm.LEFT);
-            model.leftSleeve.visible = (arm == HumanoidArm.LEFT);
+            model.rightArm.visible = arm == HumanoidArm.RIGHT;
+            model.rightSleeve.visible = arm == HumanoidArm.RIGHT && renderSleeve;
+            model.leftArm.visible = arm == HumanoidArm.LEFT;
+            model.leftSleeve.visible = arm == HumanoidArm.LEFT && renderSleeve;
 
             model.setupAnim(player, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
 
@@ -121,17 +109,14 @@ public final class SkinHighlightRender {
 
                 ResourceLocation tex = highlight.getTexture(modelType);
 
-                final boolean emissive = highlight.isEmissive();
-                final boolean tintOnEmissive = highlight.tintOnEmissive();
-
                 RenderType rt;
                 int light;
                 int color;
 
-                if (emissive) {
+                if (highlight.isEmissive()) {
                     light = 0x00F000F0;
 
-                    if (tintOnEmissive) {
+                    if (highlight.tintOnEmissive()) {
                         rt = SkinRenderTypes.emissiveTinted(tex);
                         color = highlight.getColor();
                     } else {
@@ -146,11 +131,13 @@ public final class SkinHighlightRender {
 
                 var vc = buffer.getBuffer(rt);
                 armPart.render(poseStack, vc, light, OverlayTexture.NO_OVERLAY, color);
-                if (!hideSleeve) {
+
+                if (renderSleeve) {
                     sleevePart.render(poseStack, vc, light, OverlayTexture.NO_OVERLAY, color);
                 }
             }
         } finally {
+            RenderSystem.defaultBlendFunc();
             RenderSystem.disableBlend();
 
             model.rightArmPose = prevRightPose;
@@ -166,5 +153,17 @@ public final class SkinHighlightRender {
 
             poseStack.popPose();
         }
+    }
+
+    private static boolean isSleeveEnabled(AbstractClientPlayer player, HumanoidArm arm) {
+        return arm == HumanoidArm.RIGHT
+                ? SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.RIGHT_SLEEVE)
+                : SkinVanillaWearVisibility.isModelPartShownNow(player, PlayerModelPart.LEFT_SLEEVE);
+    }
+
+    private static boolean shouldHideSleeve(SkinModifierState state, HumanoidArm arm) {
+        return arm == HumanoidArm.RIGHT
+                ? state.getHideMask().contains(SkinModifier.HideVanilla.RIGHT_SLEEVE)
+                : state.getHideMask().contains(SkinModifier.HideVanilla.LEFT_SLEEVE);
     }
 }

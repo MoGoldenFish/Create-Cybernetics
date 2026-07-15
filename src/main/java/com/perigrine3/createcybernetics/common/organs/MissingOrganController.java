@@ -16,6 +16,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -50,8 +51,9 @@ public final class MissingOrganController {
     private static final ResourceLocation NO_MUSCLE_ATTACK = ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "missing_muscle_attack");
     private static final ResourceLocation NO_MUSCLE_JUMP = ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "missing_muscle_jump");
 
-
     private static final String DEFAULTS_PATCHED = "cc_defaults_patched";
+    private static final String FORCED_MAIN_ARM = "cc_forced_main_arm";
+    private static final String ORIGINAL_MAIN_ARM = "cc_original_main_arm";
 
 
     @SubscribeEvent
@@ -89,19 +91,6 @@ public final class MissingOrganController {
         boolean hasLegs = hasLeftLeg || hasRightLeg;
 
 
-        /* -------------------- SAFETY PATCH -------------------- */
-        if (!player.getPersistentData().getBoolean(DEFAULTS_PATCHED)) {
-            boolean hasBrainNow = hasAnyTagged(data, ModTags.Items.BRAIN_ITEMS, CyberwareSlot.BRAIN);
-            if (!hasBrainNow) {
-                data.resetToDefaultOrgans();
-                data.setDirty();
-                player.syncData(ModAttachments.CYBERWARE);
-
-            }
-            player.getPersistentData().putBoolean(DEFAULTS_PATCHED, true);
-        }
-
-
         /* -------------------- BRAIN -------------------- */
         if (!hasBrain) {
             player.hurt(ModDamageSources.brainDamage(player.level(), player, null), 500000);
@@ -121,24 +110,23 @@ public final class MissingOrganController {
 
         /* -------------------- LUNGS -------------------- */
         boolean hasGills = data.hasSpecificItem(ModItems.WETWARE_WATERBREATHINGLUNGS.get(), CyberwareSlot.LUNGS);
-        boolean underWater = player.isUnderWater();
         boolean inWater = player.isUnderWater() || player.isInWaterOrRain();
 
-// Cases:
-// 1) Normal lungs present -> let vanilla handle air entirely.
-//    This preserves Respiration, Water Breathing, and your oxygen tank refund logic.
-// 2) No lungs, but gills in water -> breathe in water.
-// 3) No lungs, but gills out of water -> suffocate.
-// 4) No lungs and no gills -> suffocate.
-// 5) Both lungs and gills -> breathe anywhere; do not touch vanilla air tracking.
+        // Cases:
+        // 1) Normal lungs only -> breathe air, vanilla underwater drowning applies.
+        // 2) Gills only in water -> breathe underwater.
+        // 3) Gills only out of water -> suffocate.
+        // 4) No lungs and no gills -> suffocate.
+        // 5) Normal lungs + gills -> breathe in air and underwater.
 
-        boolean breatheFreely = hasLungs || (hasGills && inWater);
-        boolean needsCustomSuffocation = !hasLungs && !(hasGills && inWater);
+        boolean canBreatheAir = hasLungs;
+        boolean canBreatheWater = hasGills && inWater;
+        boolean canBreatheBoth = canBreatheAir || canBreatheWater;
 
-        if (breatheFreely && !needsCustomSuffocation) {
+        if (canBreatheBoth) {
             player.getPersistentData().remove(NO_LUNGS_AIR);
 
-            if (!hasLungs && hasGills) {
+            if (canBreatheWater) {
                 player.setAirSupply(player.getMaxAirSupply());
             }
         } else {
@@ -216,7 +204,10 @@ public final class MissingOrganController {
         }
 
         /* -------------------- ARMS -------------------- */
-        if (!hasLeftArm) {
+        updateMainArmForMissingArms(player, hasLeftArm, hasRightArm);
+
+        if (!player.getAbilities().instabuild
+                && !handWorks(player, InteractionHand.OFF_HAND, hasLeftArm, hasRightArm)) {
             enforceOffhandEmpty(player);
         }
 
@@ -322,13 +313,7 @@ public final class MissingOrganController {
         boolean hasLeftArm = data.hasAnyTagged(ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM);
         boolean hasRightArm = data.hasAnyTagged(ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM);
 
-        net.minecraft.world.entity.HumanoidArm mainArm = player.getMainArm();
-
-        boolean mainHandWorks =
-                (mainArm == net.minecraft.world.entity.HumanoidArm.RIGHT && hasRightArm)
-                        || (mainArm == net.minecraft.world.entity.HumanoidArm.LEFT && hasLeftArm);
-
-        if (!mainHandWorks) {
+        if (!handWorks(player, InteractionHand.MAIN_HAND, hasLeftArm, hasRightArm)) {
             event.setCanceled(true);
         }
     }
@@ -363,13 +348,18 @@ public final class MissingOrganController {
 
     private static void enforceOffhandEmpty(Player player) {
         ItemStack off = player.getOffhandItem();
-        if (off.isEmpty()) return;
+        if (off.isEmpty()) {
+            return;
+        }
 
-        ItemStack removed = off.copy();
         player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
 
-        if (!player.getInventory().add(removed)) {
-            player.drop(removed, false);
+        if (!player.getAbilities().instabuild) {
+            ItemStack removed = off.copy();
+
+            if (!player.getInventory().add(removed)) {
+                player.drop(removed, false);
+            }
         }
 
         player.inventoryMenu.broadcastChanges();
@@ -389,13 +379,57 @@ public final class MissingOrganController {
         }
     }
 
-    private static boolean handWorks(Player player, net.minecraft.world.InteractionHand hand, boolean hasLeftArm, boolean hasRightArm) {
+    private static void updateMainArmForMissingArms(Player player, boolean hasLeftArm, boolean hasRightArm) {
+        CompoundTag pd = player.getPersistentData();
 
-        net.minecraft.world.entity.HumanoidArm mainArm = player.getMainArm();
+        if (pd.getBoolean(FORCED_MAIN_ARM)) {
+            HumanoidArm originalMainArm = pd.getBoolean(ORIGINAL_MAIN_ARM)
+                    ? HumanoidArm.LEFT
+                    : HumanoidArm.RIGHT;
+
+            boolean hasOriginalMainArm =
+                    (originalMainArm == HumanoidArm.LEFT && hasLeftArm)
+                            || (originalMainArm == HumanoidArm.RIGHT && hasRightArm);
+
+            if (hasOriginalMainArm) {
+                if (player.getMainArm() != originalMainArm) {
+                    player.setMainArm(originalMainArm);
+                }
+
+                pd.remove(FORCED_MAIN_ARM);
+                pd.remove(ORIGINAL_MAIN_ARM);
+                return;
+            }
+        }
+
+        HumanoidArm currentMainArm = player.getMainArm();
+
+        if (currentMainArm == HumanoidArm.RIGHT && !hasRightArm && hasLeftArm) {
+            if (!pd.getBoolean(FORCED_MAIN_ARM)) {
+                pd.putBoolean(FORCED_MAIN_ARM, true);
+                pd.putBoolean(ORIGINAL_MAIN_ARM, false);
+            }
+
+            player.setMainArm(HumanoidArm.LEFT);
+            return;
+        }
+
+        if (currentMainArm == HumanoidArm.LEFT && !hasLeftArm && hasRightArm) {
+            if (!pd.getBoolean(FORCED_MAIN_ARM)) {
+                pd.putBoolean(FORCED_MAIN_ARM, true);
+                pd.putBoolean(ORIGINAL_MAIN_ARM, true);
+            }
+
+            player.setMainArm(HumanoidArm.RIGHT);
+        }
+    }
+
+    private static boolean handWorks(Player player, InteractionHand hand, boolean hasLeftArm, boolean hasRightArm) {
+        HumanoidArm mainArm = player.getMainArm();
 
         boolean usingRightArm =
-                (hand == net.minecraft.world.InteractionHand.MAIN_HAND && mainArm == net.minecraft.world.entity.HumanoidArm.RIGHT)
-                        || (hand == net.minecraft.world.InteractionHand.OFF_HAND && mainArm == net.minecraft.world.entity.HumanoidArm.LEFT);
+                (hand == InteractionHand.MAIN_HAND && mainArm == HumanoidArm.RIGHT)
+                        || (hand == InteractionHand.OFF_HAND && mainArm == HumanoidArm.LEFT);
 
         return usingRightArm ? hasRightArm : hasLeftArm;
     }
@@ -418,6 +452,8 @@ public final class MissingOrganController {
 
         boolean hasLeftArm = data.hasAnyTagged(ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM);
         boolean hasRightArm = data.hasAnyTagged(ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM);
+
+        updateMainArmForMissingArms(player, hasLeftArm, hasRightArm);
 
         if (!handWorks(player, event.getHand(), hasLeftArm, hasRightArm)) {
             event.setCanceled(true);
@@ -442,6 +478,8 @@ public final class MissingOrganController {
 
         boolean hasLeftArm = data.hasAnyTagged(ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM);
         boolean hasRightArm = data.hasAnyTagged(ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM);
+
+        updateMainArmForMissingArms(player, hasLeftArm, hasRightArm);
 
         if (!handWorks(player, event.getHand(), hasLeftArm, hasRightArm)) {
             event.setCanceled(true);

@@ -10,6 +10,9 @@ import com.perigrine3.createcybernetics.api.InstalledCyberware;
 import com.perigrine3.createcybernetics.common.capabilities.EntityCyberwareData;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.common.damage.ModDamageSources;
+import com.perigrine3.createcybernetics.common.humanity.DataIntegrityHandler;
+import com.perigrine3.createcybernetics.item.generic.BiochipDataShardItem;
 import com.perigrine3.createcybernetics.network.payload.CerebralShutdownStatePayload;
 import com.perigrine3.createcybernetics.util.CyberwareAttributeHelper;
 import net.minecraft.ChatFormatting;
@@ -74,9 +77,35 @@ public class CerebralProcessingUnitItem extends Item implements ICyberwareItem {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        if (hasEngramData(stack)) {
+            String ownerName = getEngramOwnerName(stack);
+            String ownerUuid = getEngramUuid(stack);
+
+            if (!ownerName.isBlank()) {
+                tooltip.add(
+                        Component.literal(ownerName + ".dhf")
+                                .withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD)
+                );
+            }
+
+            tooltip.add(
+                    Component.literal(ownerUuid)
+                            .withStyle(ChatFormatting.DARK_GRAY)
+            );
+        } else {
+            tooltip.add(
+                    Component.translatable("tooltip.createcybernetics.brainupgrades_cyberbrain.unbound")
+                            .withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+            );
+        }
+
         if (Screen.hasShiftDown()) {
-            tooltip.add(Component.translatable("tooltip.createcybernetics.humanity", humanityCost)
-                    .withStyle(ChatFormatting.GOLD));
+            tooltip.add(Component.translatable("tooltip.createcybernetics.brainupgrades_cyberbrain.data_integrity")
+                    .withStyle(ChatFormatting.YELLOW));
+
+            tooltip.add(Component.translatable("tooltip.createcybernetics.brainupgrades_cyberbrain.boot_down")
+                    .withStyle(ChatFormatting.YELLOW));
+
             tooltip.add(Component.translatable("tooltip.createcybernetics.brainupgrades_cyberbrain.energy")
                     .withStyle(ChatFormatting.RED));
         }
@@ -111,6 +140,10 @@ public class CerebralProcessingUnitItem extends Item implements ICyberwareItem {
     public void onInstalled(LivingEntity entity) {
         CyberwareAttributeHelper.applyModifier(entity, "cyberbrain_learn");
         CyberwareAttributeHelper.applyModifier(entity, "cyberbrain_insomnia");
+
+        if (entity instanceof Player player && !player.level().isClientSide) {
+            DataIntegrityHandler.restoreIntegrity(player);
+        }
     }
 
     @Override
@@ -121,6 +154,21 @@ public class CerebralProcessingUnitItem extends Item implements ICyberwareItem {
 
     @Override
     public void onTick(LivingEntity entity, ItemStack installedStack, CyberwareSlot slot, int index) {
+        if (entity.level().isClientSide) {
+            return;
+        }
+
+        if (!(entity instanceof ServerPlayer player)) {
+            return;
+        }
+
+        if (slot != CyberwareSlot.BRAIN) {
+            return;
+        }
+
+        if (!isBoundToPlayerName(installedStack, player)) {
+            player.hurt(ModDamageSources.brainDamage(player.level(), player, null), 500000.0F);
+        }
     }
 
     @Override
@@ -185,6 +233,11 @@ public class CerebralProcessingUnitItem extends Item implements ICyberwareItem {
             if (data == null) {
                 clearShutdownState(sp);
                 PacketDistributor.sendToPlayer(sp, new CerebralShutdownStatePayload(false));
+                return;
+            }
+
+            if (hasMismatchedInstalledCyberbrain(data, sp)) {
+                sp.hurt(ModDamageSources.brainDamage(sp.level(), sp, null), 500000.0F);
                 return;
             }
 
@@ -421,5 +474,114 @@ public class CerebralProcessingUnitItem extends Item implements ICyberwareItem {
         pt.remove(NBT_AZ);
         pt.remove(NBT_AYAW);
         pt.remove(NBT_APITCH);
+    }
+
+    public static boolean hasCompletedBiochipBinding(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return false;
+        }
+
+        if (!(stack.getItem() instanceof CerebralProcessingUnitItem)) {
+            return false;
+        }
+
+        CompoundTag tag = BiochipDataShardItem.getTagOrNull(stack);
+        if (tag == null) {
+            return false;
+        }
+
+        if (!tag.getBoolean(BiochipDataShardItem.TAG_DONE)) {
+            return false;
+        }
+
+        String ownerName = tag.getString(BiochipDataShardItem.TAG_OWNER_NAME);
+        String ownerUuid = tag.getString(BiochipDataShardItem.TAG_OWNER_UUID);
+
+        return !ownerName.isBlank() && !ownerUuid.isBlank();
+    }
+
+    public static String getBoundOwnerName(ItemStack stack) {
+        CompoundTag tag = BiochipDataShardItem.getTagOrNull(stack);
+        if (tag == null) {
+            return "";
+        }
+
+        return tag.getString(BiochipDataShardItem.TAG_OWNER_NAME);
+    }
+
+    public static boolean isBoundToPlayerName(ItemStack stack, ServerPlayer player) {
+        if (!hasCompletedBiochipBinding(stack) || player == null) {
+            return false;
+        }
+
+        String brainOwnerName = getBoundOwnerName(stack);
+        String playerName = player.getGameProfile().getName();
+
+        return !brainOwnerName.isBlank()
+                && !playerName.isBlank()
+                && brainOwnerName.equals(playerName);
+    }
+
+    private static boolean hasMismatchedInstalledCyberbrain(PlayerCyberwareData data, ServerPlayer player) {
+        if (data == null) {
+            return false;
+        }
+
+        InstalledCyberware[] brains = data.getAll().get(CyberwareSlot.BRAIN);
+        if (brains == null) {
+            return false;
+        }
+
+        for (InstalledCyberware installed : brains) {
+            if (installed == null) {
+                continue;
+            }
+
+            ItemStack stack = installed.getItem();
+            if (stack == null || stack.isEmpty()) {
+                continue;
+            }
+
+            if (!(stack.getItem() instanceof CerebralProcessingUnitItem)) {
+                continue;
+            }
+
+            if (!isBoundToPlayerName(stack, player)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean hasEngramData(ItemStack stack) {
+        CompoundTag tag = BiochipDataShardItem.getTagOrNull(stack);
+
+        if (tag == null) {
+            return false;
+        }
+
+        return tag.getBoolean(BiochipDataShardItem.TAG_DONE)
+                && !tag.getString(BiochipDataShardItem.TAG_OWNER_UUID).isBlank();
+    }
+
+    public static String getEngramUuid(ItemStack stack) {
+        CompoundTag tag = BiochipDataShardItem.getTagOrNull(stack);
+
+        if (tag == null) {
+            return "";
+        }
+
+        return tag.getString(BiochipDataShardItem.TAG_OWNER_UUID);
+    }
+
+    public static String getEngramOwnerName(ItemStack stack) {
+        CompoundTag tag = BiochipDataShardItem.getTagOrNull(stack);
+
+        if (tag == null) {
+            return "";
+        }
+
+        return tag.getString(BiochipDataShardItem.TAG_OWNER_NAME);
     }
 }

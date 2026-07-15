@@ -4,6 +4,9 @@ import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.block.ModBlocks;
 import com.perigrine3.createcybernetics.client.ModKeyMappings;
+import com.perigrine3.createcybernetics.compat.ModCompats;
+import com.perigrine3.createcybernetics.compat.ironsspells.IronsSpellbooksCompat;
+import com.perigrine3.createcybernetics.compat.ironsspells.IronsSpellbooksStaffItems;
 import com.perigrine3.createcybernetics.entity.ModEntities;
 import com.perigrine3.createcybernetics.item.cyberware.*;
 import com.perigrine3.createcybernetics.item.cyberware.arm.*;
@@ -14,22 +17,26 @@ import com.perigrine3.createcybernetics.item.cyberware.heart.*;
 import com.perigrine3.createcybernetics.item.cyberware.leg.*;
 import com.perigrine3.createcybernetics.item.cyberware.lungs.HyperoxygenationBoostItem;
 import com.perigrine3.createcybernetics.item.cyberware.lungs.OxygenTankItem;
+import com.perigrine3.createcybernetics.item.cyberware.lungs.SynthLungsItem;
 import com.perigrine3.createcybernetics.item.cyberware.muscle.SynthMuscleItem;
 import com.perigrine3.createcybernetics.item.cyberware.muscle.WiredReflexesItem;
 import com.perigrine3.createcybernetics.item.cyberware.organs.*;
 import com.perigrine3.createcybernetics.item.cyberware.skin.*;
 import com.perigrine3.createcybernetics.item.cyberware.upgrade_items.*;
 import com.perigrine3.createcybernetics.item.cyberware.wetware.*;
+import com.perigrine3.createcybernetics.item.food.BrainStewItem;
 import com.perigrine3.createcybernetics.item.generic.*;
 import com.perigrine3.createcybernetics.item.organs.*;
 import com.perigrine3.createcybernetics.item.sculked.*;
 import com.perigrine3.createcybernetics.sound.ModSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.DyedItemColor;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
@@ -93,7 +100,7 @@ public class ModItems {
             () -> new ItemNameBlockItem(ModBlocks.DATURA_BUSH.get(), new Item.Properties()));
 
     public static final DeferredItem<Item> EXOSUIT1 = ITEMS.register("exosuit1",
-            () -> new ExosuitArmor(new Item.Properties()){
+            () -> new ExosuitMK1(new Item.Properties()){
                 @Override
                 public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
                     if (Screen.hasShiftDown()) {
@@ -190,6 +197,8 @@ public class ModItems {
             () -> new Item(new Item.Properties().stacksTo(64)));
     public static final DeferredItem<Item> INCOMPLETE_EMPTY_AUTOINJECTOR = ITEMS.register("incomplete_empty_autoinjector",
             () -> new Item(new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> DYNAMIC_POTION_AUTOINJECTOR = ITEMS.register("potion_autoinjector",
+            () -> new DynamicPotionAutoinjectorItem(new Item.Properties().stacksTo(16)));
 
     public static final DeferredItem<Item> MUSIC_DISC_CYBERPSYCHO = ITEMS.register("music_disc_cyberpsycho",
             () -> new Item(new Item.Properties().stacksTo(1).jukeboxPlayable(ModSounds.CYBERPSYCHO_KEY)));
@@ -338,6 +347,655 @@ public class ModItems {
                 }});
 
 
+//TUTORIAL SHARDS
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_GETTING_STARTED = ITEMS.register("data_shard_infolog_getting_started",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x00FF66, false)),
+
+                    "item.createcybernetics.data_shard_infolog_getting_started.title",
+                    "item.createcybernetics.data_shard_infolog_getting_started.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_ROBOSURGEON_MANUAL = ITEMS.register("data_shard_infolog_robosurgeon_manual",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x00a5cf, false)),
+
+                    "item.createcybernetics.data_shard_infolog_robosurgeon_manual.title",
+                    "item.createcybernetics.data_shard_infolog_robosurgeon_manual.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_FBC_GUIDE = ITEMS.register("data_shard_infolog_fbc_guide",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x720078, false)),
+
+                    "item.createcybernetics.data_shard_infolog_fbc_guide.title",
+                    true,
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.text"),
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.linebreak"),
+
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.gemini"),
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.linebreak"),
+
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.samson"),
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.linebreak"),
+
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.eclipse"),
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.linebreak"),
+
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.spyder"),
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.linebreak"),
+
+                    InfologGuideSection.whenModLoaded("caelus","item.createcybernetics.data_shard_infolog_fbc_guide.wingman"),
+                    InfologGuideSection.whenModLoaded("caelus","item.createcybernetics.data_shard_infolog_fbc_guide.linebreak"),
+
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.aquarius"),
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.linebreak"),
+
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.dymond"),
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.linebreak"),
+
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.dragoon"),
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.linebreak"),
+
+                    InfologGuideSection.whenModLoaded("creatingspace","item.createcybernetics.data_shard_infolog_fbc_guide.copernicus"),
+                    InfologGuideSection.whenModLoaded("creatingspace","item.createcybernetics.data_shard_infolog_fbc_guide.linebreak"),
+                    InfologGuideSection.whenModLoaded("northstar-redux","item.createcybernetics.data_shard_infolog_fbc_guide.copernicus"),
+                    InfologGuideSection.whenModLoaded("northstar-redux","item.createcybernetics.data_shard_infolog_fbc_guide.linebreak"),
+
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.genos"),
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.linebreak"),
+
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.kildare"),
+                    InfologGuideSection.always("item.createcybernetics.data_shard_infolog_fbc_guide.linebreak"),
+
+                    InfologGuideSection.whenModLoaded("irons_spellbooks", "item.createcybernetics.data_shard_infolog_fbc_guide.hexborg"),
+                    InfologGuideSection.whenModLoaded("irons_spellbooks", "item.createcybernetics.data_shard_infolog_fbc_guide.linebreak")
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_CYBERBESTIARY = ITEMS.register("data_shard_infolog_cyberbestiary",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0xff1100, false)),
+
+                    "item.createcybernetics.data_shard_infolog_cyberbestiary.title",
+                    "item.createcybernetics.data_shard_infolog_cyberbestiary.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_SURGERY_TABLE_MANUAL = ITEMS.register("data_shard_infolog_surgery_table_manual",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x00a5cf, false)),
+
+                    "item.createcybernetics.data_shard_infolog_surgery_table_manual.title",
+                    "item.createcybernetics.data_shard_infolog_surgery_table_manual.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_CYBERCHEMS = registerIfLoaded("cyberchems", "data_shard_infolog_cyberchems",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0xb7fa00, false)),
+
+                    "item.createcybernetics.data_shard_infolog_cyberchems.title",
+                    "item.createcybernetics.data_shard_infolog_cyberchems.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_CYBERDECK = ITEMS.register("data_shard_infolog_cyberdeck",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x00ffee, false)),
+
+                    "item.createcybernetics.data_shard_infolog_cyberdeck.title",
+                    "item.createcybernetics.data_shard_infolog_cyberdeck.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_HARVESTER_ENCHANTMENT = ITEMS.register("data_shard_infolog_harvester_enchantment",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x00ffee, false)),
+
+                    "item.createcybernetics.data_shard_infolog_harvester_enchantment.title",
+                    "item.createcybernetics.data_shard_infolog_harvester_enchantment.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+
+
+
+
+
+
+
+
+// LORE SHARDS
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_SUNSET_SHIFT = ITEMS.register("data_shard_infolog_sunset_shift",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_sunset_shift.title",
+                    "item.createcybernetics.data_shard_infolog_sunset_shift.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_HOUSE_RULES = ITEMS.register("data_shard_infolog_house_rules",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_house_rules.title",
+                    "item.createcybernetics.data_shard_infolog_house_rules.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_DENSE_BATTERY_AD = ITEMS.register("data_shard_infolog_dense_battery_ad",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_dense_battery_ad.title",
+                    "item.createcybernetics.data_shard_infolog_dense_battery_ad.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_IMMUNOSUPPRESSOR_ADVISORY = ITEMS.register("data_shard_infolog_immunosuppressor_advisory",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_immunosuppressor_advisory.title",
+                    "item.createcybernetics.data_shard_infolog_immunosuppressor_advisory.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_CHROMATOPHORE_FIELD_NOTE = ITEMS.register("data_shard_infolog_chromatophore_field_note",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_chromatophore_field_note.title",
+                    "item.createcybernetics.data_shard_infolog_chromatophore_field_note.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_THE_RAISE = ITEMS.register("data_shard_infolog_the_raise",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_the_raise.title",
+                    "item.createcybernetics.data_shard_infolog_the_raise.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_OMNISCIENT_OPTICS_AD = ITEMS.register("data_shard_infolog_omniscient_optics_ad",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_omniscient_optics_ad.title",
+                    "item.createcybernetics.data_shard_infolog_omniscient_optics_ad.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_PRIVATE_WARD_REPORT = ITEMS.register("data_shard_infolog_private_ward_report",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_private_ward_report.title",
+                    "item.createcybernetics.data_shard_infolog_private_ward_report.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_DRILLFIST_AD = ITEMS.register("data_shard_infolog_drillfist_ad",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_drillfist_ad.title",
+                    "item.createcybernetics.data_shard_infolog_drillfist_ad.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_IDEM_ARTICLE = ITEMS.register("data_shard_infolog_idem_article",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_idem_article.title",
+                    "item.createcybernetics.data_shard_infolog_idem_article.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_MOM_IM_FINE = ITEMS.register("data_shard_infolog_mom_im_fine",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_mom_im_fine.title",
+                    "item.createcybernetics.data_shard_infolog_mom_im_fine.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_CYBERDECK_SECURITY_BRIEF = ITEMS.register("data_shard_infolog_cyberdeck_security_brief",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_cyberdeck_security_brief.title",
+                    "item.createcybernetics.data_shard_infolog_cyberdeck_security_brief.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_LUNCH_BREAK = ITEMS.register("data_shard_infolog_lunch_break",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_lunch_break.title",
+                    "item.createcybernetics.data_shard_infolog_lunch_break.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_DATURA = ITEMS.register("data_shard_infolog_datura",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_datura.title",
+                    "item.createcybernetics.data_shard_infolog_datura.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_WAIT_YOUR_TURN = ITEMS.register("data_shard_infolog_wait_your_turn",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_wait_your_turn.title",
+                    "item.createcybernetics.data_shard_infolog_wait_your_turn.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_THE_BREACH = ITEMS.register("data_shard_infolog_the_breach",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_the_breach.title",
+                    "item.createcybernetics.data_shard_infolog_the_breach.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_AI_CHAT = ITEMS.register("data_shard_infolog_ai_chat",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_ai_chat.title",
+                    "item.createcybernetics.data_shard_infolog_ai_chat.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_CYBERPSYCHO_TRANSCRIPT = ITEMS.register("data_shard_infolog_cyberpsycho_transcript",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_cyberpsycho_transcript.title",
+                    "item.createcybernetics.data_shard_infolog_cyberpsycho_transcript.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+    public static final DeferredItem<Item> DATA_SHARD_INFOLOG_CPU_INSTALL = ITEMS.register("data_shard_infolog_cpu_install",
+            () -> new InfologDataShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0x303030, false)),
+
+                    "item.createcybernetics.data_shard_infolog_cpu_install.title",
+                    "item.createcybernetics.data_shard_infolog_cpu_install.text",
+
+                    true
+            ) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc"));
+
+                    Component key = com.perigrine3.createcybernetics.client.ModKeyMappings.INFOLOG.get().getTranslatedKeyMessage();
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_infolog.desc2", key));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            }
+    );
+
+
+
+
+
+
+
+
+//GAME SHARDS
+    public static final DeferredItem<Item> DATA_SHARD_GAME_MINESWEEPER = ITEMS.register("data_shard_game_minesweeper",
+            () -> new GameShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0xC77DFF, false)), "minesweeper",
+                    "gui.createcybernetics.computer.game.minesweeper") {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_game_minesweeper.desc").withStyle(ChatFormatting.GRAY));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            });
+
+    public static final DeferredItem<Item> DATA_SHARD_GAME_CHESS = ITEMS.register("data_shard_game_chess",
+            () -> new GameShardItem(new Item.Properties().stacksTo(1).component(DataComponents.DYED_COLOR,
+                    new DyedItemColor(0xC77DFF, false)), "chess",
+                    "gui.createcybernetics.computer.game.chess") {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("item.createcybernetics.data_shard_game_chess.desc").withStyle(ChatFormatting.GRAY));
+
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            });
+
+
+
 
 
     public static final DeferredItem<Item> COOKED_BRAIN = ITEMS.register("cooked_brain",
@@ -355,7 +1013,7 @@ public class ModItems {
     public static final DeferredItem<Item> GROUND_OFFAL = registerIfLoaded("farmersdelight", "ground_offal",
             () -> new Item(new Item.Properties().stacksTo(64).food(ModFoods.GROUND_OFFAL)));
     public static final DeferredItem<Item> BRAIN_STEW = registerIfLoaded("farmersdelight", "brain_stew",
-            () -> new Item(new Item.Properties().stacksTo(64).food(ModFoods.BRAIN_STEW)));
+            () -> new BrainStewItem(new Item.Properties().stacksTo(64).food(ModFoods.BRAIN_STEW)));
 
 
 
@@ -1091,6 +1749,21 @@ public class ModItems {
                 super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
             }
         });
+    public static final DeferredItem<Item> EYEUPGRADES_BIOMONITOR = ITEMS.register("eyeupgrades_biomonitor",
+        () -> new BiomonitorModuleItem(new Item.Properties().stacksTo(16), 3) {
+            @Override
+            public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                if (Screen.hasShiftDown()) {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.eyeupgrades_tooltip"));
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.eyeupgrades_biomonitor.tooltip1"));
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.eyeupgrades_biomonitor.tooltip2"));
+                } else {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.eyeupgrades_tooltip"));
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.hold_shift_down"));
+                }
+                super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+            }
+        });
 
 //ARM UPGRADES
     public static final DeferredItem<Item> ARMUPGRADES_ARMCANNON = ITEMS.register("armupgrades_armcannon",
@@ -1100,6 +1773,7 @@ public class ModItems {
                 if (Screen.hasShiftDown()) {
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.armupgrades_tooltip"));
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.armupgrades_armcannon.tooltip1"));
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.armupgrades_armcannon.tooltip2"));
 
                     Component key = ModKeyMappings.ARM_CANNON.get().getTranslatedKeyMessage();
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.armupgrades_armcannon.desc", key));
@@ -1157,7 +1831,7 @@ public class ModItems {
             }
         });
     public static final DeferredItem<Item> ARMUPGRADES_DRILLFIST = ITEMS.register("armupgrades_drillfist",
-        () -> new ArmUpgradeItem(new Item.Properties().stacksTo(16), 7) {
+        () -> new DrillFistItem(new Item.Properties().stacksTo(16), 7) {
             @Override
             public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
                 if (Screen.hasShiftDown()) {
@@ -1237,6 +1911,7 @@ public class ModItems {
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.armupgrades_tooltip"));
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.armupgrades_arccannon.tooltip1"));
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.armupgrades_arccannon.tooltip2"));
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.armupgrades_arccannon.tooltip3"));
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.armupgrades_arccannon.energy"));
                 } else {
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.armupgrades_tooltip"));
@@ -1245,6 +1920,18 @@ public class ModItems {
                 super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
             }
         });
+    public static final DeferredItem<Item> ARMUPGRADES_MANTISBLADE_IRON = ITEMS.register("armupgrades_mantisblade_iron",
+            () -> new MantisBladeItem(new Item.Properties().stacksTo(16), MantisBladeItem.Variant.IRON, 15));
+    public static final DeferredItem<Item> ARMUPGRADES_MANTISBLADE_COPPER = ITEMS.register("armupgrades_mantisblade_copper",
+            () -> new MantisBladeItem(new Item.Properties().stacksTo(16), MantisBladeItem.Variant.COPPER, 15));
+    public static final DeferredItem<Item> ARMUPGRADES_MANTISBLADE_TITANIUM = ITEMS.register("armupgrades_mantisblade_titanium",
+            () -> new MantisBladeItem(new Item.Properties().stacksTo(16), MantisBladeItem.Variant.TITANIUM, 15));
+    public static final DeferredItem<Item> ARMUPGRADES_MANTISBLADE_GOLD = ITEMS.register("armupgrades_mantisblade_gold",
+            () -> new MantisBladeItem(new Item.Properties().stacksTo(16), MantisBladeItem.Variant.GOLD, 15));
+    public static final DeferredItem<Item> ARMUPGRADES_MANTISBLADE_DIAMOND = ITEMS.register("armupgrades_mantisblade_diamond",
+            () -> new MantisBladeItem(new Item.Properties().stacksTo(16), MantisBladeItem.Variant.DIAMOND, 15));
+    public static final DeferredItem<Item> ARMUPGRADES_MANTISBLADE_NETHERITE = ITEMS.register("armupgrades_mantisblade_netherite",
+            () -> new MantisBladeItem(new Item.Properties().stacksTo(16), MantisBladeItem.Variant.NETHERITE, 15));
 
 //LEG UPGRADES
     public static final DeferredItem<Item> LEGUPGRADES_METALDETECTOR = ITEMS.register("legupgrades_metaldetector",
@@ -1453,6 +2140,8 @@ public class ModItems {
                 if (Screen.hasShiftDown()) {
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.boneupgrades_tooltip"));
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.boneupgrades_sandevistan.tooltip1"));
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.boneupgrades_sandevistan.tooltip2"));
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.boneupgrades_sandevistan.tooltip3"));
                 } else {
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.boneupgrades_tooltip"));
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.hold_shift_down"));
@@ -1763,6 +2452,20 @@ public class ModItems {
                 super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
             }
         });
+    public static final DeferredItem<Item> HEARTUPGRADES_ANOMALY = registerIfLoaded("irons_spellbooks", "heartupgrades_anomaly",
+        () -> new ArcaneAnomalyItem(new Item.Properties().stacksTo(1), 15) {
+            @Override
+            public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                if (Screen.hasShiftDown()) {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.heartupgrades_tooltip"));
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.heartupgrades_anomaly.tooltip1"));
+                } else {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.heartupgrades_tooltip"));
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.hold_shift_down"));
+                }
+                super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+            }
+        });
 
 //LUNG UPGRADES
     public static final DeferredItem<Item> LUNGSUPGRADES_HYPEROXYGENATION = ITEMS.register("lungsupgrades_hyperoxygenation",
@@ -1790,6 +2493,25 @@ public class ModItems {
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.lungsupgrades_oxygen.tooltip1"));
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.lungsupgrades_oxygen.tooltip2"));
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.lungsupgrades_oxygen.tooltip3"));
+                } else {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.lungsupgrades_tooltip"));
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.hold_shift_down"));
+                }
+                super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+            }
+        });
+    public static final DeferredItem<Item> LUNGSUPGRADES_SYNTHLUNGS = ITEMS.register("lungsupgrades_synthlungs",
+        () -> new SynthLungsItem(new Item.Properties().stacksTo(16), 5) {
+            @Override
+            public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                if (Screen.hasShiftDown()) {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.lungsupgrades_tooltip"));
+                    if(ModCompats.isInstalled("parcool")) {
+                        tooltipComponents.add(Component.translatable("tooltip.createcybernetics.lungsupgrades_synthlungs.tooltip1_parcool"));
+                    } else {
+                        tooltipComponents.add(Component.translatable("tooltip.createcybernetics.lungsupgrades_synthlungs.tooltip1"));
+                    }
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.lungsupgrades_synthlungs.tooltip2"));
                 } else {
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.lungsupgrades_tooltip"));
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.hold_shift_down"));
@@ -1848,10 +2570,10 @@ public class ModItems {
             @Override
             public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
                 if (Screen.hasShiftDown()) {
-                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.heartupgrades_tooltip"));
+                    Component.translatable("tooltip.createcybernetics.heartupgrades_tooltip").append(Component.literal(" & ")).append(Component.translatable("tooltip.createcybernetics.organsupgrades_tooltip"));
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.organsupgrades_dualisticconverter.tooltip1"));
                 } else {
-                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.heartupgrades_tooltip"));
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.heartupgrades_tooltip" + " & " + "tooltip.createcybernetics.organsupgrades_tooltip"));
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.hold_shift_down"));
                 }
                 super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
@@ -1876,10 +2598,10 @@ public class ModItems {
             @Override
             public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
                 if (Screen.hasShiftDown()) {
-                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.heartupgrades_tooltip"));
-                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.organsupgrades_magiccatalyst.tooltip1"));
+                    Component.translatable("tooltip.createcybernetics.heartupgrades_tooltip").append(Component.literal(" & ")).append(Component.translatable("tooltip.createcybernetics.organsupgrades_tooltip"));
+                tooltipComponents.add(Component.translatable("tooltip.createcybernetics.organsupgrades_magiccatalyst.tooltip1"));
                 } else {
-                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.heartupgrades_tooltip"));
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.heartupgrades_tooltip" + " & " + "tooltip.createcybernetics.organsupgrades_tooltip"));
                     tooltipComponents.add(Component.translatable("tooltip.createcybernetics.hold_shift_down"));
                 }
                 super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
@@ -1946,8 +2668,26 @@ public class ModItems {
                 super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
             }
         });
+    public static final DeferredItem<Item> ORGANSUPGRADES_OREGRINDER = ITEMS.register("organsupgrades_oregrinder",
+        () -> new OregrinderItem(new Item.Properties().stacksTo(16), 10) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    if (Screen.hasShiftDown()) {
+                        tooltipComponents.add(Component.translatable("tooltip.createcybernetics.organsupgrades_tooltip"));
+                        tooltipComponents.add(Component.translatable("tooltip.createcybernetics.organsupgrades_oregrinder.tooltip1"));
+                        tooltipComponents.add(Component.translatable("tooltip.createcybernetics.organsupgrades_oregrinder.tooltip2"));
+                        tooltipComponents.add(Component.translatable("tooltip.createcybernetics.organsupgrades_oregrinder.tooltip3"));
 
-//SKIN UPGRADES
+                    } else {
+                        tooltipComponents.add(Component.translatable("tooltip.createcybernetics.organsupgrades_tooltip"));
+                        tooltipComponents.add(Component.translatable("tooltip.createcybernetics.hold_shift_down"));
+                    }
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            });
+
+
+    //SKIN UPGRADES
     public static final DeferredItem<Item> SKINUPGRADES_ARTERIALTURBINE = ITEMS.register("skinupgrades_arterialturbine",
         () -> new ArterialTurbineItem(new Item.Properties().stacksTo(16), 3) {
             @Override
@@ -2588,6 +3328,14 @@ public class ModItems {
                     super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
                 }
             });
+    public static final DeferredItem<Item> SCAVENGED_BIOMONITOR = ITEMS.register("scavenged_biomonitor",
+            () -> new Item(new Item.Properties().stacksTo(64)) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.scavenged_tooltip"));
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            });
     public static final DeferredItem<Item> SCAVENGED_ARMCANNON = ITEMS.register("scavenged_armcannon",
             () -> new Item(new Item.Properties().stacksTo(64)) {
                 @Override
@@ -2653,6 +3401,54 @@ public class ModItems {
                 }
             });
     public static final DeferredItem<Item> SCAVENGED_ARCCANNON = ITEMS.register("scavenged_arccannon",
+            () -> new Item(new Item.Properties().stacksTo(64)) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.scavenged_tooltip"));
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            });
+    public static final DeferredItem<Item> SCAVENGED_MANTISBLADE_TITANIUM = ITEMS.register("scavenged_mantisblade_titanium",
+            () -> new Item(new Item.Properties().stacksTo(64)) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.scavenged_tooltip"));
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            });
+    public static final DeferredItem<Item> SCAVENGED_MANTISBLADE_IRON = ITEMS.register("scavenged_mantisblade_iron",
+            () -> new Item(new Item.Properties().stacksTo(64)) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.scavenged_tooltip"));
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            });
+    public static final DeferredItem<Item> SCAVENGED_MANTISBLADE_COPPER = ITEMS.register("scavenged_mantisblade_copper",
+            () -> new Item(new Item.Properties().stacksTo(64)) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.scavenged_tooltip"));
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            });
+    public static final DeferredItem<Item> SCAVENGED_MANTISBLADE_GOLD = ITEMS.register("scavenged_mantisblade_gold",
+            () -> new Item(new Item.Properties().stacksTo(64)) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.scavenged_tooltip"));
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            });
+    public static final DeferredItem<Item> SCAVENGED_MANTISBLADE_DIAMOND = ITEMS.register("scavenged_mantisblade_diamond",
+            () -> new Item(new Item.Properties().stacksTo(64)) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.scavenged_tooltip"));
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            });
+    public static final DeferredItem<Item> SCAVENGED_MANTISBLADE_NETHERITE = ITEMS.register("scavenged_mantisblade_netherite",
             () -> new Item(new Item.Properties().stacksTo(64)) {
                 @Override
                 public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
@@ -2932,6 +3728,14 @@ public class ModItems {
                     super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
                 }
             });
+    public static final DeferredItem<Item> SCAVENGED_SYNTHLUNGS = ITEMS.register("scavenged_synthlungs",
+            () -> new Item(new Item.Properties().stacksTo(64)) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.scavenged_tooltip"));
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            });
     public static final DeferredItem<Item> SCAVENGED_ADRENALINE = ITEMS.register("scavenged_adrenaline",
             () -> new Item(new Item.Properties().stacksTo(64)) {
                 @Override
@@ -2941,6 +3745,14 @@ public class ModItems {
                 }
             });
     public static final DeferredItem<Item> SCAVENGED_BATTERY = ITEMS.register("scavenged_battery",
+            () -> new Item(new Item.Properties().stacksTo(64)) {
+                @Override
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.add(Component.translatable("tooltip.createcybernetics.scavenged_tooltip"));
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                }
+            });
+    public static final DeferredItem<Item> SCAVENGED_OREGRINDER = ITEMS.register("scavenged_oregrinder",
             () -> new Item(new Item.Properties().stacksTo(64)) {
                 @Override
                 public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
@@ -3126,6 +3938,16 @@ public class ModItems {
             });
 
 
+
+
+
+
+
+    public static final Supplier<Item> ANOMALOUS_STAFF = registerIronsSpellbooksItem(
+            "anomalous_staff", IronsSpellbooksStaffItems::createAnomalousStaff
+    );
+
+
     public static <T extends Item> DeferredItem<T> registerIfLoaded(String modid, String name, Supplier<T> supplier) {
         if (ModList.get().isLoaded(modid)) {
             return ModItems.ITEMS.register(name, supplier);
@@ -3138,6 +3960,14 @@ public class ModItems {
             return ModItems.ITEMS.register(name, supplier);
         }
         return null;
+    }
+
+    private static Supplier<Item> registerIronsSpellbooksItem(String name, Supplier<Item> supplier) {
+        if (!IronsSpellbooksCompat.isLoaded()) {
+            return () -> Items.AIR;
+        }
+
+        return ITEMS.register(name, supplier);
     }
 
     public static void register(IEventBus eventBus) {

@@ -119,12 +119,16 @@ public final class FullBorgHandler {
             CyberwareAttributeHelper.applyModifier(player, "dragoon_attack");
             CyberwareAttributeHelper.applyModifier(player, "dragoon_resist");
             CyberwareAttributeHelper.applyModifier(player, "dragoon_knockback");
+            CyberwareAttributeHelper.applyModifier(player, "dragoon_jump");
+            CyberwareAttributeHelper.applyModifier(player, "dragoon_step");
         } else {
             CyberwareAttributeHelper.removeModifier(player, "dragoon_weight");
             CyberwareAttributeHelper.removeModifier(player, "dragoon_size");
             CyberwareAttributeHelper.removeModifier(player, "dragoon_attack");
             CyberwareAttributeHelper.removeModifier(player, "dragoon_resist");
             CyberwareAttributeHelper.removeModifier(player, "dragoon_knockback");
+            CyberwareAttributeHelper.removeModifier(player, "dragoon_jump");
+            CyberwareAttributeHelper.removeModifier(player, "dragoon_step");
         }
 
         if (ModCompats.isInstalled("creatingspace")) {
@@ -150,6 +154,15 @@ public final class FullBorgHandler {
         }
 
         boolean kildareModel = isKildare(data);
+        if (kildareModel) {
+            CyberwareAttributeHelper.applyModifier(player, "kildare_strength");
+            CyberwareAttributeHelper.applyModifier(player, "kildare_speed");
+        } else {
+            CyberwareAttributeHelper.removeModifier(player, "kildare_strength");
+            CyberwareAttributeHelper.removeModifier(player, "kildare_speed");
+        }
+
+        boolean hexborgModel = isHexborg(data);
         if (kildareModel) {
             CyberwareAttributeHelper.applyModifier(player, "kildare_strength");
             CyberwareAttributeHelper.applyModifier(player, "kildare_speed");
@@ -217,6 +230,7 @@ public final class FullBorgHandler {
                 && data.hasSpecificItem(ModItems.SKINUPGRADES_SYNTHSKIN.get(), CyberwareSlot.SKIN)
                 && data.hasSpecificItem(ModItems.MUSCLEUPGRADES_SYNTHMUSCLE.get(), CyberwareSlot.MUSCLE)
                 && data.hasSpecificItem(ModItems.HEARTUPGRADES_CYBERHEART.get(), CyberwareSlot.HEART)
+                && data.hasSpecificItem(ModItems.LUNGSUPGRADES_SYNTHLUNGS.get(), CyberwareSlot.LUNGS)
                 && data.hasSpecificItem(ModItems.BASECYBERWARE_LINEARFRAME.get(), CyberwareSlot.BONE)
                 && data.hasSpecificItem(ModItems.BASECYBERWARE_CYBEREYES.get(), CyberwareSlot.EYES)
                 && data.hasSpecificItem(ModItems.BONEUPGRADES_BONELACING.get(), CyberwareSlot.BONE);
@@ -247,6 +261,7 @@ public final class FullBorgHandler {
                 && data.hasSpecificItem(ModItems.SKINUPGRADES_METALPLATING.get(), CyberwareSlot.SKIN)
                 && data.hasSpecificItem(ModItems.MUSCLEUPGRADES_SYNTHMUSCLE.get(), CyberwareSlot.MUSCLE)
                 && data.hasSpecificItem(ModItems.HEARTUPGRADES_CYBERHEART.get(), CyberwareSlot.HEART)
+                && data.hasSpecificItem(ModItems.LUNGSUPGRADES_SYNTHLUNGS.get(), CyberwareSlot.LUNGS)
                 && data.hasSpecificItem(ModItems.BASECYBERWARE_LINEARFRAME.get(), CyberwareSlot.BONE)
                 && data.hasSpecificItem(ModItems.BASECYBERWARE_CYBEREYES.get(), CyberwareSlot.EYES)
                 && data.hasSpecificItem(ModItems.BONEUPGRADES_BONELACING.get(), CyberwareSlot.BONE)
@@ -310,8 +325,8 @@ public final class FullBorgHandler {
                 && data.hasSpecificItem(ModItems.BONEUPGRADES_BONELACING.get(), CyberwareSlot.BONE)
                 && data.hasMultipleSpecificItem(ModItems.LEGUPGRADES_PROPELLERS.get(), 2, CyberwareSlot.RLEG, CyberwareSlot.LLEG)
                 && data.hasSpecificItem(ModItems.EYEUPGRADES_UNDERWATERVISION.get(), CyberwareSlot.EYES)
-                && data.hasSpecificItem(ModItems.LUNGSUPGRADES_OXYGEN.get(), CyberwareSlot.LUNGS)
-                && data.hasSpecificItem(ModItems.WETWARE_WATERBREATHINGLUNGS.get(), CyberwareSlot.LUNGS);
+                && data.hasMultipleSpecificItem(ModItems.LUNGSUPGRADES_OXYGEN.get(), 3, CyberwareSlot.LUNGS)
+                && data.hasSpecificItem(ModItems.LUNGSUPGRADES_SYNTHLUNGS.get(), CyberwareSlot.LUNGS);
     }
 
     public static boolean isDymond(PlayerCyberwareData data) {
@@ -346,6 +361,7 @@ public final class FullBorgHandler {
                 && data.hasSpecificItem(ModItems.BASECYBERWARE_LINEARFRAME.get(), CyberwareSlot.BONE)
                 && data.hasSpecificItem(ModItems.BASECYBERWARE_CYBEREYES.get(), CyberwareSlot.EYES)
                 && data.hasMultipleSpecificItem(ModItems.BONEUPGRADES_BONELACING.get(), CyberwareSlot.BONE, 3)
+                && data.hasMultipleSpecificItem(ModItems.SKINUPGRADES_SUBDERMALARMOR.get(), CyberwareSlot.SKIN, 3)
                 && data.hasMultipleSpecificItem(ModItems.ARMUPGRADES_PNEUMATICWRIST.get(), 2, CyberwareSlot.RARM, CyberwareSlot.LARM)
                 && data.hasMultipleSpecificItem(ModItems.LEGUPGRADES_ANKLEBRACERS.get(), 2, CyberwareSlot.RLEG, CyberwareSlot.LLEG)
                 && data.hasMultipleSpecificItem(ModItems.LEGUPGRADES_JUMPBOOST.get(), 2, CyberwareSlot.RLEG, CyberwareSlot.LLEG)
@@ -366,6 +382,7 @@ public final class FullBorgHandler {
                 && data.hasSpecificItem(ModItems.HEARTUPGRADES_CYBERHEART.get(), CyberwareSlot.HEART)
                 && data.hasSpecificItem(ModItems.BASECYBERWARE_LINEARFRAME.get(), CyberwareSlot.BONE)
                 && data.hasSpecificItem(ModItems.BASECYBERWARE_CYBEREYES.get(), CyberwareSlot.EYES)
+                && data.hasSpecificItem(ModItems.LUNGSUPGRADES_SYNTHLUNGS.get(), CyberwareSlot.LUNGS)
                 && data.hasMultipleSpecificItem(ModItems.LUNGSUPGRADES_OXYGEN.get(), CyberwareSlot.LUNGS, 3)
                 && data.hasSpecificItem(ModItems.SKINUPGRADES_SOLARSKIN.get(), CyberwareSlot.SKIN)
                 && data.hasSpecificItem(ModItems.SKINUPGRADES_NETHERITEPLATING.get(), CyberwareSlot.SKIN)
@@ -386,6 +403,7 @@ public final class FullBorgHandler {
                 && data.hasSpecificItem(ModItems.BASECYBERWARE_LINEARFRAME.get(), CyberwareSlot.BONE)
                 && data.hasSpecificItem(ModItems.BASECYBERWARE_CYBEREYES.get(), CyberwareSlot.EYES)
                 && data.hasMultipleSpecificItem(ModItems.BONEUPGRADES_BONELACING.get(), CyberwareSlot.BONE, 2)
+                && data.hasMultipleSpecificItem(ModItems.SKINUPGRADES_SUBDERMALARMOR.get(), CyberwareSlot.SKIN, 3)
                 && data.hasMultipleSpecificItem(ModItems.ARMUPGRADES_PNEUMATICWRIST.get(), 2, CyberwareSlot.RARM, CyberwareSlot.LARM)
                 && data.hasMultipleSpecificItem(ModItems.LUNGSUPGRADES_HYPEROXYGENATION.get(), 3, CyberwareSlot.LUNGS)
                 && data.hasMultipleSpecificItem(ModItems.LEGUPGRADES_ANKLEBRACERS.get(), 2, CyberwareSlot.RLEG, CyberwareSlot.LLEG)
@@ -408,10 +426,30 @@ public final class FullBorgHandler {
                 && data.hasSpecificItem(ModItems.HEARTUPGRADES_CYBERHEART.get(), CyberwareSlot.HEART)
                 && data.hasSpecificItem(ModItems.BASECYBERWARE_LINEARFRAME.get(), CyberwareSlot.BONE)
                 && data.hasSpecificItem(ModItems.BASECYBERWARE_CYBEREYES.get(), CyberwareSlot.EYES)
+                && data.hasSpecificItem(ModItems.EYEUPGRADES_BIOMONITOR.get(), CyberwareSlot.EYES)
                 && data.hasSpecificItem(ModItems.EYEUPGRADES_ZOOM.get(), CyberwareSlot.EYES)
                 && data.hasSpecificItem(ModItems.EYEUPGRADES_HUDJACK.get(), CyberwareSlot.EYES)
                 && data.hasSpecificItem(ModItems.ARMUPGRADES_CRAFTHANDS.get(), CyberwareSlot.LARM, CyberwareSlot.RARM)
                 && data.hasSpecificItem(ModItems.ARMUPGRADES_RIPPERCLAW.get(), CyberwareSlot.LARM, CyberwareSlot.RARM);
+    }
+
+    public static boolean isHexborg(PlayerCyberwareData data) {
+        if (data == null) return false;
+        if (ModItems.HEARTUPGRADES_ANOMALY != null && ModItems.SKINUPGRADES_MANASKIN != null && ModItems.ORGANSUPGRADES_MANABATTERY != null) {
+            return data.hasSpecificItem(ModItems.BASECYBERWARE_RIGHTARM.get(), CyberwareSlot.RARM)
+                    && data.hasSpecificItem(ModItems.BASECYBERWARE_LEFTARM.get(), CyberwareSlot.LARM)
+                    && data.hasSpecificItem(ModItems.BASECYBERWARE_RIGHTLEG.get(), CyberwareSlot.RLEG)
+                    && data.hasSpecificItem(ModItems.BASECYBERWARE_LEFTLEG.get(), CyberwareSlot.LLEG)
+                    && data.hasSpecificItem(ModItems.SKINUPGRADES_MANASKIN.get(), CyberwareSlot.SKIN)
+                    && data.hasSpecificItem(ModItems.MUSCLEUPGRADES_SYNTHMUSCLE.get(), CyberwareSlot.MUSCLE)
+                    && data.hasSpecificItem(ModItems.HEARTUPGRADES_ANOMALY.get(), CyberwareSlot.HEART)
+                    && data.hasSpecificItem(ModItems.BASECYBERWARE_LINEARFRAME.get(), CyberwareSlot.BONE)
+                    && data.hasSpecificItem(ModItems.BASECYBERWARE_CYBEREYES.get(), CyberwareSlot.EYES)
+                    && data.hasMultipleSpecificItem(ModItems.ORGANSUPGRADES_MANABATTERY.get(), 3, CyberwareSlot.ORGANS)
+                    && data.hasSpecificItem(ModItems.EYEUPGRADES_HUDJACK.get(), CyberwareSlot.EYES)
+                    && data.hasSpecificItem(ModItems.ARMUPGRADES_CRAFTHANDS.get(), CyberwareSlot.LARM, CyberwareSlot.RARM);
+        }
+        return false;
     }
 
 
@@ -447,13 +485,7 @@ public final class FullBorgHandler {
 
 
 
-
-
-    public static boolean isFullBorg(ServerPlayer player) {
-        if (player == null) return false;
-        if (!player.hasData(ModAttachments.CYBERWARE)) return false;
-
-        PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
+    public static boolean isFullBorg(PlayerCyberwareData data) {
         if (data == null) return false;
 
         if (isGemini(data)) return true;
@@ -467,8 +499,16 @@ public final class FullBorgHandler {
         if (isCopernicus(data)) return true;
         if (isGenos(data)) return true;
         if (isKildare(data)) return true;
+        if (ModCompats.isInstalled("irons_spellbooks") && isHexborg(data)) return true;
 
         return false;
+    }
+
+    public static boolean isFullBorg(ServerPlayer player) {
+        if (player == null) return false;
+        if (!player.hasData(ModAttachments.CYBERWARE)) return false;
+
+        return isFullBorg(player.getData(ModAttachments.CYBERWARE));
     }
 
     public static boolean hasAnyImplantsAtAll(ServerPlayer player) {

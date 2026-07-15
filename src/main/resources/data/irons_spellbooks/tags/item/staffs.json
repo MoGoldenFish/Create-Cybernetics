@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "createcybernetics:anomalous_staff",
+      "required": false
+    }
+  ]
+}

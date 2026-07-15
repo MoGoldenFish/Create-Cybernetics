@@ -1,7 +1,9 @@
 package com.perigrine3.createcybernetics.screen;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
-import com.perigrine3.createcybernetics.screen.custom.TattooMenu;
+import com.perigrine3.createcybernetics.screen.custom.computer.ComputerMenu;
+import com.perigrine3.createcybernetics.screen.custom.computer.ComputerTowerMenu;
+import com.perigrine3.createcybernetics.screen.custom.tattoo_system.TattooMenu;
 import com.perigrine3.createcybernetics.screen.custom.arm_cannon.ArmCannonMenu;
 import com.perigrine3.createcybernetics.screen.custom.chipware.ChipwareMiniMenu;
 import com.perigrine3.createcybernetics.screen.custom.crafting.EngineeringTableMenu;
@@ -36,6 +38,10 @@ public class ModMenuTypes {
             registerMenuType("grafting_table_menu", GraftingTableMenu::new);
     public static final DeferredHolder<MenuType<?>, MenuType<SurgeryTableMenu>> SURGERY_TABLE_MENU =
             registerMenuType("surgery_table_menu", SurgeryTableMenu::new);
+    public static final DeferredHolder<MenuType<?>, MenuType<ComputerMenu>> COMPUTER_MENU =
+            registerMenuType("computer_menu", ComputerMenu::new);
+    public static final DeferredHolder<MenuType<?>, MenuType<ComputerTowerMenu>> COMPUTER_TOWER_MENU =
+            registerMenuType("computer_tower_menu", ComputerTowerMenu::new);
 
     public static final DeferredHolder<MenuType<?>, MenuType<SurgeryPaymentMenu>> SURGERY_PAYMENT_MENU =
             registerMenuType("surgery_payment_menu", SurgeryPaymentMenu::new);

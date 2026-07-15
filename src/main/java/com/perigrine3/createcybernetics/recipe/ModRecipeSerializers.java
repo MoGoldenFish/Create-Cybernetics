@@ -1,7 +1,6 @@
 package com.perigrine3.createcybernetics.recipe;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
-import com.perigrine3.createcybernetics.recipe.CyberwarePrimaryDyeRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
@@ -18,6 +17,14 @@ public final class ModRecipeSerializers {
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<CyberwarePrimaryDyeRecipe>> CYBERWARE_PRIMARY_DYE =
             SERIALIZERS.register("cyberware_primary_dye",
                     () -> new SimpleCraftingRecipeSerializer<>(CyberwarePrimaryDyeRecipe::new));
+
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<DynamicPotionAutoinjectorRecipe>> DYNAMIC_POTION_AUTOINJECTOR =
+            SERIALIZERS.register("dynamic_potion_autoinjector",
+                    () -> new SimpleCraftingRecipeSerializer<>(DynamicPotionAutoinjectorRecipe::new));
+
+
+    public static final DeferredHolder<RecipeSerializer<?>, CyberbrainSmithingRecipe.Serializer> CYBERBRAIN_SMITHING =
+            SERIALIZERS.register("cyberbrain_smithing", CyberbrainSmithingRecipe.Serializer::new);
 
     public static void register(IEventBus eventBus) {
         SERIALIZERS.register(eventBus);

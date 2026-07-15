@@ -11,6 +11,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Spider;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -39,6 +43,7 @@ public final class SonarClientEvents {
     private static final float SKY_EPS = 0.0005F;
 
     private static Field postChainField;
+    private static boolean sonarShaderActive;
 
     private SonarClientEvents() {
     }
@@ -114,23 +119,32 @@ public final class SonarClientEvents {
         Minecraft mc = Minecraft.getInstance();
 
         if (mc.player == null || mc.level == null) {
-            mc.gameRenderer.shutdownEffect();
+            disableSonarShader(mc);
             SonarPingManager.clear();
+            return;
+        }
+
+        Entity cameraEntity = mc.getCameraEntity();
+
+        if (isVanillaSpectatorShaderEntity(cameraEntity)) {
+            sonarShaderActive = false;
             return;
         }
 
         if (!isSonarActive(mc)) {
-            mc.gameRenderer.shutdownEffect();
+            disableSonarShader(mc);
             SonarPingManager.clear();
             return;
         }
 
-        if (getPostChain(mc.gameRenderer) == null) {
+        if (!sonarShaderActive || getPostChain(mc.gameRenderer) == null) {
             mc.gameRenderer.loadEffect(SONAR_POST);
+            sonarShaderActive = true;
         }
 
         PostChain chain = getPostChain(mc.gameRenderer);
         if (chain == null) {
+            sonarShaderActive = false;
             return;
         }
 
@@ -196,6 +210,21 @@ public final class SonarClientEvents {
             chain.setUniform("SoundPosZ" + i, vz);
             chain.setUniform("SoundAge" + i, ageSeconds);
         }
+    }
+
+    private static void disableSonarShader(Minecraft mc) {
+        if (!sonarShaderActive) {
+            return;
+        }
+
+        mc.gameRenderer.shutdownEffect();
+        sonarShaderActive = false;
+    }
+
+    private static boolean isVanillaSpectatorShaderEntity(Entity entity) {
+        return entity instanceof Spider
+                || entity instanceof Creeper
+                || entity instanceof EnderMan;
     }
 
     private static boolean isSonarActive(Minecraft mc) {

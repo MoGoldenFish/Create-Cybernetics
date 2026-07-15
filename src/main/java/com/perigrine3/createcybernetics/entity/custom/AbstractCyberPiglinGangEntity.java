@@ -185,11 +185,15 @@ public abstract class AbstractCyberPiglinGangEntity extends Monster {
     }
 
     public boolean isBarterItem(ItemStack stack) {
-        return canBarter() && (isCyberware(stack) || isComponent(stack) || isGold(stack));
+        return canBarter() && (isCyberware(stack) || (isScavengedCyberware(stack) || isGold(stack)));
     }
 
     public static boolean isCyberware(ItemStack stack) {
         return stack != null && !stack.isEmpty() && stack.is(ModTags.Items.CYBERWARE_ITEM);
+    }
+
+    public static boolean isScavengedCyberware(ItemStack stack) {
+        return stack != null && !stack.isEmpty() && stack.is(ModTags.Items.SCAVENGED_CYBERWARE);
     }
 
     public static boolean isComponent(ItemStack stack) {

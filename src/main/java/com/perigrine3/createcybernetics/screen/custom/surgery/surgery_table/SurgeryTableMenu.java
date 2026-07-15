@@ -218,6 +218,10 @@ public class SurgeryTableMenu extends AbstractContainerMenu {
             int handlerIndex = rsSlot.getSlotIndex();
             ItemStack carried = getCarried();
 
+            if (clickType == ClickType.THROW) {
+                return;
+            }
+
             if (clickType == ClickType.QUICK_MOVE) {
                 return;
             }

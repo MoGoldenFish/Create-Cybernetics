@@ -1,0 +1,22 @@
+{
+  "type": "create:filling",
+  "ingredients": [
+    {
+      "item": "createcybernetics:empty_autoinjector"
+    }
+  ],
+  "results": [
+    {
+      "item": "createcybernetics:dynamic_potion_autoinjector"
+    }
+  ],
+  "fluidIngredients": [
+    {
+      "amount": 250,
+      "fluid": "create:potion",
+      "nbt": {
+        "create:potion_fluid_bottle_type": "regular"
+      }
+    }
+  ]
+}

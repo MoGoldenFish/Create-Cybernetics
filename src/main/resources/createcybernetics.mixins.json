@@ -5,6 +5,7 @@
   "mixins": [
     "AbstractContainerMenuAccessor",
     "AbstractContainerMenuInvoker",
+    "CommandsMixin",
     "CorpseEntityMixin",
     "CorpseEntityRemoveMixin",
     "InventoryMenuChipwareSlotsMixin",
@@ -13,7 +14,8 @@
     "PlayerSprintWhileCrouchingMixin",
     "ProjectileInaccuracyMixin",
     "RaidMixin",
-    "VillagerHostilesSensorMixin"
+    "VillagerHostilesSensorMixin",
+    "create.FillingBySpoutMixin"
   ],
   "client": [
     "PlayerEyeHeightMixin",
@@ -28,10 +30,13 @@
     "client.ItemInHandRendererMixin",
     "client.ItemInHandRendererOverlayMixin",
     "client.LivingEntityRendererAccessor",
+    "client.LocalPlayerSwingMixin",
+    "client.MultiLineEditBoxAccessor",
     "client.PlayerModelImpactSquishMixin",
     "client.PlayerModelVanillaWearHideMixin",
     "client.PlayerRendererSkinHideMixin",
     "client.ScreenInvoker",
+    "parcool.ParCoolStaminaHandlerMixin",
     "playeranimator.LivingEntityRendererFirstPersonOverlayMixin",
     "pointblank.GunItemRendererMixin",
     "wildfire.GenderLayerOverlayMixin"

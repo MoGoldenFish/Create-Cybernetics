@@ -45,6 +45,70 @@ public class Config {
             .comment("ANY_PLAYER_AUTO_APPROVE: Any player may upload tattoos, and uploads are immediately approved. Not recommended for public servers.")
             .defineEnum("tattooUploadMode", ConfigValues.TattooUploadMode.OP_ONLY_AUTO_APPROVE);
 
+
+
+    public static final ModConfigSpec.IntValue CYBERZOMBIE_SPAWN_WEIGHT = BUILDER
+            .comment("Cyberzombie spawn weight. Set to 0 to disable natural spawning.")
+            .defineInRange("cyberzombieSpawn", 10, 0, 1000);
+
+    public static final ModConfigSpec.IntValue CYBERZOMBIE_MIN_GROUP = BUILDER
+            .comment("Cyberzombie minimum spawn group size.")
+            .defineInRange("cyberzombieMin", 1, 1, 100);
+
+    public static final ModConfigSpec.IntValue CYBERZOMBIE_MAX_GROUP = BUILDER
+            .comment("Cyberzombie maximum spawn group size.")
+            .defineInRange("cyberzombieMax", 3, 1, 100);
+
+    public static final ModConfigSpec.IntValue CYBERSKELETON_SPAWN_WEIGHT = BUILDER
+            .comment("Cyberskeleton spawn weight. Set to 0 to disable natural spawning.")
+            .defineInRange("cyberskeletonSpawn", 10, 0, 1000);
+
+    public static final ModConfigSpec.IntValue CYBERSKELETON_MIN_GROUP = BUILDER
+            .comment("Cyberskeleton minimum spawn group size.")
+            .defineInRange("cyberskeletonMin", 1, 1, 100);
+
+    public static final ModConfigSpec.IntValue CYBERSKELETON_MAX_GROUP = BUILDER
+            .comment("Cyberskeleton maximum spawn group size.")
+            .defineInRange("cyberskeletonMax", 3, 1, 100);
+
+    public static final ModConfigSpec.IntValue HOGBOY_SPAWN_WEIGHT = BUILDER
+            .comment("Hogboy spawn weight. Set to 0 to disable natural spawning.")
+            .defineInRange("hogboySpawn", 5, 0, 1000);
+
+    public static final ModConfigSpec.IntValue HOGBOY_MIN_GROUP = BUILDER
+            .comment("Hogboy minimum spawn group size.")
+            .defineInRange("hogboyMin", 1, 1, 100);
+
+    public static final ModConfigSpec.IntValue HOGBOY_MAX_GROUP = BUILDER
+            .comment("Hogboy maximum spawn group size.")
+            .defineInRange("hogboyMax", 4, 1, 100);
+
+    public static final ModConfigSpec.IntValue PUNKLIN_SPAWN_WEIGHT = BUILDER
+            .comment("Punklin spawn weight. Set to 0 to disable natural spawning.")
+            .defineInRange("punklinSpawn", 10, 0, 1000);
+
+    public static final ModConfigSpec.IntValue PUNKLIN_MIN_GROUP = BUILDER
+            .comment("Punklin minimum spawn group size.")
+            .defineInRange("punklinMin", 3, 1, 100);
+
+    public static final ModConfigSpec.IntValue PUNKLIN_MAX_GROUP = BUILDER
+            .comment("Punklin maximum spawn group size.")
+            .defineInRange("punklinMax", 7, 1, 100);
+
+    public static final ModConfigSpec.IntValue PIGSTROM_SPAWN_WEIGHT = BUILDER
+            .comment("Pigstrom spawn weight. Set to 0 to disable natural spawning.")
+            .defineInRange("pigstromSpawn", 14, 0, 1000);
+
+    public static final ModConfigSpec.IntValue PIGSTROM_MIN_GROUP = BUILDER
+            .comment("Pigstrom minimum spawn group size.")
+            .defineInRange("pigstromMin", 4, 1, 100);
+
+    public static final ModConfigSpec.IntValue PIGSTROM_MAX_GROUP = BUILDER
+            .comment("Pigstrom maximum spawn group size.")
+            .defineInRange("pigstromMax", 8, 1, 100);
+
+
+
     public static final ModConfigSpec.ConfigValue<List<? extends String>> ENGINEERING_DECONSTRUCT_ROLLS = BUILDER
             .comment("Engineering Table deconstruction rolls for regular cyberware.")
             .comment("Format per entry: item_id,min,max,weight")
@@ -350,6 +414,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:eyeupgrades_underwatervision,EYES,4");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_zoom,EYES,5");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_trajectorycalculator,EYES,4");
+            defaults.add(tableId + ",createcybernetics:eyeupgrades_biomonitor,EYES,2");
 
             defaults.add(tableId + ",createcybernetics:heartupgrades_cyberheart,HEART,8");
             defaults.add(tableId + ",createcybernetics:heartupgrades_coupler,HEART,5");
@@ -407,6 +472,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:armupgrades_firestarter,RARM,5");
             defaults.add(tableId + ",createcybernetics:armupgrades_pneumaticwrist,RARM,4");
             defaults.add(tableId + ",createcybernetics:armupgrades_reinforcedknuckles,RARM,6");
+            defaults.add(tableId + ",createcybernetics:armupgrades_mantisblade_titanium,RARM,2");
 
             defaults.add(tableId + ",createcybernetics:basecyberware_leftarm,LARM,12");
             defaults.add(tableId + ",createcybernetics:armupgrades_armcannon,LARM,3");
@@ -417,6 +483,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:armupgrades_firestarter,LARM,5");
             defaults.add(tableId + ",createcybernetics:armupgrades_pneumaticwrist,LARM,4");
             defaults.add(tableId + ",createcybernetics:armupgrades_reinforcedknuckles,LARM,6");
+            defaults.add(tableId + ",createcybernetics:armupgrades_mantisblade_titanium,LARM,2");
 
             defaults.add(tableId + ",createcybernetics:basecyberware_rightleg,RLEG,12");
             defaults.add(tableId + ",createcybernetics:legupgrades_metaldetector,RLEG,3");
@@ -460,6 +527,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:eyeupgrades_underwatervision,EYES,4");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_zoom,EYES,5");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_trajectorycalculator,EYES,4");
+            defaults.add(tableId + ",createcybernetics:eyeupgrades_biomonitor,EYES,2");
 
             defaults.add(tableId + ",createcybernetics:organsupgrades_adrenaline,ORGANS,5");
             defaults.add(tableId + ",createcybernetics:organsupgrades_battery,ORGANS,6");
@@ -490,6 +558,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:armupgrades_firestarter,RARM,5");
             defaults.add(tableId + ",createcybernetics:armupgrades_pneumaticwrist,RARM,4");
             defaults.add(tableId + ",createcybernetics:armupgrades_reinforcedknuckles,RARM,6");
+            defaults.add(tableId + ",createcybernetics:armupgrades_mantisblade_iron,RARM,2");
 
             defaults.add(tableId + ",createcybernetics:basecyberware_leftarm,LARM,12");
             defaults.add(tableId + ",createcybernetics:armupgrades_armcannon,LARM,3");
@@ -500,6 +569,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:armupgrades_firestarter,LARM,5");
             defaults.add(tableId + ",createcybernetics:armupgrades_pneumaticwrist,LARM,4");
             defaults.add(tableId + ",createcybernetics:armupgrades_reinforcedknuckles,LARM,6");
+            defaults.add(tableId + ",createcybernetics:armupgrades_mantisblade_iron,LARM,2");
 
             defaults.add(tableId + ",createcybernetics:basecyberware_rightleg,RLEG,12");
             defaults.add(tableId + ",createcybernetics:legupgrades_metaldetector,RLEG,3");
@@ -543,6 +613,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:eyeupgrades_underwatervision,EYES,4");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_zoom,EYES,5");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_trajectorycalculator,EYES,4");
+            defaults.add(tableId + ",createcybernetics:eyeupgrades_biomonitor,EYES,2");
 
             defaults.add(tableId + ",createcybernetics:heartupgrades_cyberheart,HEART,8");
             defaults.add(tableId + ",createcybernetics:heartupgrades_coupler,HEART,5");
@@ -599,6 +670,8 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:armupgrades_firestarter,RARM,5");
             defaults.add(tableId + ",createcybernetics:armupgrades_pneumaticwrist,RARM,4");
             defaults.add(tableId + ",createcybernetics:armupgrades_reinforcedknuckles,RARM,6");
+            defaults.add(tableId + ",createcybernetics:armupgrades_mantisblade_diamond,RARM,2");
+            defaults.add(tableId + ",createcybernetics:armupgrades_mantisblade_netherite,RARM,2");
 
             defaults.add(tableId + ",createcybernetics:basecyberware_leftarm,LARM,12");
             defaults.add(tableId + ",createcybernetics:armupgrades_armcannon,LARM,3");
@@ -609,6 +682,8 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:armupgrades_firestarter,LARM,5");
             defaults.add(tableId + ",createcybernetics:armupgrades_pneumaticwrist,LARM,4");
             defaults.add(tableId + ",createcybernetics:armupgrades_reinforcedknuckles,LARM,6");
+            defaults.add(tableId + ",createcybernetics:armupgrades_mantisblade_diamond,LARM,2");
+            defaults.add(tableId + ",createcybernetics:armupgrades_mantisblade_netherite,LARM,2");
 
             defaults.add(tableId + ",createcybernetics:basecyberware_rightleg,RLEG,12");
             defaults.add(tableId + ",createcybernetics:legupgrades_metaldetector,RLEG,3");
@@ -650,6 +725,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:eyeupgrades_underwatervision,EYES,4");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_zoom,EYES,5");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_trajectorycalculator,EYES,4");
+            defaults.add(tableId + ",createcybernetics:eyeupgrades_biomonitor,EYES,2");
 
             defaults.add(tableId + ",createcybernetics:heartupgrades_cyberheart,HEART,8");
             defaults.add(tableId + ",createcybernetics:heartupgrades_coupler,HEART,5");
@@ -706,6 +782,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:armupgrades_firestarter,RARM,5");
             defaults.add(tableId + ",createcybernetics:armupgrades_pneumaticwrist,RARM,4");
             defaults.add(tableId + ",createcybernetics:armupgrades_reinforcedknuckles,RARM,6");
+            defaults.add(tableId + ",createcybernetics:armupgrades_mantisblade_gold,RARM,2");
 
             defaults.add(tableId + ",createcybernetics:basecyberware_leftarm,LARM,12");
             defaults.add(tableId + ",createcybernetics:armupgrades_armcannon,LARM,3");
@@ -716,6 +793,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:armupgrades_firestarter,LARM,5");
             defaults.add(tableId + ",createcybernetics:armupgrades_pneumaticwrist,LARM,4");
             defaults.add(tableId + ",createcybernetics:armupgrades_reinforcedknuckles,LARM,6");
+            defaults.add(tableId + ",createcybernetics:armupgrades_mantisblade_gold,LARM,2");
 
             defaults.add(tableId + ",createcybernetics:basecyberware_rightleg,RLEG,12");
             defaults.add(tableId + ",createcybernetics:legupgrades_metaldetector,RLEG,3");
@@ -757,6 +835,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:eyeupgrades_underwatervision,EYES,4");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_zoom,EYES,5");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_trajectorycalculator,EYES,4");
+            defaults.add(tableId + ",createcybernetics:eyeupgrades_biomonitor,EYES,2");
 
             defaults.add(tableId + ",createcybernetics:heartupgrades_cyberheart,HEART,8");
             defaults.add(tableId + ",createcybernetics:heartupgrades_coupler,HEART,5");
@@ -813,6 +892,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:armupgrades_firestarter,RARM,5");
             defaults.add(tableId + ",createcybernetics:armupgrades_pneumaticwrist,RARM,4");
             defaults.add(tableId + ",createcybernetics:armupgrades_reinforcedknuckles,RARM,6");
+            defaults.add(tableId + ",createcybernetics:armupgrades_mantisblade_gold,RARM,2");
 
             defaults.add(tableId + ",createcybernetics:basecyberware_leftarm_goldplated,LARM,12");
             defaults.add(tableId + ",createcybernetics:armupgrades_armcannon,LARM,3");
@@ -823,6 +903,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:armupgrades_firestarter,LARM,5");
             defaults.add(tableId + ",createcybernetics:armupgrades_pneumaticwrist,LARM,4");
             defaults.add(tableId + ",createcybernetics:armupgrades_reinforcedknuckles,LARM,6");
+            defaults.add(tableId + ",createcybernetics:armupgrades_mantisblade_gold,LARM,2");
 
             defaults.add(tableId + ",createcybernetics:basecyberware_rightleg_goldplated,RLEG,12");
             defaults.add(tableId + ",createcybernetics:legupgrades_metaldetector,RLEG,3");
@@ -864,6 +945,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:eyeupgrades_underwatervision,EYES,4");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_zoom,EYES,5");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_trajectorycalculator,EYES,4");
+            defaults.add(tableId + ",createcybernetics:eyeupgrades_biomonitor,EYES,2");
 
             defaults.add(tableId + ",createcybernetics:heartupgrades_cyberheart,HEART,8");
             defaults.add(tableId + ",createcybernetics:heartupgrades_coupler,HEART,5");
@@ -920,6 +1002,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:armupgrades_firestarter,RARM,5");
             defaults.add(tableId + ",createcybernetics:armupgrades_pneumaticwrist,RARM,4");
             defaults.add(tableId + ",createcybernetics:armupgrades_reinforcedknuckles,RARM,6");
+            defaults.add(tableId + ",createcybernetics:armupgrades_mantisblade_gold,RARM,2");
 
             defaults.add(tableId + ",createcybernetics:basecyberware_leftarm,LARM,12");
             defaults.add(tableId + ",createcybernetics:armupgrades_armcannon,LARM,3");
@@ -930,6 +1013,7 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:armupgrades_firestarter,LARM,5");
             defaults.add(tableId + ",createcybernetics:armupgrades_pneumaticwrist,LARM,4");
             defaults.add(tableId + ",createcybernetics:armupgrades_reinforcedknuckles,LARM,6");
+            defaults.add(tableId + ",createcybernetics:armupgrades_mantisblade_gold,LARM,2");
 
             defaults.add(tableId + ",createcybernetics:basecyberware_rightleg,RLEG,12");
             defaults.add(tableId + ",createcybernetics:legupgrades_metaldetector,RLEG,3");

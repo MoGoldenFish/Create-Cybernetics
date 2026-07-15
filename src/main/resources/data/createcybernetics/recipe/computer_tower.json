@@ -1,0 +1,35 @@
+{
+  "type": "createcybernetics:engineering_table",
+  "accept_mirrored": true,
+
+  "key": {
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "B": {
+      "item": "createcybernetics:titanium_block"
+    },
+    "T": {
+      "item": "createcybernetics:titaniumsheet"
+    },
+    "S": {
+      "item": "createcybernetics:component_storage"
+    },
+    "X": {
+      "item": "createcybernetics:component_ssd"
+    }
+  },
+
+  "pattern": [
+    "TGTGT",
+    "TXSSS",
+    "TXSSS",
+    "TXSSS",
+    "TTBTT"
+  ],
+
+  "result": {
+    "count": 1,
+    "id": "createcybernetics:computer_tower"
+  }
+}

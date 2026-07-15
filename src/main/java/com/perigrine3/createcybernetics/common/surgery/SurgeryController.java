@@ -3,12 +3,18 @@ package com.perigrine3.createcybernetics.common.surgery;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
 import com.perigrine3.createcybernetics.api.InstalledCyberware;
+import com.perigrine3.createcybernetics.block.RobosurgeonBlock;
 import com.perigrine3.createcybernetics.block.entity.RobosurgeonBlockEntity;
 import com.perigrine3.createcybernetics.block.entity.SurgeryTableBlockEntity;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.common.energy.ConditionalBlockPower;
 import com.perigrine3.createcybernetics.event.custom.CyberwareSurgeryEvent;
+import com.perigrine3.createcybernetics.item.cyberware.brain.CerebralProcessingUnitItem;
+import com.perigrine3.createcybernetics.item.cyberware.organs.OregrinderItem;
+import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
@@ -28,6 +34,10 @@ public final class SurgeryController {
     private SurgeryController() {}
 
     public static float performSurgery(Player player, RobosurgeonBlockEntity surgeon) {
+        if (!canRobosurgeonPerformSurgery(player, surgeon)) {
+            return 0.0F;
+        }
+
         return performSurgery(player, surgeon, surgeon.staged, surgeon.markedForRemoval);
     }
 
@@ -37,6 +47,10 @@ public final class SurgeryController {
 
     public static float performSurgery(Player player, RobosurgeonBlockEntity surgeon, boolean[] staged, boolean[] markedForRemoval) {
         if (player.level().isClientSide) return 0.0F;
+
+        if (!canRobosurgeonPerformSurgery(player, surgeon)) {
+            return 0.0F;
+        }
 
         surgeon.beginSurgery();
 
@@ -66,7 +80,6 @@ public final class SurgeryController {
 
             for (CyberwareSlot slot : CyberwareSlot.values()) {
                 for (int i = 0; i < slot.size; i++) {
-
                     int invIndex = RobosurgeonSlotMap.toInventoryIndex(slot, i);
                     if (invIndex < 0 || invIndex >= surgeon.inventory.getSlots()) continue;
 
@@ -80,7 +93,7 @@ public final class SurgeryController {
 
                     if (willRemove && willInstall) {
                         InstalledCyberware current = data.get(slot, i);
-                        ItemStack installedStack = (current != null && current.getItem() != null) ? current.getItem() : ItemStack.EMPTY;
+                        ItemStack installedStack = current != null && current.getItem() != null ? current.getItem() : ItemStack.EMPTY;
 
                         if (!installedStack.isEmpty() && ItemStack.isSameItemSameComponents(stackInGui, installedStack)) {
                             willInstall = false;
@@ -101,6 +114,11 @@ public final class SurgeryController {
                             removedChanges.add(new CyberwareSurgeryEvent.Change(slot, i, removed.getItem().copy()));
                             removedItemsThisSurgery.add(removed.getItem().getItem());
 
+                            data.ejectInventoryForRemovedCyberware(
+                                    player,
+                                    removed.getItem()
+                            );
+
                             if (removed.getItem().getItem() instanceof ICyberwareItem cw) {
                                 cw.onRemoved(player);
                             }
@@ -112,10 +130,7 @@ public final class SurgeryController {
                         }
 
                         if (!willInstall) {
-                            surgeon.inventory.setStackInSlot(invIndex, ItemStack.EMPTY);
-                            surgeon.installed[invIndex] = false;
-                            surgeon.staged[invIndex] = false;
-                            surgeon.markedForRemoval[invIndex] = false;
+                            clearRobosurgeonSlot(surgeon, invIndex);
                             continue;
                         }
                     }
@@ -127,6 +142,17 @@ public final class SurgeryController {
                         continue;
                     }
 
+                    if (stackInGui.getItem() instanceof CerebralProcessingUnitItem
+                            && !CerebralProcessingUnitItem.hasCompletedBiochipBinding(stackInGui)) {
+                        rejectRobosurgeonInstall(player, surgeon, invIndex, stackInGui);
+                        continue;
+                    }
+
+                    if (stackInGui.getItem() instanceof ICyberwareItem cw && !cw.surgeryInstallable()) {
+                        rejectRobosurgeonInstall(player, surgeon, invIndex, stackInGui);
+                        continue;
+                    }
+
                     if (stackInGui.getItem() instanceof ICyberwareItem cw) {
                         int cap = Math.max(1, cw.maxStacksPerSlotType(stackInGui, slot));
                         int currentlyInstalledSame = countInstalledSameInSlotType(data, slot, stackInGui);
@@ -134,15 +160,7 @@ public final class SurgeryController {
                         int effectiveSameAfterAllRemovals = currentlyInstalledSame - plannedRemovedSame;
 
                         if (effectiveSameAfterAllRemovals >= cap) {
-                            ItemStack giveBack = stackInGui.copy();
-                            if (!player.getInventory().add(giveBack)) {
-                                player.drop(giveBack, false);
-                            }
-
-                            surgeon.inventory.setStackInSlot(invIndex, ItemStack.EMPTY);
-                            surgeon.installed[invIndex] = false;
-                            surgeon.staged[invIndex] = false;
-                            surgeon.markedForRemoval[invIndex] = false;
+                            rejectRobosurgeonInstall(player, surgeon, invIndex, stackInGui);
                             continue;
                         }
                     }
@@ -164,30 +182,25 @@ public final class SurgeryController {
                         }
 
                         if (!ok) {
-                            ItemStack giveBack = stackInGui.copy();
-                            if (!player.getInventory().add(giveBack)) {
-                                player.drop(giveBack, false);
-                            }
-
-                            surgeon.inventory.setStackInSlot(invIndex, ItemStack.EMPTY);
-                            surgeon.installed[invIndex] = false;
-                            surgeon.staged[invIndex] = false;
-                            surgeon.markedForRemoval[invIndex] = false;
+                            rejectRobosurgeonInstall(player, surgeon, invIndex, stackInGui);
                             continue;
                         }
                     }
 
-                    if (stackInGui.getItem() instanceof ICyberwareItem cwInc) {
-                        if (hasAnyIncompatibleCyberware(data, surgeon, staged, markedForRemoval, stackInGui, slot, i)) {
-                            ItemStack giveBack = stackInGui.copy();
-                            if (!player.getInventory().add(giveBack)) {
-                                player.drop(giveBack, false);
-                            }
+                    if (stackInGui.getItem() instanceof ICyberwareItem) {
+                        if (stackInGui.getItem() instanceof OregrinderItem
+                                && hasAnyInstalledWetware(data, surgeon, markedForRemoval)) {
+                            rejectRobosurgeonInstall(player, surgeon, invIndex, stackInGui);
+                            continue;
+                        }
 
-                            surgeon.inventory.setStackInSlot(invIndex, ItemStack.EMPTY);
-                            surgeon.installed[invIndex] = false;
-                            surgeon.staged[invIndex] = false;
-                            surgeon.markedForRemoval[invIndex] = false;
+                        if (hasAnyIncompatibleCyberware(data, surgeon, staged, markedForRemoval, stackInGui, slot, i)) {
+                            rejectRobosurgeonInstall(player, surgeon, invIndex, stackInGui);
+                            continue;
+                        }
+
+                        if (hasAnySameSlotIncompatibleCyberware(data, surgeon, staged, markedForRemoval, stackInGui, slot, i)) {
+                            rejectRobosurgeonInstall(player, surgeon, invIndex, stackInGui);
                             continue;
                         }
                     }
@@ -233,8 +246,17 @@ public final class SurgeryController {
                 }
 
                 if (player.level() instanceof ServerLevel sl) {
-                    sl.sendParticles(ParticleTypes.HAPPY_VILLAGER, player.getX(), player.getY() + 1.0, player.getZ(),
-                            18, 0.35, 0.55, 0.35, 0.0);
+                    sl.sendParticles(
+                            ParticleTypes.HAPPY_VILLAGER,
+                            player.getX(),
+                            player.getY() + 1.0,
+                            player.getZ(),
+                            18,
+                            0.35,
+                            0.55,
+                            0.35,
+                            0.0
+                    );
                 }
             }
 
@@ -252,10 +274,44 @@ public final class SurgeryController {
             }
 
             return damageApplied;
-
         } finally {
             surgeon.endSurgery();
         }
+    }
+
+    private static boolean canRobosurgeonPerformSurgery(Player player, RobosurgeonBlockEntity surgeon) {
+        if (player == null || surgeon == null) {
+            return false;
+        }
+
+        if (player.level().isClientSide) {
+            return false;
+        }
+
+        Level level = surgeon.getLevel();
+
+        if (level == null || level.isClientSide) {
+            return false;
+        }
+
+        boolean powered = ConditionalBlockPower.consumeRequiredPower(
+                level,
+                surgeon.getBlockPos(),
+                surgeon.getMutableEnergyStorage(),
+                RobosurgeonBlock.ENERGY_USED_PER_GUI_TICK
+        );
+
+        if (powered) {
+            return true;
+        }
+
+        if (ConditionalBlockPower.shouldUseEnergyInsteadOfRedstone()) {
+            player.displayClientMessage(Component.translatable("message.createcybernetics.block.requires_energy"), true);
+        } else {
+            player.displayClientMessage(Component.translatable("message.createcybernetics.block.requires_redstone"), true);
+        }
+
+        return false;
     }
 
     public static float performSurgery(Player player, SurgeryTableBlockEntity surgeon, boolean[] staged, boolean[] markedForRemoval) {
@@ -289,7 +345,6 @@ public final class SurgeryController {
 
             for (CyberwareSlot slot : CyberwareSlot.values()) {
                 for (int i = 0; i < slot.size; i++) {
-
                     int invIndex = RobosurgeonSlotMap.toInventoryIndex(slot, i);
                     if (invIndex < 0 || invIndex >= surgeon.inventory.getSlots()) continue;
 
@@ -303,7 +358,7 @@ public final class SurgeryController {
 
                     if (willRemove && willInstall) {
                         InstalledCyberware current = data.get(slot, i);
-                        ItemStack installedStack = (current != null && current.getItem() != null) ? current.getItem() : ItemStack.EMPTY;
+                        ItemStack installedStack = current != null && current.getItem() != null ? current.getItem() : ItemStack.EMPTY;
 
                         if (!installedStack.isEmpty() && ItemStack.isSameItemSameComponents(stackInGui, installedStack)) {
                             willInstall = false;
@@ -324,6 +379,11 @@ public final class SurgeryController {
                             removedChanges.add(new CyberwareSurgeryEvent.Change(slot, i, removed.getItem().copy()));
                             removedItemsThisSurgery.add(removed.getItem().getItem());
 
+                            data.ejectInventoryForRemovedCyberware(
+                                    player,
+                                    removed.getItem()
+                            );
+
                             if (removed.getItem().getItem() instanceof ICyberwareItem cw) {
                                 cw.onRemoved(player);
                             }
@@ -335,10 +395,7 @@ public final class SurgeryController {
                         }
 
                         if (!willInstall) {
-                            surgeon.inventory.setStackInSlot(invIndex, ItemStack.EMPTY);
-                            surgeon.setInstalled(invIndex, false);
-                            surgeon.setStaged(invIndex, false);
-                            surgeon.setMarkedForRemoval(invIndex, false);
+                            clearSurgeryTableSlot(surgeon, invIndex);
                             continue;
                         }
                     }
@@ -350,6 +407,17 @@ public final class SurgeryController {
                         continue;
                     }
 
+                    if (stackInGui.getItem() instanceof CerebralProcessingUnitItem
+                            && !CerebralProcessingUnitItem.hasCompletedBiochipBinding(stackInGui)) {
+                        rejectSurgeryTableInstall(player, surgeon, invIndex, stackInGui);
+                        continue;
+                    }
+
+                    if (stackInGui.getItem() instanceof ICyberwareItem cw && !cw.surgeryInstallable()) {
+                        rejectSurgeryTableInstall(player, surgeon, invIndex, stackInGui);
+                        continue;
+                    }
+
                     if (stackInGui.getItem() instanceof ICyberwareItem cw) {
                         int cap = Math.max(1, cw.maxStacksPerSlotType(stackInGui, slot));
                         int currentlyInstalledSame = countInstalledSameInSlotType(data, slot, stackInGui);
@@ -357,15 +425,7 @@ public final class SurgeryController {
                         int effectiveSameAfterAllRemovals = currentlyInstalledSame - plannedRemovedSame;
 
                         if (effectiveSameAfterAllRemovals >= cap) {
-                            ItemStack giveBack = stackInGui.copy();
-                            if (!player.getInventory().add(giveBack)) {
-                                player.drop(giveBack, false);
-                            }
-
-                            surgeon.inventory.setStackInSlot(invIndex, ItemStack.EMPTY);
-                            surgeon.setInstalled(invIndex, false);
-                            surgeon.setStaged(invIndex, false);
-                            surgeon.setMarkedForRemoval(invIndex, false);
+                            rejectSurgeryTableInstall(player, surgeon, invIndex, stackInGui);
                             continue;
                         }
                     }
@@ -387,30 +447,25 @@ public final class SurgeryController {
                         }
 
                         if (!ok) {
-                            ItemStack giveBack = stackInGui.copy();
-                            if (!player.getInventory().add(giveBack)) {
-                                player.drop(giveBack, false);
-                            }
-
-                            surgeon.inventory.setStackInSlot(invIndex, ItemStack.EMPTY);
-                            surgeon.setInstalled(invIndex, false);
-                            surgeon.setStaged(invIndex, false);
-                            surgeon.setMarkedForRemoval(invIndex, false);
+                            rejectSurgeryTableInstall(player, surgeon, invIndex, stackInGui);
                             continue;
                         }
                     }
 
-                    if (stackInGui.getItem() instanceof ICyberwareItem cwInc) {
-                        if (hasAnyIncompatibleCyberware(data, surgeon, staged, markedForRemoval, stackInGui, slot, i)) {
-                            ItemStack giveBack = stackInGui.copy();
-                            if (!player.getInventory().add(giveBack)) {
-                                player.drop(giveBack, false);
-                            }
+                    if (stackInGui.getItem() instanceof ICyberwareItem) {
+                        if (stackInGui.getItem() instanceof OregrinderItem
+                                && hasAnyInstalledWetware(data, surgeon, markedForRemoval)) {
+                            rejectSurgeryTableInstall(player, surgeon, invIndex, stackInGui);
+                            continue;
+                        }
 
-                            surgeon.inventory.setStackInSlot(invIndex, ItemStack.EMPTY);
-                            surgeon.setInstalled(invIndex, false);
-                            surgeon.setStaged(invIndex, false);
-                            surgeon.setMarkedForRemoval(invIndex, false);
+                        if (hasAnyIncompatibleCyberware(data, surgeon, staged, markedForRemoval, stackInGui, slot, i)) {
+                            rejectSurgeryTableInstall(player, surgeon, invIndex, stackInGui);
+                            continue;
+                        }
+
+                        if (hasAnySameSlotIncompatibleCyberware(data, surgeon, staged, markedForRemoval, stackInGui, slot, i)) {
+                            rejectSurgeryTableInstall(player, surgeon, invIndex, stackInGui);
                             continue;
                         }
                     }
@@ -448,7 +503,6 @@ public final class SurgeryController {
             }
 
             data.recomputeHumanityBaseFromInstalled(player);
-
             float damageApplied = 0.0F;
 
             if (didWork) {
@@ -457,8 +511,17 @@ public final class SurgeryController {
                 }
 
                 if (player.level() instanceof ServerLevel sl) {
-                    sl.sendParticles(ParticleTypes.HAPPY_VILLAGER, player.getX(), player.getY() + 1.0, player.getZ(),
-                            18, 0.35, 0.55, 0.35, 0.0);
+                    sl.sendParticles(
+                            ParticleTypes.HAPPY_VILLAGER,
+                            player.getX(),
+                            player.getY() + 1.0,
+                            player.getZ(),
+                            18,
+                            0.35,
+                            0.55,
+                            0.35,
+                            0.0
+                    );
                 }
             }
 
@@ -472,10 +535,102 @@ public final class SurgeryController {
             player.level().sendBlockUpdated(surgeon.getBlockPos(), surgeon.getBlockState(), surgeon.getBlockState(), 3);
 
             return damageApplied;
-
         } finally {
             surgeon.endSurgery();
         }
+    }
+
+    private static void rejectRobosurgeonInstall(Player player, RobosurgeonBlockEntity surgeon, int invIndex, ItemStack stack) {
+        giveOrDrop(player, stack);
+        clearRobosurgeonSlot(surgeon, invIndex);
+    }
+
+    private static void rejectSurgeryTableInstall(Player player, SurgeryTableBlockEntity surgeon, int invIndex, ItemStack stack) {
+        giveOrDrop(player, stack);
+        clearSurgeryTableSlot(surgeon, invIndex);
+    }
+
+    private static void giveOrDrop(Player player, ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return;
+
+        ItemStack giveBack = stack.copy();
+        if (!player.getInventory().add(giveBack)) {
+            player.drop(giveBack, false);
+        }
+    }
+
+    private static void clearRobosurgeonSlot(RobosurgeonBlockEntity surgeon, int invIndex) {
+        surgeon.inventory.setStackInSlot(invIndex, ItemStack.EMPTY);
+        surgeon.installed[invIndex] = false;
+        surgeon.staged[invIndex] = false;
+        surgeon.markedForRemoval[invIndex] = false;
+    }
+
+    private static void clearSurgeryTableSlot(SurgeryTableBlockEntity surgeon, int invIndex) {
+        surgeon.inventory.setStackInSlot(invIndex, ItemStack.EMPTY);
+        surgeon.setInstalled(invIndex, false);
+        surgeon.setStaged(invIndex, false);
+        surgeon.setMarkedForRemoval(invIndex, false);
+    }
+
+
+
+    private static boolean hasAnyInstalledWetware(PlayerCyberwareData data, RobosurgeonBlockEntity surgeon, boolean[] markedForRemoval) {
+        for (CyberwareSlot slot : CyberwareSlot.values()) {
+            for (int index = 0; index < slot.size; index++) {
+                int invIndex = RobosurgeonSlotMap.toInventoryIndex(slot, index);
+
+                if (invIndex < 0 || invIndex >= surgeon.inventory.getSlots()) {
+                    continue;
+                }
+
+                if (markedForRemoval != null
+                        && invIndex < markedForRemoval.length
+                        && markedForRemoval[invIndex]) {
+                    continue;
+                }
+
+                InstalledCyberware installed = data.get(slot, index);
+                if (installed == null || installed.getItem() == null || installed.getItem().isEmpty()) {
+                    continue;
+                }
+
+                if (installed.getItem().is(ModTags.Items.WETWARE_ITEM)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean hasAnyInstalledWetware(PlayerCyberwareData data, SurgeryTableBlockEntity surgeon, boolean[] markedForRemoval) {
+        for (CyberwareSlot slot : CyberwareSlot.values()) {
+            for (int index = 0; index < slot.size; index++) {
+                int invIndex = RobosurgeonSlotMap.toInventoryIndex(slot, index);
+
+                if (invIndex < 0 || invIndex >= surgeon.inventory.getSlots()) {
+                    continue;
+                }
+
+                if (markedForRemoval != null
+                        && invIndex < markedForRemoval.length
+                        && markedForRemoval[invIndex]) {
+                    continue;
+                }
+
+                InstalledCyberware installed = data.get(slot, index);
+                if (installed == null || installed.getItem() == null || installed.getItem().isEmpty()) {
+                    continue;
+                }
+
+                if (installed.getItem().is(ModTags.Items.WETWARE_ITEM)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static int forceRemoveDependents(
@@ -494,11 +649,9 @@ public final class SurgeryController {
 
             for (CyberwareSlot slot : CyberwareSlot.values()) {
                 for (int i = 0; i < slot.size; i++) {
-
                     int invIndex = RobosurgeonSlotMap.toInventoryIndex(slot, i);
                     if (invIndex < 0 || invIndex >= surgeon.inventory.getSlots()) continue;
                     if (invIndex >= wasInstalledBefore.length) continue;
-
                     if (!wasInstalledBefore[invIndex]) continue;
 
                     InstalledCyberware inst = data.get(slot, i);
@@ -515,27 +668,7 @@ public final class SurgeryController {
 
                     if (!hasReqItems && !hasReqTags) continue;
 
-                    boolean intersectsRemoved = false;
-
-                    if (hasReqItems) {
-                        for (Item req : requiredItems) {
-                            if (req != null && removedItemsThisSurgery.contains(req)) {
-                                intersectsRemoved = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!intersectsRemoved && hasReqTags) {
-                        for (TagKey<Item> tag : requiredTags) {
-                            if (tag == null) continue;
-                            if (anyRemovedItemMatchesTag(removedItemsThisSurgery, tag)) {
-                                intersectsRemoved = true;
-                                break;
-                            }
-                        }
-                    }
-
+                    boolean intersectsRemoved = removedRequirementMatches(requiredItems, requiredTags, removedItemsThisSurgery);
                     if (!intersectsRemoved) continue;
 
                     boolean itemsSatisfied = hasReqItems && hasAnyInstalledItem(data, requiredItems);
@@ -560,22 +693,19 @@ public final class SurgeryController {
 
                     removedChanges.add(new CyberwareSurgeryEvent.Change(slot, i, removed.getItem().copy()));
 
+                    data.ejectInventoryForRemovedCyberware(
+                            player,
+                            removed.getItem()
+                    );
+
                     if (removedItem instanceof ICyberwareItem cwRemoved) {
                         cwRemoved.onRemoved(player);
                     }
 
-                    ItemStack giveBack = removed.getItem().copy();
-                    if (!player.getInventory().add(giveBack)) {
-                        player.drop(giveBack, false);
-                    }
-
-                    surgeon.inventory.setStackInSlot(invIndex, ItemStack.EMPTY);
-                    surgeon.installed[invIndex] = false;
-                    surgeon.staged[invIndex] = false;
-                    surgeon.markedForRemoval[invIndex] = false;
+                    giveOrDrop(player, removed.getItem());
+                    clearRobosurgeonSlot(surgeon, invIndex);
                 }
             }
-
         } while (changed);
 
         return forcedRemovals;
@@ -597,11 +727,9 @@ public final class SurgeryController {
 
             for (CyberwareSlot slot : CyberwareSlot.values()) {
                 for (int i = 0; i < slot.size; i++) {
-
                     int invIndex = RobosurgeonSlotMap.toInventoryIndex(slot, i);
                     if (invIndex < 0 || invIndex >= surgeon.inventory.getSlots()) continue;
                     if (invIndex >= wasInstalledBefore.length) continue;
-
                     if (!wasInstalledBefore[invIndex]) continue;
 
                     InstalledCyberware inst = data.get(slot, i);
@@ -618,27 +746,7 @@ public final class SurgeryController {
 
                     if (!hasReqItems && !hasReqTags) continue;
 
-                    boolean intersectsRemoved = false;
-
-                    if (hasReqItems) {
-                        for (Item req : requiredItems) {
-                            if (req != null && removedItemsThisSurgery.contains(req)) {
-                                intersectsRemoved = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!intersectsRemoved && hasReqTags) {
-                        for (TagKey<Item> tag : requiredTags) {
-                            if (tag == null) continue;
-                            if (anyRemovedItemMatchesTag(removedItemsThisSurgery, tag)) {
-                                intersectsRemoved = true;
-                                break;
-                            }
-                        }
-                    }
-
+                    boolean intersectsRemoved = removedRequirementMatches(requiredItems, requiredTags, removedItemsThisSurgery);
                     if (!intersectsRemoved) continue;
 
                     boolean itemsSatisfied = hasReqItems && hasAnyInstalledItem(data, requiredItems);
@@ -663,25 +771,46 @@ public final class SurgeryController {
 
                     removedChanges.add(new CyberwareSurgeryEvent.Change(slot, i, removed.getItem().copy()));
 
+                    data.ejectInventoryForRemovedCyberware(
+                            player,
+                            removed.getItem()
+                    );
+
                     if (removedItem instanceof ICyberwareItem cwRemoved) {
                         cwRemoved.onRemoved(player);
                     }
 
-                    ItemStack giveBack = removed.getItem().copy();
-                    if (!player.getInventory().add(giveBack)) {
-                        player.drop(giveBack, false);
-                    }
-
-                    surgeon.inventory.setStackInSlot(invIndex, ItemStack.EMPTY);
-                    surgeon.setInstalled(invIndex, false);
-                    surgeon.setStaged(invIndex, false);
-                    surgeon.setMarkedForRemoval(invIndex, false);
+                    giveOrDrop(player, removed.getItem());
+                    clearSurgeryTableSlot(surgeon, invIndex);
                 }
             }
-
         } while (changed);
 
         return forcedRemovals;
+    }
+
+    private static boolean removedRequirementMatches(
+            Set<Item> requiredItems,
+            Set<TagKey<Item>> requiredTags,
+            Set<Item> removedItemsThisSurgery
+    ) {
+        if (requiredItems != null) {
+            for (Item req : requiredItems) {
+                if (req != null && removedItemsThisSurgery.contains(req)) {
+                    return true;
+                }
+            }
+        }
+
+        if (requiredTags != null) {
+            for (TagKey<Item> tag : requiredTags) {
+                if (tag != null && anyRemovedItemMatchesTag(removedItemsThisSurgery, tag)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static boolean hasAnyInstalledItem(PlayerCyberwareData data, Set<Item> items) {
@@ -750,7 +879,6 @@ public final class SurgeryController {
                 int invIndex = RobosurgeonSlotMap.toInventoryIndex(installSlotType, i);
                 if (invIndex < 0 || invIndex >= surgeon.inventory.getSlots()) continue;
                 if (invIndex >= staged.length) continue;
-
                 if (!staged[invIndex]) continue;
 
                 ItemStack st = surgeon.inventory.getStackInSlot(invIndex);
@@ -785,7 +913,6 @@ public final class SurgeryController {
                 int invIndex = RobosurgeonSlotMap.toInventoryIndex(installSlotType, i);
                 if (invIndex < 0 || invIndex >= surgeon.inventory.getSlots()) continue;
                 if (invIndex >= staged.length) continue;
-
                 if (!staged[invIndex]) continue;
 
                 ItemStack st = surgeon.inventory.getStackInSlot(invIndex);
@@ -809,10 +936,10 @@ public final class SurgeryController {
             PlayerCyberwareData data,
             RobosurgeonBlockEntity surgeon,
             boolean[] staged,
-            Set<TagKey<Item>> requiredTags,
+            Set<TagKey<Item>> required,
             CyberwareSlot installSlotType
     ) {
-        if (requiredTags == null || requiredTags.isEmpty()) return true;
+        if (required == null || required.isEmpty()) return true;
 
         if (staged != null) {
             int mappedSize = RobosurgeonSlotMap.mappedSize(installSlotType);
@@ -820,13 +947,12 @@ public final class SurgeryController {
                 int invIndex = RobosurgeonSlotMap.toInventoryIndex(installSlotType, i);
                 if (invIndex < 0 || invIndex >= surgeon.inventory.getSlots()) continue;
                 if (invIndex >= staged.length) continue;
-
                 if (!staged[invIndex]) continue;
 
                 ItemStack st = surgeon.inventory.getStackInSlot(invIndex);
                 if (st.isEmpty()) continue;
 
-                for (TagKey<Item> tag : requiredTags) {
+                for (TagKey<Item> tag : required) {
                     if (tag != null && st.is(tag)) return true;
                 }
             }
@@ -838,7 +964,7 @@ public final class SurgeryController {
             if (inst == null || inst.getItem() == null || inst.getItem().isEmpty()) continue;
 
             ItemStack st = inst.getItem();
-            for (TagKey<Item> tag : requiredTags) {
+            for (TagKey<Item> tag : required) {
                 if (tag != null && st.is(tag)) return true;
             }
         }
@@ -850,10 +976,10 @@ public final class SurgeryController {
             PlayerCyberwareData data,
             SurgeryTableBlockEntity surgeon,
             boolean[] staged,
-            Set<TagKey<Item>> requiredTags,
+            Set<TagKey<Item>> required,
             CyberwareSlot installSlotType
     ) {
-        if (requiredTags == null || requiredTags.isEmpty()) return true;
+        if (required == null || required.isEmpty()) return true;
 
         if (staged != null) {
             int mappedSize = RobosurgeonSlotMap.mappedSize(installSlotType);
@@ -861,13 +987,12 @@ public final class SurgeryController {
                 int invIndex = RobosurgeonSlotMap.toInventoryIndex(installSlotType, i);
                 if (invIndex < 0 || invIndex >= surgeon.inventory.getSlots()) continue;
                 if (invIndex >= staged.length) continue;
-
                 if (!staged[invIndex]) continue;
 
                 ItemStack st = surgeon.inventory.getStackInSlot(invIndex);
                 if (st.isEmpty()) continue;
 
-                for (TagKey<Item> tag : requiredTags) {
+                for (TagKey<Item> tag : required) {
                     if (tag != null && st.is(tag)) return true;
                 }
             }
@@ -879,7 +1004,7 @@ public final class SurgeryController {
             if (inst == null || inst.getItem() == null || inst.getItem().isEmpty()) continue;
 
             ItemStack st = inst.getItem();
-            for (TagKey<Item> tag : requiredTags) {
+            for (TagKey<Item> tag : required) {
                 if (tag != null && st.is(tag)) return true;
             }
         }
@@ -901,19 +1026,80 @@ public final class SurgeryController {
         Set<Item> badItems = installingItem.incompatibleCyberware(installingStack, installingSlotType);
         Set<TagKey<Item>> badTags = installingItem.incompatibleCyberwareTags(installingStack, installingSlotType);
 
-        if ((badItems == null || badItems.isEmpty()) && (badTags == null || badTags.isEmpty())) {
-            badItems = Set.of();
-            badTags = Set.of();
-        }
+        if (badItems == null) badItems = Set.of();
+        if (badTags == null) badTags = Set.of();
 
         int currentInvIndex = RobosurgeonSlotMap.toInventoryIndex(installingSlotType, installingIndex);
 
         for (CyberwareSlot otherSlot : CyberwareSlot.values()) {
             for (int otherIndex = 0; otherIndex < otherSlot.size; otherIndex++) {
-
                 int otherInvIndex = RobosurgeonSlotMap.toInventoryIndex(otherSlot, otherIndex);
                 if (otherInvIndex < 0 || otherInvIndex >= surgeon.inventory.getSlots()) continue;
+                if (otherInvIndex == currentInvIndex) continue;
 
+                if (markedForRemoval != null && otherInvIndex < markedForRemoval.length && markedForRemoval[otherInvIndex]) {
+                    continue;
+                }
+
+                ItemStack otherStack;
+
+                boolean otherIsStaged = staged != null && otherInvIndex < staged.length && staged[otherInvIndex];
+
+                if (otherIsStaged) {
+                    otherStack = surgeon.inventory.getStackInSlot(otherInvIndex);
+                } else {
+                    InstalledCyberware inst = data.get(otherSlot, otherIndex);
+                    otherStack = inst != null && inst.getItem() != null ? inst.getItem() : ItemStack.EMPTY;
+                }
+
+                if (otherStack.isEmpty()) continue;
+
+                if (badItems.contains(otherStack.getItem())) return true;
+
+                for (TagKey<Item> tag : badTags) {
+                    if (tag != null && otherStack.is(tag)) return true;
+                }
+
+                if (otherStack.getItem() instanceof ICyberwareItem otherCyberware) {
+                    Set<Item> otherBadItems = otherCyberware.incompatibleCyberware(otherStack, otherSlot);
+                    if (otherBadItems != null && otherBadItems.contains(installingStack.getItem())) return true;
+
+                    Set<TagKey<Item>> otherBadTags = otherCyberware.incompatibleCyberwareTags(otherStack, otherSlot);
+                    if (otherBadTags != null) {
+                        for (TagKey<Item> tag : otherBadTags) {
+                            if (tag != null && installingStack.is(tag)) return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean hasAnyIncompatibleCyberware(
+            PlayerCyberwareData data,
+            SurgeryTableBlockEntity surgeon,
+            boolean[] staged,
+            boolean[] markedForRemoval,
+            ItemStack installingStack,
+            CyberwareSlot installingSlotType,
+            int installingIndex
+    ) {
+        if (!(installingStack.getItem() instanceof ICyberwareItem installingItem)) return false;
+
+        Set<Item> badItems = installingItem.incompatibleCyberware(installingStack, installingSlotType);
+        Set<TagKey<Item>> badTags = installingItem.incompatibleCyberwareTags(installingStack, installingSlotType);
+
+        if (badItems == null) badItems = Set.of();
+        if (badTags == null) badTags = Set.of();
+
+        int currentInvIndex = RobosurgeonSlotMap.toInventoryIndex(installingSlotType, installingIndex);
+
+        for (CyberwareSlot otherSlot : CyberwareSlot.values()) {
+            for (int otherIndex = 0; otherIndex < otherSlot.size; otherIndex++) {
+                int otherInvIndex = RobosurgeonSlotMap.toInventoryIndex(otherSlot, otherIndex);
+                if (otherInvIndex < 0 || otherInvIndex >= surgeon.inventory.getSlots()) continue;
                 if (otherInvIndex == currentInvIndex) continue;
 
                 if (markedForRemoval != null
@@ -960,7 +1146,90 @@ public final class SurgeryController {
         return false;
     }
 
-    private static boolean hasAnyIncompatibleCyberware(
+    private static boolean hasAnySameSlotIncompatibleCyberware(
+            PlayerCyberwareData data,
+            RobosurgeonBlockEntity surgeon,
+            boolean[] staged,
+            boolean[] markedForRemoval,
+            ItemStack installingStack,
+            CyberwareSlot installingSlotType,
+            int installingIndex
+    ) {
+        if (!(installingStack.getItem() instanceof ICyberwareItem installingItem)) {
+            return false;
+        }
+
+        Set<TagKey<Item>> badTags =
+                installingItem.sameSlotIncompatibleCyberwareTags(installingStack, installingSlotType);
+
+        if (badTags == null || badTags.isEmpty()) {
+            return false;
+        }
+
+        int currentInvIndex = RobosurgeonSlotMap.toInventoryIndex(installingSlotType, installingIndex);
+        int mappedSize = RobosurgeonSlotMap.mappedSize(installingSlotType);
+
+        for (int otherIndex = 0; otherIndex < mappedSize; otherIndex++) {
+            int otherInvIndex = RobosurgeonSlotMap.toInventoryIndex(installingSlotType, otherIndex);
+
+            if (otherInvIndex < 0 || otherInvIndex >= surgeon.inventory.getSlots()) {
+                continue;
+            }
+
+            if (otherInvIndex == currentInvIndex) {
+                continue;
+            }
+
+            if (markedForRemoval != null
+                    && otherInvIndex < markedForRemoval.length
+                    && markedForRemoval[otherInvIndex]) {
+                continue;
+            }
+
+            ItemStack otherStack;
+
+            boolean otherIsStaged =
+                    staged != null
+                            && otherInvIndex < staged.length
+                            && staged[otherInvIndex];
+
+            if (otherIsStaged) {
+                otherStack = surgeon.inventory.getStackInSlot(otherInvIndex);
+            } else {
+                InstalledCyberware installed = data.get(installingSlotType, otherIndex);
+                otherStack = installed != null && installed.getItem() != null
+                        ? installed.getItem()
+                        : ItemStack.EMPTY;
+            }
+
+            if (otherStack.isEmpty()) {
+                continue;
+            }
+
+            for (TagKey<Item> tag : badTags) {
+                if (tag != null && otherStack.is(tag)) {
+                    return true;
+                }
+            }
+
+            if (otherStack.getItem() instanceof ICyberwareItem otherCyberware) {
+                Set<TagKey<Item>> otherBadTags =
+                        otherCyberware.sameSlotIncompatibleCyberwareTags(otherStack, installingSlotType);
+
+                if (otherBadTags != null) {
+                    for (TagKey<Item> tag : otherBadTags) {
+                        if (tag != null && installingStack.is(tag)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean hasAnySameSlotIncompatibleCyberware(
             PlayerCyberwareData data,
             SurgeryTableBlockEntity surgeon,
             boolean[] staged,
@@ -969,61 +1238,71 @@ public final class SurgeryController {
             CyberwareSlot installingSlotType,
             int installingIndex
     ) {
-        if (!(installingStack.getItem() instanceof ICyberwareItem installingItem)) return false;
+        if (!(installingStack.getItem() instanceof ICyberwareItem installingItem)) {
+            return false;
+        }
 
-        Set<Item> badItems = installingItem.incompatibleCyberware(installingStack, installingSlotType);
-        Set<TagKey<Item>> badTags = installingItem.incompatibleCyberwareTags(installingStack, installingSlotType);
+        Set<TagKey<Item>> badTags =
+                installingItem.sameSlotIncompatibleCyberwareTags(installingStack, installingSlotType);
 
-        if ((badItems == null || badItems.isEmpty()) && (badTags == null || badTags.isEmpty())) {
-            badItems = Set.of();
-            badTags = Set.of();
+        if (badTags == null || badTags.isEmpty()) {
+            return false;
         }
 
         int currentInvIndex = RobosurgeonSlotMap.toInventoryIndex(installingSlotType, installingIndex);
+        int mappedSize = RobosurgeonSlotMap.mappedSize(installingSlotType);
 
-        for (CyberwareSlot otherSlot : CyberwareSlot.values()) {
-            for (int otherIndex = 0; otherIndex < otherSlot.size; otherIndex++) {
+        for (int otherIndex = 0; otherIndex < mappedSize; otherIndex++) {
+            int otherInvIndex = RobosurgeonSlotMap.toInventoryIndex(installingSlotType, otherIndex);
 
-                int otherInvIndex = RobosurgeonSlotMap.toInventoryIndex(otherSlot, otherIndex);
-                if (otherInvIndex < 0 || otherInvIndex >= surgeon.inventory.getSlots()) continue;
+            if (otherInvIndex < 0 || otherInvIndex >= surgeon.inventory.getSlots()) {
+                continue;
+            }
 
-                if (otherInvIndex == currentInvIndex) continue;
+            if (otherInvIndex == currentInvIndex) {
+                continue;
+            }
 
-                if (markedForRemoval != null
-                        && otherInvIndex < markedForRemoval.length
-                        && markedForRemoval[otherInvIndex]) {
-                    continue;
+            if (markedForRemoval != null
+                    && otherInvIndex < markedForRemoval.length
+                    && markedForRemoval[otherInvIndex]) {
+                continue;
+            }
+
+            ItemStack otherStack;
+
+            boolean otherIsStaged =
+                    staged != null
+                            && otherInvIndex < staged.length
+                            && staged[otherInvIndex];
+
+            if (otherIsStaged) {
+                otherStack = surgeon.inventory.getStackInSlot(otherInvIndex);
+            } else {
+                InstalledCyberware installed = data.get(installingSlotType, otherIndex);
+                otherStack = installed != null && installed.getItem() != null
+                        ? installed.getItem()
+                        : ItemStack.EMPTY;
+            }
+
+            if (otherStack.isEmpty()) {
+                continue;
+            }
+
+            for (TagKey<Item> tag : badTags) {
+                if (tag != null && otherStack.is(tag)) {
+                    return true;
                 }
+            }
 
-                ItemStack otherStack;
+            if (otherStack.getItem() instanceof ICyberwareItem otherCyberware) {
+                Set<TagKey<Item>> otherBadTags =
+                        otherCyberware.sameSlotIncompatibleCyberwareTags(otherStack, installingSlotType);
 
-                boolean otherIsStaged = staged != null
-                        && otherInvIndex < staged.length
-                        && staged[otherInvIndex];
-
-                if (otherIsStaged) {
-                    otherStack = surgeon.inventory.getStackInSlot(otherInvIndex);
-                } else {
-                    InstalledCyberware inst = data.get(otherSlot, otherIndex);
-                    otherStack = (inst != null && inst.getItem() != null) ? inst.getItem() : ItemStack.EMPTY;
-                }
-
-                if (otherStack.isEmpty()) continue;
-
-                if (badItems.contains(otherStack.getItem())) return true;
-
-                for (TagKey<Item> tag : badTags) {
-                    if (tag != null && otherStack.is(tag)) return true;
-                }
-
-                if (otherStack.getItem() instanceof ICyberwareItem otherCyberware) {
-                    Set<Item> otherBadItems = otherCyberware.incompatibleCyberware(otherStack, otherSlot);
-                    if (otherBadItems != null && otherBadItems.contains(installingStack.getItem())) return true;
-
-                    Set<TagKey<Item>> otherBadTags = otherCyberware.incompatibleCyberwareTags(otherStack, otherSlot);
-                    if (otherBadTags != null) {
-                        for (TagKey<Item> tag : otherBadTags) {
-                            if (tag != null && installingStack.is(tag)) return true;
+                if (otherBadTags != null) {
+                    for (TagKey<Item> tag : otherBadTags) {
+                        if (tag != null && installingStack.is(tag)) {
+                            return true;
                         }
                     }
                 }

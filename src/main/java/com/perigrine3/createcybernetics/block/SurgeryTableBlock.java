@@ -141,14 +141,18 @@ public class SurgeryTableBlock extends BaseEntityBlock implements EntityBlock {
 
         Direction facing = state.getValue(FACING);
         BedPart part = state.getValue(PART);
-        BlockPos otherPos = part == BedPart.FOOT ? pos.relative(facing) : pos.relative(facing.getOpposite());
-        BlockState otherState = level.getBlockState(otherPos);
-
-        if (otherState.is(this) && otherState.getValue(PART) != part) {
-            level.removeBlock(otherPos, false);
-        }
 
         BlockPos headPos = getHeadPos(state, pos);
+        BlockPos footPos = part == BedPart.FOOT
+                ? pos
+                : pos.relative(facing.getOpposite());
+
+        BlockPos otherPos = part == BedPart.FOOT
+                ? pos.relative(facing)
+                : pos.relative(facing.getOpposite());
+
+        BlockState otherState = level.getBlockState(otherPos);
+
         if (level.getBlockEntity(headPos) instanceof SurgeryTableBlockEntity table) {
             table.dropStagedItems(level, headPos);
 
@@ -156,8 +160,16 @@ public class SurgeryTableBlock extends BaseEntityBlock implements EntityBlock {
             if (patient != null && patient.isSleeping()) {
                 patient.stopSleeping();
             }
+
             table.clearPatient();
         }
+
+        if (otherState.is(this) && otherState.getValue(PART) != part) {
+            level.removeBlock(otherPos, false);
+        }
+
+        level.updateNeighbourForOutputSignal(headPos, this);
+        level.updateNeighbourForOutputSignal(footPos, this);
 
         super.onRemove(state, level, pos, newState, isMoving);
     }
@@ -257,6 +269,22 @@ public class SurgeryTableBlock extends BaseEntityBlock implements EntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return state.getValue(PART) == BedPart.HEAD ? new SurgeryTableBlockEntity(pos, state) : null;
+    }
+
+    @Override
+    protected boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        BlockPos headPos = getHeadPos(state, pos);
+
+        if (!(level.getBlockEntity(headPos) instanceof SurgeryTableBlockEntity table)) {
+            return 0;
+        }
+
+        return table.getComparatorOutput();
     }
 
     @Nullable

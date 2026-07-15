@@ -78,4 +78,9 @@ public class CyberzombieEntity extends Zombie {
         this.goalSelector.addGoal(2, new CyberentityFirestarterAttackGoal(this, 1.0D, false));
         this.goalSelector.addGoal(3, new CyberentitySandevistanGoal(this));
     }
+
+    @Override
+    protected boolean convertsInWater() {
+        return false;
+    }
 }

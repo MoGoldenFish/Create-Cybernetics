@@ -20,40 +20,63 @@ public final class SkinOverlayModelRenderer {
     ) {
         if (modifier == null) return;
 
-        if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.HEAD)) {
+        if (model.head.visible
+                && modifier.rendersOverlayPart(SkinModifier.OverlayPart.HEAD)) {
             model.head.render(poseStack, vc, light, overlay, color);
         }
-        if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.HAT)) {
+
+        if (model.hat.visible
+                && modifier.rendersOverlayPart(SkinModifier.OverlayPart.HAT)) {
             model.hat.render(poseStack, vc, light, overlay, color);
         }
-        if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.BODY)) {
+
+        if (model.body.visible
+                && modifier.rendersOverlayPart(SkinModifier.OverlayPart.BODY)) {
             model.body.render(poseStack, vc, light, overlay, color);
         }
-        if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.JACKET)) {
+
+        if (model.jacket.visible
+                && modifier.rendersOverlayPart(SkinModifier.OverlayPart.JACKET)) {
             model.jacket.render(poseStack, vc, light, overlay, color);
         }
-        if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_ARM)) {
+
+        if (model.leftArm.visible
+                && modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_ARM)) {
             model.leftArm.render(poseStack, vc, light, overlay, color);
         }
-        if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_SLEEVE)) {
+
+        if (model.leftSleeve.visible
+                && modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_SLEEVE)) {
             model.leftSleeve.render(poseStack, vc, light, overlay, color);
         }
-        if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_ARM)) {
+
+        if (model.rightArm.visible
+                && modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_ARM)) {
             model.rightArm.render(poseStack, vc, light, overlay, color);
         }
-        if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_SLEEVE)) {
+
+        if (model.rightSleeve.visible
+                && modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_SLEEVE)) {
             model.rightSleeve.render(poseStack, vc, light, overlay, color);
         }
-        if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_LEG)) {
+
+        if (model.leftLeg.visible
+                && modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_LEG)) {
             model.leftLeg.render(poseStack, vc, light, overlay, color);
         }
-        if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_PANTS)) {
+
+        if (model.leftPants.visible
+                && modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_PANTS)) {
             model.leftPants.render(poseStack, vc, light, overlay, color);
         }
-        if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_LEG)) {
+
+        if (model.rightLeg.visible
+                && modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_LEG)) {
             model.rightLeg.render(poseStack, vc, light, overlay, color);
         }
-        if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_PANTS)) {
+
+        if (model.rightPants.visible
+                && modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_PANTS)) {
             model.rightPants.render(poseStack, vc, light, overlay, color);
         }
     }
@@ -71,17 +94,23 @@ public final class SkinOverlayModelRenderer {
         if (modifier == null) return;
 
         if (rightArm) {
-            if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_ARM)) {
+            if (model.rightArm.visible
+                    && modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_ARM)) {
                 model.rightArm.render(poseStack, vc, light, overlay, color);
             }
-            if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_SLEEVE)) {
+
+            if (model.rightSleeve.visible
+                    && modifier.rendersOverlayPart(SkinModifier.OverlayPart.RIGHT_SLEEVE)) {
                 model.rightSleeve.render(poseStack, vc, light, overlay, color);
             }
         } else {
-            if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_ARM)) {
+            if (model.leftArm.visible
+                    && modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_ARM)) {
                 model.leftArm.render(poseStack, vc, light, overlay, color);
             }
-            if (modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_SLEEVE)) {
+
+            if (model.leftSleeve.visible
+                    && modifier.rendersOverlayPart(SkinModifier.OverlayPart.LEFT_SLEEVE)) {
                 model.leftSleeve.render(poseStack, vc, light, overlay, color);
             }
         }

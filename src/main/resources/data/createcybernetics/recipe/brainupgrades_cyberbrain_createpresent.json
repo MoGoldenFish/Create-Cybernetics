@@ -27,19 +27,19 @@
     "5": {
       "item": "createcybernetics:cerebellum"
     },
-    "Q": {
-      "item": "createcybernetics:netherite_qpu"
-    },
     "X": {
       "item": "createcybernetics:component_synthnerves"
+    },
+    "S": {
+      "item": "createcybernetics:component_ssd"
     }
   },
 
   "pattern": [
     " NNN ",
-    "NQ2QN",
-    "N1Q3N",
-    "NQ4QN",
+    "NX2XN",
+    "N1S3N",
+    "NX4XN",
     "  X5X"
   ],
 

@@ -1,6 +1,6 @@
 package com.perigrine3.createcybernetics.common.humanity;
 
-import com.perigrine3.createcybernetics.ConfigValues;
+import com.perigrine3.createcybernetics.Config;
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
@@ -10,6 +10,7 @@ import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
 import com.perigrine3.createcybernetics.util.CyberwareAttributeHelper;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -24,16 +25,41 @@ public final class HumanityAttributeModifiers {
 
     private HumanityAttributeModifiers() {}
 
-    public static int get(Player player) {
-        return CyberwareAttributeHelper.getIntValue(player, ModAttributes.HUMANITY, ConfigValues.BASE_HUMANITY);
+    public static int getConfiguredBaseHumanity() {
+        return Math.max(1, Config.HUMANITY.get());
     }
 
-    public static void resetBase(Player player) {
+    public static int get(Player player) {
+        return CyberwareAttributeHelper.getIntValue(
+                player,
+                ModAttributes.HUMANITY,
+                getConfiguredBaseHumanity()
+        );
+    }
+
+    public static int getBase(Player player) {
+        if (player == null) {
+            return getConfiguredBaseHumanity();
+        }
+
+        var instance = player.getAttribute(ModAttributes.HUMANITY);
+        if (instance == null) {
+            return getConfiguredBaseHumanity();
+        }
+
+        return Mth.floor(instance.getBaseValue());
+    }
+
+    public static void syncConfiguredBase(Player player) {
         if (player == null) {
             return;
         }
 
-        CyberwareAttributeHelper.setBaseValue(player, ModAttributes.HUMANITY, ConfigValues.BASE_HUMANITY);
+        CyberwareAttributeHelper.setBaseValue(
+                player,
+                ModAttributes.HUMANITY,
+                getConfiguredBaseHumanity()
+        );
     }
 
     public static void rebuildCyberwareCostModifiers(Player player) {
@@ -41,7 +67,12 @@ public final class HumanityAttributeModifiers {
             return;
         }
 
+        syncConfiguredBase(player);
         clearCyberwareCostModifiers(player);
+
+        if (DataIntegrityHandler.usesDataIntegrity(player)) {
+            return;
+        }
 
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
         if (data == null) {
@@ -70,7 +101,6 @@ public final class HumanityAttributeModifiers {
                 }
 
                 int cost = item.getHumanityCost();
-
                 if (cost == 0) {
                     continue;
                 }

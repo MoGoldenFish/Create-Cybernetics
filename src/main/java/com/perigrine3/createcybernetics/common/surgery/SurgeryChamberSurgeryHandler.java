@@ -1,12 +1,15 @@
 package com.perigrine3.createcybernetics.common.surgery;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
+import com.perigrine3.createcybernetics.block.RobosurgeonBlock;
 import com.perigrine3.createcybernetics.block.SurgeryChamberBlockBottom;
 import com.perigrine3.createcybernetics.block.entity.RobosurgeonBlockEntity;
 import com.perigrine3.createcybernetics.common.damage.ModDamageSources;
+import com.perigrine3.createcybernetics.common.energy.ConditionalBlockPower;
 import com.perigrine3.createcybernetics.sound.ModSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -61,6 +64,11 @@ public final class SurgeryChamberSurgeryHandler {
     }
 
     public static void startOrRefresh(ServerPlayer player, Level level, BlockPos bottomPos, RobosurgeonBlockEntity surgeon) {
+        if (!hasRequiredRobosurgeonPower(player, surgeon, false)) {
+            sendUnpoweredMessage(player);
+            return;
+        }
+
         ActiveSurgery active = ACTIVE_BY_PLAYER.get(player.getUUID());
 
         if (active != null) {
@@ -120,6 +128,13 @@ public final class SurgeryChamberSurgeryHandler {
                 continue;
             }
 
+            if (!hasRequiredRobosurgeonPower(player, active.surgeon, true)) {
+                sendUnpoweredMessage(player);
+                PLAYER_BY_BOTTOM_POS.remove(active.bottomPos);
+                it.remove();
+                continue;
+            }
+
             tickBloodParticles(level, player, active);
             tickSurgeryDamage(level, player, active);
 
@@ -135,6 +150,46 @@ public final class SurgeryChamberSurgeryHandler {
 
             PLAYER_BY_BOTTOM_POS.remove(active.bottomPos);
             it.remove();
+        }
+    }
+
+    private static boolean hasRequiredRobosurgeonPower(ServerPlayer player, RobosurgeonBlockEntity surgeon, boolean consume) {
+        if (player == null || surgeon == null) {
+            return false;
+        }
+
+        if (player.level().isClientSide) {
+            return false;
+        }
+
+        Level level = surgeon.getLevel();
+
+        if (level == null || level.isClientSide) {
+            return false;
+        }
+
+        if (consume) {
+            return ConditionalBlockPower.consumeRequiredPower(
+                    level,
+                    surgeon.getBlockPos(),
+                    surgeon.getMutableEnergyStorage(),
+                    RobosurgeonBlock.ENERGY_USED_PER_GUI_TICK
+            );
+        }
+
+        return ConditionalBlockPower.hasRequiredPower(
+                level,
+                surgeon.getBlockPos(),
+                surgeon.getMutableEnergyStorage(),
+                RobosurgeonBlock.ENERGY_REQUIRED_TO_OPEN
+        );
+    }
+
+    private static void sendUnpoweredMessage(ServerPlayer player) {
+        if (ConditionalBlockPower.shouldUseEnergyInsteadOfRedstone()) {
+            player.displayClientMessage(Component.translatable("message.createcybernetics.block.requires_energy"), true);
+        } else {
+            player.displayClientMessage(Component.translatable("message.createcybernetics.block.requires_redstone"), true);
         }
     }
 

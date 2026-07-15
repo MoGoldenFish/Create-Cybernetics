@@ -31,6 +31,7 @@ public final class EnergyController {
     private static final Map<Class<?>, Boolean> OVERRIDES_SHOULD_GENERATE = new ConcurrentHashMap<>();
 
     private static final String NBT_ON_CHARGER_UNTIL = "cc_on_charging_block_until";
+    private static final String NBT_CHARGER_ENERGY_BUDGET = "cc_charging_block_energy_budget";
 
     private static final String NBT_EMP_THREADING_GRACE_UNTIL = "cc_emp_threading_grace_until";
     private static final int EMP_THREADING_GRACE_TICKS = 60;
@@ -41,6 +42,7 @@ public final class EnergyController {
         if (player.level().isClientSide) return;
 
         if (!player.hasData(ModAttachments.CYBERWARE)) return;
+
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
         if (data == null) return;
 
@@ -50,86 +52,45 @@ public final class EnergyController {
             player.getPersistentData().remove(NBT_EMP_THREADING_GRACE_UNTIL);
         }
 
-        // ================================================================
-        // EMP / REBOOT: wipe stored energy, clear activation-paid flags,
-        // and mark all cyberware unpowered.
-        //
-        // Capacitor Frame still fully protects as before.
-        // EMP Threading gives a 3 second grace window before this shutdown
-        // path is allowed to run.
-        // ================================================================
         if (empLikeShutdown && !hasEmpProtection(data) && !hasEmpThreadingGrace(player, data)) {
-            data.setEnergyStored(player, 0);
-
-            for (var entry : data.getAll().entrySet()) {
-                CyberwareSlot slot = entry.getKey();
-                InstalledCyberware[] arr = entry.getValue();
-                if (arr == null) continue;
-
-                for (int idx = 0; idx < arr.length; idx++) {
-                    InstalledCyberware cw = arr[idx];
-                    if (cw == null) continue;
-
-                    ItemStack stack = cw.getItem();
-                    if (stack == null || stack.isEmpty()) {
-                        cw.setPowered(false);
-                        continue;
-                    }
-
-                    if (stack.getItem() instanceof ICyberwareItem item) {
-                        String paidKey = item.getActivationPaidNbtKey(player, stack, slot);
-                        if (paidKey != null && !paidKey.isBlank()) {
-                            String persistentKey = buildActivationPersistentKey(paidKey, slot, idx);
-                            player.getPersistentData().remove(persistentKey);
-                        }
-                    }
-
-                    cw.setPowered(false);
-                }
-            }
-
-            data.setDirty();
+            shutdownAllCyberwareEnergy(player, data);
             return;
         }
 
-        // ================================================================
-        // Normal flow
-        // ================================================================
         data.clampEnergyToCapacity(player);
 
-        final boolean onCharger = isOnChargerBlock(player);
+        final int chargerEnergyBudget = getActiveChargerEnergyBudget(player);
+        final boolean onCharger = chargerEnergyBudget > 0;
 
-        // ================================================================
-        // Compute charger "charge rate" (how much can be stored this tick).
-        // This is independent from powering implants while on the charger.
-        // ================================================================
-        int chargerCharge = 0;
-        if (onCharger) {
-            for (var entry : data.getAll().entrySet()) {
-                CyberwareSlot slot = entry.getKey();
-                InstalledCyberware[] arr = entry.getValue();
-                if (arr == null) continue;
+        int chargerCharge = computeChargerCharge(player, data, onCharger);
+        int tickGenerated = computeGeneratedEnergy(player, data);
 
-                for (int idx = 0; idx < arr.length; idx++) {
-                    InstalledCyberware cw = arr[idx];
-                    if (cw == null) continue;
+        MutableInt genPool = new MutableInt(tickGenerated);
+        MutableInt mainsPool = new MutableInt(onCharger ? chargerEnergyBudget : 0);
 
-                    ItemStack stack = cw.getItem();
-                    if (stack == null || stack.isEmpty()) continue;
+        payEnergyCosts(player, data, mainsPool, genPool);
 
-                    if (!(stack.getItem() instanceof ICyberwareItem item)) continue;
-                    if (!item.acceptsChargerEnergy(player, stack, slot)) continue;
+        consumeGeneratedSurplus(player, data, genPool);
 
-                    int req = item.getChargerEnergyReceivePerTick(player, stack, slot);
-                    if (req > 0) chargerCharge += req;
-                }
+        depositGeneratedSurplus(player, data, genPool);
+
+        if (onCharger && chargerCharge > 0 && mainsPool.value > 0) {
+            int receivedFromCharger = Math.min(chargerCharge, mainsPool.value);
+
+            data.receiveEnergy(player, receivedFromCharger);
+
+            if (mainsPool.value != Integer.MAX_VALUE) {
+                mainsPool.value = Math.max(0, mainsPool.value - receivedFromCharger);
             }
         }
 
-        // ================================================================
-        // Generator pool (existing behavior)
-        // ================================================================
-        int tickGenerated = 0;
+        data.clampEnergyToCapacity(player);
+        data.setDirty();
+    }
+
+    private static void shutdownAllCyberwareEnergy(Player player, PlayerCyberwareData data) {
+        data.setEnergyStored(player, 0);
+
         for (var entry : data.getAll().entrySet()) {
             CyberwareSlot slot = entry.getKey();
             InstalledCyberware[] arr = entry.getValue();
@@ -137,6 +98,78 @@ public final class EnergyController {
 
             for (int idx = 0; idx < arr.length; idx++) {
                 InstalledCyberware cw = arr[idx];
+                if (cw == null) continue;
+
+                ItemStack stack = cw.getItem();
+                if (stack == null || stack.isEmpty()) {
+                    cw.setPowered(false);
+                    continue;
+                }
+
+                if (stack.getItem() instanceof ICyberwareItem item) {
+                    String paidKey = item.getActivationPaidNbtKey(player, stack, slot);
+                    if (paidKey != null && !paidKey.isBlank()) {
+                        String persistentKey = buildActivationPersistentKey(paidKey, slot, idx);
+                        player.getPersistentData().remove(persistentKey);
+                    }
+                }
+
+                cw.setPowered(false);
+            }
+        }
+
+        data.setDirty();
+    }
+
+    private static int computeChargerCharge(Player player, PlayerCyberwareData data, boolean onCharger) {
+        if (!onCharger) return 0;
+
+        int chargerCharge = 0;
+
+        for (var entry : data.getAll().entrySet()) {
+            CyberwareSlot slot = entry.getKey();
+            InstalledCyberware[] arr = entry.getValue();
+            if (arr == null) continue;
+
+            for (InstalledCyberware cw : arr) {
+                if (cw == null) continue;
+
+                ItemStack stack = cw.getItem();
+                if (stack == null || stack.isEmpty()) continue;
+
+                if (!(stack.getItem() instanceof ICyberwareItem item)) continue;
+                if (!item.acceptsChargerEnergy(player, stack, slot)) continue;
+
+                int req = item.getChargerEnergyReceivePerTick(player, stack, slot);
+                if (req > 0) {
+                    chargerCharge += req;
+                }
+            }
+        }
+
+        return chargerCharge;
+    }
+
+    public static int getRequestedChargerEnergy(Player player) {
+        if (player == null) return 0;
+        if (player.level().isClientSide) return 0;
+        if (!player.hasData(ModAttachments.CYBERWARE)) return 0;
+
+        PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
+        if (data == null) return 0;
+
+        return computeChargerCharge(player, data, true);
+    }
+
+    private static int computeGeneratedEnergy(Player player, PlayerCyberwareData data) {
+        int tickGenerated = 0;
+
+        for (var entry : data.getAll().entrySet()) {
+            CyberwareSlot slot = entry.getKey();
+            InstalledCyberware[] arr = entry.getValue();
+            if (arr == null) continue;
+
+            for (InstalledCyberware cw : arr) {
                 if (cw == null) continue;
 
                 ItemStack stack = cw.getItem();
@@ -153,22 +186,10 @@ public final class EnergyController {
             }
         }
 
-        MutableInt genPool = new MutableInt(tickGenerated);
+        return Math.max(0, tickGenerated);
+    }
 
-        // ================================================================
-        // “Mains” power while on the charger:
-        // If on the charging block, implants can draw unlimited external power.
-        // This prevents stored energy from being drained and allows batteries to charge.
-        // ================================================================
-        MutableInt mainsPool = new MutableInt(onCharger ? Integer.MAX_VALUE : 0);
-
-        // ================================================================
-        // Pay per-tick energy + activation costs:
-        // Priority:
-        //   1) mainsPool (only when on charger)
-        //   2) genPool
-        //   3) stored energy
-        // ================================================================
+    private static void payEnergyCosts(Player player, PlayerCyberwareData data, MutableInt mainsPool, MutableInt genPool) {
         for (var entry : data.getAll().entrySet()) {
             CyberwareSlot slot = entry.getKey();
             InstalledCyberware[] arr = entry.getValue();
@@ -179,9 +200,15 @@ public final class EnergyController {
                 if (cw == null) continue;
 
                 ItemStack stack = cw.getItem();
-                if (stack == null || stack.isEmpty()) continue;
+                if (stack == null || stack.isEmpty()) {
+                    cw.setPowered(false);
+                    continue;
+                }
 
-                if (!(stack.getItem() instanceof ICyberwareItem item)) continue;
+                if (!(stack.getItem() instanceof ICyberwareItem item)) {
+                    cw.setPowered(true);
+                    continue;
+                }
 
                 boolean powered = true;
 
@@ -189,6 +216,7 @@ public final class EnergyController {
                 if (hasDrainHack(player) && use > 0) {
                     use *= 2;
                 }
+
                 if (use > 0) {
                     powered = tryPayEnergy(data, mainsPool, genPool, use);
                 }
@@ -215,44 +243,73 @@ public final class EnergyController {
                         }
                     }
                 } else {
-                    String paidKey = item.getActivationPaidNbtKey(player, stack, slot);
-                    if (paidKey != null && !paidKey.isBlank()) {
-                        String persistentKey = buildActivationPersistentKey(paidKey, slot, idx);
-                        player.getPersistentData().remove(persistentKey);
-                    }
+                    clearActivationPaidFlag(player, item, stack, slot, idx);
                 }
 
                 cw.setPowered(powered);
             }
         }
+    }
 
-        // ================================================================
-        // Deposit generator surplus (existing rule)
-        // ================================================================
-        int genLeftover = genPool.value;
-        if (genLeftover > 0) {
-            if (canAcceptGeneratedSurplus(player, data)) {
-                data.receiveEnergy(player, genLeftover);
+    private static void clearActivationPaidFlag(Player player, ICyberwareItem item, ItemStack stack, CyberwareSlot slot, int index) {
+        String paidKey = item.getActivationPaidNbtKey(player, stack, slot);
+        if (paidKey == null || paidKey.isBlank()) return;
+
+        String persistentKey = buildActivationPersistentKey(paidKey, slot, index);
+        player.getPersistentData().remove(persistentKey);
+    }
+
+    private static void consumeGeneratedSurplus(Player player, PlayerCyberwareData data, MutableInt genPool) {
+        if (genPool.value <= 0) return;
+
+        int consumed = consumeGeneratedSurplusHooks(player, data, genPool.value);
+        if (consumed <= 0) return;
+
+        genPool.value = Math.max(0, genPool.value - consumed);
+    }
+
+    private static int consumeGeneratedSurplusHooks(Player player, PlayerCyberwareData data, int availableSurplus) {
+        if (player == null || data == null || availableSurplus <= 0) return 0;
+
+        int remaining = availableSurplus;
+
+        for (var entry : data.getAll().entrySet()) {
+            CyberwareSlot slot = entry.getKey();
+            InstalledCyberware[] arr = entry.getValue();
+            if (arr == null) continue;
+
+            for (InstalledCyberware cw : arr) {
+                if (remaining <= 0) return availableSurplus;
+
+                if (cw == null) continue;
+                if (!cw.isPowered()) continue;
+
+                ItemStack stack = cw.getItem();
+                if (stack == null || stack.isEmpty()) continue;
+
+                if (!(stack.getItem() instanceof ICyberwareItem item)) continue;
+
+                int consumed = item.consumeGeneratedEnergySurplus(player, stack, slot, remaining);
+                if (consumed <= 0) continue;
+
+                consumed = Math.min(consumed, remaining);
+                remaining -= consumed;
             }
         }
 
-        // ================================================================
-        // Deposit charger charge into stored energy.
-        // This is the ONLY place charger affects stored energy now.
-        // ================================================================
-        if (onCharger && chargerCharge > 0) {
-            data.receiveEnergy(player, chargerCharge);
-        }
-
-        data.clampEnergyToCapacity(player);
+        return availableSurplus - remaining;
     }
 
-    /**
-     * Spend energy in priority order:
-     *   1) mainsPool (only available while on charging block)
-     *   2) genPool
-     *   3) stored energy
-     */
+    private static void depositGeneratedSurplus(Player player, PlayerCyberwareData data, MutableInt genPool) {
+        int genLeftover = genPool.value;
+        if (genLeftover <= 0) return;
+
+        if (canAcceptGeneratedSurplus(player, data)) {
+            data.receiveEnergy(player, genLeftover);
+            genPool.value = 0;
+        }
+    }
+
     private static boolean tryPayEnergy(PlayerCyberwareData data, MutableInt mainsPool, MutableInt genPool, int amount) {
         if (amount <= 0) return true;
 
@@ -277,8 +334,7 @@ public final class EnergyController {
             InstalledCyberware[] arr = entry.getValue();
             if (arr == null) continue;
 
-            for (int idx = 0; idx < arr.length; idx++) {
-                InstalledCyberware cw = arr[idx];
+            for (InstalledCyberware cw : arr) {
                 if (cw == null) continue;
 
                 ItemStack stack = cw.getItem();
@@ -313,38 +369,37 @@ public final class EnergyController {
         return "cc_energy_actpaid_" + key + "_" + slot.name() + "_" + index;
     }
 
-    private static boolean isOnChargerBlock(Player player) {
+    private static int getActiveChargerEnergyBudget(Player player) {
         Level level = player.level();
 
         long now = level.getGameTime();
         long markedUntil = player.getPersistentData().getLong(NBT_ON_CHARGER_UNTIL);
 
-        if (markedUntil >= now) {
-            return true;
+        if (markedUntil < now) {
+            player.getPersistentData().remove(NBT_CHARGER_ENERGY_BUDGET);
+            return 0;
         }
 
-        BlockPos below = player.blockPosition().below();
-        if (level.getBlockState(below).is(ModBlocks.CHARGING_BLOCK.get())) {
-            return true;
-        }
-
-        BlockPos feetBelow = BlockPos.containing(
-                player.getX(),
-                player.getBoundingBox().minY - 0.05D,
-                player.getZ()
-        );
-
-        return !feetBelow.equals(below)
-                && level.getBlockState(feetBelow).is(ModBlocks.CHARGING_BLOCK.get());
+        return Math.max(0, player.getPersistentData().getInt(NBT_CHARGER_ENERGY_BUDGET));
     }
 
     public static void markOnChargingBlock(Player player) {
+        markOnChargingBlock(player, Integer.MAX_VALUE);
+    }
+
+    public static void markOnChargingBlock(Player player, int energyBudget) {
         if (player == null) return;
         if (player.level().isClientSide) return;
+        if (energyBudget <= 0) return;
 
         player.getPersistentData().putLong(
                 NBT_ON_CHARGER_UNTIL,
                 player.level().getGameTime() + 2L
+        );
+
+        player.getPersistentData().putInt(
+                NBT_CHARGER_ENERGY_BUDGET,
+                energyBudget
         );
     }
 

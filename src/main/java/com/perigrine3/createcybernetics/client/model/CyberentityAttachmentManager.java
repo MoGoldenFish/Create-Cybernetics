@@ -48,6 +48,21 @@ public final class CyberentityAttachmentManager {
     private static final ResourceLocation RIPPER_CLAW_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/ripper_claw.png");
 
+    private static final ResourceLocation MANTIS_BLADE_CLOSED_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/mantis_blade_closed.png");
+    private static final ResourceLocation MANTIS_BLADE_IRON_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/mantis_blade_iron.png");
+    private static final ResourceLocation MANTIS_BLADE_COPPER_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/mantis_blade_copper.png");
+    private static final ResourceLocation MANTIS_BLADE_TITANIUM_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/mantis_blade_titanium.png");
+    private static final ResourceLocation MANTIS_BLADE_GOLD_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/mantis_blade_gold.png");
+    private static final ResourceLocation MANTIS_BLADE_DIAMOND_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/mantis_blade_diamond.png");
+    private static final ResourceLocation MANTIS_BLADE_NETHERITE_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/mantis_blade_netherite.png");
+
     private final Model clawsModel;
     private final Model drillFistModel;
     private final Model ocelotPawsModel;
@@ -57,6 +72,7 @@ public final class CyberentityAttachmentManager {
     private final Model wardenAntlersModel;
     private final Model neuralProcessorModel;
     private final Model ripperClawModel;
+    private final Model mantisBladeModel;
 
     public CyberentityAttachmentManager(net.minecraft.client.renderer.entity.EntityRendererProvider.Context context) {
         this.clawsModel = new ClawAttachmentModel(context.bakeLayer(ClawAttachmentModel.LAYER));
@@ -68,6 +84,7 @@ public final class CyberentityAttachmentManager {
         this.wardenAntlersModel = new WardenAntlersAttachmentModel(context.bakeLayer(WardenAntlersAttachmentModel.LAYER));
         this.neuralProcessorModel = new NeuralProcessorAttachmentModel(context.bakeLayer(NeuralProcessorAttachmentModel.LAYER));
         this.ripperClawModel = new RipperClawAttachmentModel(context.bakeLayer(RipperClawAttachmentModel.LAYER));
+        this.mantisBladeModel = new MantisBladeAttachmentModel(context.bakeLayer(MantisBladeAttachmentModel.LAYER));
     }
 
     public CyberentityAttachmentState buildState(LivingEntity entity) {
@@ -92,6 +109,31 @@ public final class CyberentityAttachmentManager {
 
                 ItemStack stack = installed.getItem();
                 if (stack == null || stack.isEmpty()) continue;
+
+                ResourceLocation key = BuiltInRegistries.ITEM.getKey(stack.getItem());
+                if (key == null) continue;
+
+                String path = key.getPath();
+
+                if (isMantisBlade(path)) {
+                    AttachmentAnchor anchor = mapSlotToAnchor(slot);
+
+                    if (anchor != null) {
+                        state.add(new CyberentityAttachment(
+                                anchor,
+                                mantisBladeModel,
+                                mantisBladeTextureFor(path, data.isEnabled(slot, i)),
+                                0xFFFFFFFF,
+                                false,
+                                rigType == RigType.SMASHER
+                                        ? (pose, living) -> applyMantisBladeTransformSmasher(pose, anchor)
+                                        : (pose, living) -> applyMantisBladeTransformDefault(pose, anchor)
+                        ));
+                    }
+
+                    continue;
+                }
+
                 if (!data.isEnabled(slot, i)) continue;
 
                 CyberentityAttachment attachment = createAttachment(slot, stack, rigType);
@@ -121,7 +163,11 @@ public final class CyberentityAttachmentManager {
 
             poseStack.pushPose();
             try {
-                anchorPart.translateAndRotate(poseStack);
+                if (isSmasher(entity)) {
+                    applySmasherAnchorTransform(parentModel, anchorPart, poseStack);
+                } else {
+                    anchorPart.translateAndRotate(poseStack);
+                }
 
                 if (attachment.tuner() != null) {
                     attachment.tuner().apply(poseStack, entity);
@@ -255,6 +301,29 @@ public final class CyberentityAttachmentManager {
         };
     }
 
+    private boolean isMantisBlade(String path) {
+        return path.equals("armupgrades_mantisblade_iron")
+                || path.equals("armupgrades_mantisblade_copper")
+                || path.equals("armupgrades_mantisblade_titanium")
+                || path.equals("armupgrades_mantisblade_gold")
+                || path.equals("armupgrades_mantisblade_diamond")
+                || path.equals("armupgrades_mantisblade_netherite");
+    }
+
+    private ResourceLocation mantisBladeTextureFor(String path, boolean enabled) {
+        if (!enabled) return MANTIS_BLADE_CLOSED_TEXTURE;
+
+        return switch (path) {
+            case "armupgrades_mantisblade_iron" -> MANTIS_BLADE_IRON_TEXTURE;
+            case "armupgrades_mantisblade_copper" -> MANTIS_BLADE_COPPER_TEXTURE;
+            case "armupgrades_mantisblade_titanium" -> MANTIS_BLADE_TITANIUM_TEXTURE;
+            case "armupgrades_mantisblade_gold" -> MANTIS_BLADE_GOLD_TEXTURE;
+            case "armupgrades_mantisblade_diamond" -> MANTIS_BLADE_DIAMOND_TEXTURE;
+            case "armupgrades_mantisblade_netherite" -> MANTIS_BLADE_NETHERITE_TEXTURE;
+            default -> MANTIS_BLADE_CLOSED_TEXTURE;
+        };
+    }
+
     private AttachmentAnchor mapSlotToAnchor(CyberwareSlot slot) {
         if (slot == CyberwareSlot.LARM) return AttachmentAnchor.LEFT_ARM;
         if (slot == CyberwareSlot.RARM) return AttachmentAnchor.RIGHT_ARM;
@@ -307,6 +376,20 @@ public final class CyberentityAttachmentManager {
 
         if (direct != null) return direct;
         return resolveGenericByField(parentModel, anchor);
+    }
+
+    private <T extends LivingEntity, M extends EntityModel<T>> void applySmasherAnchorTransform(
+            M parentModel,
+            ModelPart anchorPart,
+            PoseStack poseStack
+    ) {
+        ModelPart body = findModelPartByAnyName(parentModel, "body");
+
+        if (body != null && body != anchorPart) {
+            body.translateAndRotate(poseStack);
+        }
+
+        anchorPart.translateAndRotate(poseStack);
     }
 
     private <T extends LivingEntity, M extends EntityModel<T>> ModelPart resolveGenericByField(M parentModel, AttachmentAnchor anchor) {
@@ -476,12 +559,39 @@ public final class CyberentityAttachmentManager {
         }
     }
 
+    private static void applyMantisBladeTransformDefault(PoseStack pose, AttachmentAnchor armAnchor) {
+        pose.translate(0F, -0.1F, 0.0F);
+        pose.scale(1F, 1F, 1F);
 
+        if (armAnchor == AttachmentAnchor.LEFT_ARM) {
+            pose.translate(-0.3F, 0.0F, 0.0F);
+            pose.mulPose(Axis.ZP.rotationDegrees(0.0F));
+            pose.scale(-1.0F, 1.0F, 1.0F);
+        } else if (armAnchor == AttachmentAnchor.RIGHT_ARM) {
+            pose.translate(0.3F, 0.0F, 0.0F);
+            pose.mulPose(Axis.ZP.rotationDegrees(0.0F));
+        }
 
+        pose.scale(1F, 1F, 1F);
+    }
 
+    private static void applyMantisBladeTransformSmasher(PoseStack pose, AttachmentAnchor armAnchor) {
+        pose.translate(0F, 0.15F, -0.15F);
+
+        if (armAnchor == AttachmentAnchor.LEFT_ARM) {
+            pose.translate(-0.1F, 0.0F, 0.0F);
+            pose.mulPose(Axis.ZP.rotationDegrees(0.0F));
+        } else if (armAnchor == AttachmentAnchor.RIGHT_ARM) {
+            pose.translate(0.1F, 0.0F, 0.0F);
+            pose.mulPose(Axis.ZP.rotationDegrees(0.0F));
+            pose.scale(-1.0F, 1.0F, 1.0F);
+        }
+
+        pose.scale(1.75F, 1.75F, 1.75F);
+    }
 
     private static void applyKnuckleClawTransformSmasher(PoseStack pose, AttachmentAnchor armAnchor) {
-        pose.translate(0.0F, 1.25F, 0.0F);
+        pose.translate(0.0F, 1.75F, 0.0F);
         pose.mulPose(Axis.YP.rotationDegrees(90.0F));
 
         if (armAnchor == AttachmentAnchor.LEFT_ARM) {
@@ -497,7 +607,7 @@ public final class CyberentityAttachmentManager {
     }
 
     private static void applyDrillFistTransformSmasher(PoseStack pose, AttachmentAnchor armAnchor) {
-        pose.translate(0.00F, -0.5F, 0.0F);
+        pose.translate(0.00F, -0.1F, 0.0F);
         pose.mulPose(Axis.YP.rotationDegrees(90.0F));
         pose.scale(1.15F, 1.15F, 1.15F);
 

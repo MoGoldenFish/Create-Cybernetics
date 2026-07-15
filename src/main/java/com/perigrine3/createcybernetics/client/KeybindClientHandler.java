@@ -5,9 +5,11 @@ import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
 import com.perigrine3.createcybernetics.item.ModItems;
+import com.perigrine3.createcybernetics.item.generic.InfologDataShardItem;
 import com.perigrine3.createcybernetics.item.generic.InfologTextData;
 import com.perigrine3.createcybernetics.network.payload.*;
 import com.perigrine3.createcybernetics.screen.custom.arm_cannon.ArmCannonWheelScreen;
+import com.perigrine3.createcybernetics.screen.custom.chipware.InfologReadScreen;
 import com.perigrine3.createcybernetics.screen.custom.cyberdeck.CyberdeckQuickhackWheelScreen;
 import com.perigrine3.createcybernetics.screen.custom.toggle_wheel.CyberwareToggleWheelScreen;
 import com.perigrine3.createcybernetics.screen.custom.chipware.InfologEditScreen;
@@ -103,7 +105,7 @@ public final class KeybindClientHandler {
                 ItemStack st = data.getChipwareStack(i);
                 if (st.isEmpty()) continue;
 
-                if (st.is(ModItems.DATA_SHARD_INFOLOG.get())) {
+                if (st.getItem() instanceof InfologDataShardItem) {
                     found = i;
                     foundStack = st;
                     break;
@@ -112,8 +114,21 @@ public final class KeybindClientHandler {
 
             if (found == -1) continue;
 
-            String initial = InfologTextData.getText(foundStack);
-            mc.setScreen(new InfologEditScreen(found, initial));
+            String text = InfologTextData.getText(foundStack);
+
+            if (InfologTextData.isLocked(foundStack)) {
+                String title = InfologTextData.getTitle(foundStack);
+
+                mc.setScreen(new InfologReadScreen(
+                        found,
+                        title,
+                        text
+                ));
+
+                continue;
+            }
+
+            mc.setScreen(new InfologEditScreen(found, text));
         }
     }
 

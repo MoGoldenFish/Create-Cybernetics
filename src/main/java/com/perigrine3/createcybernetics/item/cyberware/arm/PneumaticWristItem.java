@@ -59,8 +59,8 @@ public class PneumaticWristItem extends Item implements ICyberwareItem {
     @Override
     public Set<TagKey<Item>> requiresCyberwareTags(ItemStack installedStack, CyberwareSlot slot) {
         return switch (slot) {
-            case RARM -> Set.of(ModTags.Items.RIGHTARM_REPLACEMENTS);
-            case LARM -> Set.of(ModTags.Items.LEFTARM_REPLACEMENTS);
+            case RARM -> Set.of(ModTags.Items.RIGHT_CYBERARM);
+            case LARM -> Set.of(ModTags.Items.LEFT_CYBERARM);
             default -> Set.of();
         };
     }

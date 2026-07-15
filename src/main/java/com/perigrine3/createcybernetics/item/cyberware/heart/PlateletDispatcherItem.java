@@ -94,6 +94,7 @@ public class PlateletDispatcherItem extends Item implements ICyberwareItem {
 
         long now = entity.level().getGameTime();
         long lastCombat = entity.getPersistentData().getLong(NBT_LAST_COMBAT_TICK);
+
         boolean inCombatWindow = lastCombat != 0L && (now - lastCombat) < OUT_OF_COMBAT_TICKS;
         if (inCombatWindow) return 0;
 
@@ -114,7 +115,6 @@ public class PlateletDispatcherItem extends Item implements ICyberwareItem {
     public void onRemoved(LivingEntity entity) {
         if (!entity.level().isClientSide) {
             entity.getPersistentData().remove(NBT_ACTIVE);
-            entity.removeEffect(MobEffects.REGENERATION);
         }
     }
 
@@ -128,61 +128,61 @@ public class PlateletDispatcherItem extends Item implements ICyberwareItem {
         if (!entity.isAlive()) return;
 
         if (entity instanceof Player player && (player.isCreative() || player.isSpectator())) {
+            entity.getPersistentData().putBoolean(NBT_ACTIVE, false);
             return;
         }
 
-        InstalledCyberware cw;
-
-        if (entity instanceof Player player) {
-            if (!player.hasData(ModAttachments.CYBERWARE)) return;
-            PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
-            if (data == null) return;
-            cw = data.get(slot, index);
-        } else {
-            if (!entity.hasData(ModMobAttachments.CYBERENTITY_CYBERWARE)) return;
-            EntityCyberwareData data = entity.getData(ModMobAttachments.CYBERENTITY_CYBERWARE);
-            if (data == null) return;
-            cw = data.get(slot, index);
+        InstalledCyberware cw = getInstalledCyberware(entity, slot, index);
+        if (cw == null) {
+            entity.getPersistentData().putBoolean(NBT_ACTIVE, false);
+            return;
         }
-
-        if (cw == null) return;
 
         long now = entity.level().getGameTime();
         long lastCombat = entity.getPersistentData().getLong(NBT_LAST_COMBAT_TICK);
+
         boolean inCombatWindow = lastCombat != 0L && (now - lastCombat) < OUT_OF_COMBAT_TICKS;
 
         if (inCombatWindow) {
-            if (entity.hasEffect(MobEffects.REGENERATION)) {
-                entity.removeEffect(MobEffects.REGENERATION);
-            }
             entity.getPersistentData().putBoolean(NBT_ACTIVE, false);
             return;
         }
 
-        boolean active = entity.getPersistentData().getBoolean(NBT_ACTIVE);
-        MobEffectInstance existing = entity.getEffect(MobEffects.REGENERATION);
-
-        if (active && existing == null) {
-            entity.getPersistentData().putBoolean(NBT_ACTIVE, false);
-            active = false;
-        }
-
         if (!cw.isPowered()) {
-            if (entity.hasEffect(MobEffects.REGENERATION)) {
-                entity.removeEffect(MobEffects.REGENERATION);
-            }
             entity.getPersistentData().putBoolean(NBT_ACTIVE, false);
             return;
         }
 
         if (entity.getHealth() >= entity.getMaxHealth()) {
+            entity.getPersistentData().putBoolean(NBT_ACTIVE, false);
             return;
         }
 
+        MobEffectInstance existing = entity.getEffect(MobEffects.REGENERATION);
+
         if (existing == null || existing.getDuration() < 40) {
             entity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, REGEN_TICKS, 0, false, true, true));
+
             entity.getPersistentData().putBoolean(NBT_ACTIVE, true);
         }
+    }
+
+    private static InstalledCyberware getInstalledCyberware(LivingEntity entity, CyberwareSlot slot, int index) {
+        if (entity instanceof Player player) {
+            if (!player.hasData(ModAttachments.CYBERWARE)) return null;
+
+            PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
+            if (data == null) return null;
+
+            return data.get(slot, index);
+        }
+
+        if (!entity.hasData(ModMobAttachments.CYBERENTITY_CYBERWARE)) return null;
+
+        EntityCyberwareData data = entity.getData(ModMobAttachments.CYBERENTITY_CYBERWARE);
+        if (data == null) return null;
+
+        return data.get(slot, index);
     }
 
     @EventBusSubscriber(modid = CreateCybernetics.MODID, bus = EventBusSubscriber.Bus.GAME)
@@ -190,28 +190,23 @@ public class PlateletDispatcherItem extends Item implements ICyberwareItem {
 
         @SubscribeEvent(priority = EventPriority.HIGHEST)
         public static void onLivingDamagePost(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post event) {
-            if (!(event.getEntity() instanceof LivingEntity victim)) return;
+            LivingEntity victim = event.getEntity();
             if (victim.level().isClientSide) return;
 
             long now = victim.level().getGameTime();
             victim.getPersistentData().putLong(NBT_LAST_COMBAT_TICK, now);
-
-            if (victim.hasEffect(MobEffects.REGENERATION)) {
-                victim.removeEffect(MobEffects.REGENERATION);
-            }
             victim.getPersistentData().putBoolean(NBT_ACTIVE, false);
 
-            Entity src = event.getSource().getEntity();
-            if (src instanceof LivingEntity attacker && !attacker.level().isClientSide) {
+            Entity sourceEntity = event.getSource().getEntity();
+
+            if (sourceEntity instanceof LivingEntity attacker && !attacker.level().isClientSide) {
                 attacker.getPersistentData().putLong(NBT_LAST_COMBAT_TICK, attacker.level().getGameTime());
 
-                if (attacker.hasEffect(MobEffects.REGENERATION)) {
-                    attacker.removeEffect(MobEffects.REGENERATION);
-                }
                 attacker.getPersistentData().putBoolean(NBT_ACTIVE, false);
             }
         }
 
-        private Events() {}
+        private Events() {
+        }
     }
 }

@@ -6,13 +6,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -32,14 +35,28 @@ public final class OreMultiplierHandler {
         if (player == null || player.isCreative()) return;
         if (!(event.getLevel() instanceof ServerLevel level)) return;
 
+        BlockPos pos = event.getPos();
+        BlockState state = event.getState();
+        ItemStack tool = player.getMainHandItem();
+
+        if (state.is(Blocks.ANCIENT_DEBRIS)) {
+            if (hasSilkTouch(level, tool)) return;
+
+            level.destroyBlock(pos, false, player);
+            Block.popResource(level, pos, new ItemStack(Items.NETHERITE_SCRAP, 2));
+
+            if (!tool.isEmpty()) {
+                tool.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
+            }
+
+            event.setCanceled(true);
+            return;
+        }
+
         double mult = player.getAttributeValue(ModAttributes.ORE_DROP_MULTIPLIER);
         if (!Double.isFinite(mult) || mult <= 1.0D) return;
 
-        BlockPos pos = event.getPos();
-        BlockState state = event.getState();
         if (!state.is(Tags.Blocks.ORES)) return;
-
-        ItemStack tool = player.getMainHandItem();
         if (hasSilkTouch(level, tool)) return;
 
         BlockEntity be = level.getBlockEntity(pos);
@@ -59,7 +76,6 @@ public final class OreMultiplierHandler {
             Block.popResource(level, pos, extraStack);
         }
     }
-
 
     private static boolean hasSilkTouch(Level level, ItemStack tool) {
         if (tool.isEmpty()) return false;

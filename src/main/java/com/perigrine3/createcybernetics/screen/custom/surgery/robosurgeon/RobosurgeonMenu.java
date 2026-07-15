@@ -4,9 +4,11 @@ import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
 import com.perigrine3.createcybernetics.api.InstalledCyberware;
 import com.perigrine3.createcybernetics.block.ModBlocks;
+import com.perigrine3.createcybernetics.block.RobosurgeonBlock;
 import com.perigrine3.createcybernetics.block.entity.RobosurgeonBlockEntity;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.common.energy.ConditionalBlockPower;
 import com.perigrine3.createcybernetics.common.surgery.DefaultOrgans;
 import com.perigrine3.createcybernetics.common.surgery.RobosurgeonSlotMap;
 import com.perigrine3.createcybernetics.screen.ModMenuTypes;
@@ -30,6 +32,7 @@ import java.util.List;
 public class RobosurgeonMenu extends AbstractContainerMenu {
     public final RobosurgeonBlockEntity blockEntity;
     private final Level level;
+    private final Player player;
     private final List<RobosurgeonSlotItemHandler> robosurgeonSlots = new ArrayList<>();
     public int getTeInventoryFirstSlotIndex() {
         return TE_INVENTORY_FIRST_SLOT_INDEX;
@@ -48,6 +51,7 @@ public class RobosurgeonMenu extends AbstractContainerMenu {
 
         this.blockEntity = rs;
         this.level = inv.player.level();
+        this.player = inv.player;
 
         addPlayerInventory(inv);
         addPlayerHotbar(inv);
@@ -59,11 +63,32 @@ public class RobosurgeonMenu extends AbstractContainerMenu {
         super(ModMenuTypes.ROBOSURGEON_MENU.get(), containerId);
         this.blockEntity = ((RobosurgeonBlockEntity) blockEntity);
         this.level = inv.player.level();
+        this.player = inv.player;
 
         addPlayerInventory(inv);
         addPlayerHotbar(inv);
         addRobosurgeonSlots();
         populateFromPlayer(inv.player);
+    }
+
+    @Override
+    public void broadcastChanges() {
+        super.broadcastChanges();
+
+        if (level.isClientSide) {
+            return;
+        }
+
+        boolean powered = ConditionalBlockPower.consumeRequiredPower(
+                level,
+                blockEntity.getBlockPos(),
+                blockEntity.getMutableEnergyStorage(),
+                RobosurgeonBlock.ENERGY_USED_PER_GUI_TICK
+        );
+
+        if (!powered) {
+            player.closeContainer();
+        }
     }
 
     public boolean isInstalled(int index) {
@@ -173,6 +198,10 @@ public class RobosurgeonMenu extends AbstractContainerMenu {
         if (slot instanceof RobosurgeonSlotItemHandler rsSlot) {
             int handlerIndex = rsSlot.getSlotIndex();
             ItemStack carried = getCarried();
+
+            if (clickType == ClickType.THROW) {
+                return;
+            }
 
             if (clickType == ClickType.QUICK_MOVE) {
                 return;

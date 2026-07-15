@@ -13,12 +13,15 @@ import com.perigrine3.createcybernetics.entity.projectile.NuggetProjectile;
 import com.perigrine3.createcybernetics.item.ModItems;
 import com.perigrine3.createcybernetics.network.payload.ArmCannonFirePayload;
 import com.perigrine3.createcybernetics.util.ModTags;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
@@ -34,12 +37,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.entity.projectile.windcharge.WindCharge;
-import net.minecraft.world.item.ArrowItem;
-import net.minecraft.world.item.FireworkRocketItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ProjectileItem;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
@@ -54,6 +52,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.List;
 import java.util.Set;
 
 public class ArmCannonItem extends Item implements ICyberwareItem {
@@ -74,6 +73,8 @@ public class ArmCannonItem extends Item implements ICyberwareItem {
     private static final int CD_FIREWORKS = 5 * TICKS_PER_SECOND;
     private static final int CD_TNT = 5 * TICKS_PER_SECOND;
 
+    private static final int ENERGY_PER_SHOT = 25;
+
     private final int humanityCost;
 
     public ArmCannonItem(Properties props, int humanityCost) {
@@ -84,6 +85,15 @@ public class ArmCannonItem extends Item implements ICyberwareItem {
     @Override
     public int getHumanityCost() {
         return humanityCost;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        if (Screen.hasShiftDown()) {
+            tooltip.add(Component.translatable("tooltip.createcybernetics.humanity", humanityCost).withStyle(ChatFormatting.GOLD));
+
+            tooltip.add(Component.translatable("tooltip.createcybernetics.armupgrades_armcannon.energy").withStyle(ChatFormatting.RED));
+        }
     }
 
     @Override
@@ -370,8 +380,16 @@ public class ArmCannonItem extends Item implements ICyberwareItem {
 
         ItemStack ammoOne = ammo.copyWithCount(1);
 
+        if (!data.tryConsumeEnergy(ENERGY_PER_SHOT)) {
+            return false;
+        }
+
         boolean fired = spawnAmmoProjectile(sp, ammoOne);
-        if (!fired) return false;
+
+        if (!fired) {
+            data.receiveEnergy(sp, ENERGY_PER_SHOT);
+            return false;
+        }
 
         if (cooldownTicks > 0 && cooldownKey != null) {
             setNextAllowedTick(pd, cooldownKey, now + cooldownTicks);
@@ -406,6 +424,54 @@ public class ArmCannonItem extends Item implements ICyberwareItem {
             }
         }
         return null;
+    }
+
+    public static ItemStack getSelectedAmmoForTrajectoryPreview(Player player) {
+        if (player == null) {
+            return ItemStack.EMPTY;
+        }
+
+        if (!player.hasData(ModAttachments.CYBERWARE)) {
+            return ItemStack.EMPTY;
+        }
+
+        PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
+
+        if (data == null) {
+            return ItemStack.EMPTY;
+        }
+
+        CannonRef ref = findInstalledArmCannon(data);
+
+        if (ref == null) {
+            return ItemStack.EMPTY;
+        }
+
+        if (!data.isEnabled(ref.slot(), ref.index())) {
+            return ItemStack.EMPTY;
+        }
+
+        int selected = data.getArmCannonSelected();
+
+        if (selected < 0 || selected >= SLOT_COUNT) {
+            return ItemStack.EMPTY;
+        }
+
+        SimpleContainer inventory = new SimpleContainer(SLOT_COUNT);
+
+        loadFromInstalledStack(
+                ref.stack(),
+                player.level().registryAccess(),
+                inventory
+        );
+
+        ItemStack ammo = inventory.getItem(selected);
+
+        if (ammo.isEmpty() || !isValidStoredItem(ammo)) {
+            return ItemStack.EMPTY;
+        }
+
+        return ammo.copyWithCount(1);
     }
 
     /* ---------------- COOLDOWN HELPERS ---------------- */

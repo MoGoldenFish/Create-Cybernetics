@@ -20,6 +20,10 @@ public interface ICyberwareItem {
         return getSupportedSlots().contains(slot);
     }
 
+    default boolean surgeryInstallable() {
+        return true;
+    }
+
     default Set<Item> requiresCyberware(ItemStack installedStack, CyberwareSlot slot) {
         return Set.of();
     }
@@ -33,6 +37,10 @@ public interface ICyberwareItem {
     }
 
     default Set<TagKey<Item>> incompatibleCyberwareTags(ItemStack installedStack, CyberwareSlot slot) {
+        return Set.of();
+    }
+
+    default Set<TagKey<Item>> sameSlotIncompatibleCyberwareTags(ItemStack installedStack, CyberwareSlot slot) {
         return Set.of();
     }
 
@@ -272,6 +280,10 @@ public interface ICyberwareItem {
     }
 
     default int getChargerEnergyReceivePerTick(LivingEntity entity, ItemStack installedStack, CyberwareSlot slot) {
+        return 0;
+    }
+
+    default int consumeGeneratedEnergySurplus(Player player, ItemStack installedStack, CyberwareSlot slot, int availableSurplus) {
         return 0;
     }
 

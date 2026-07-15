@@ -1,16 +1,17 @@
 package com.perigrine3.createcybernetics.screen.custom.crafting;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
+import com.perigrine3.createcybernetics.compat.apothicattributes.ApothicAttributesClientCompat;
 import com.perigrine3.createcybernetics.compat.curios.CuriosClientCompat;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
-public class ExpandedInventoryScreen extends AbstractContainerScreen<ExpandedInventoryMenu> {
+public class ExpandedInventoryScreen extends EffectRenderingInventoryScreen<ExpandedInventoryMenu> {
 
     private static final ResourceLocation TEX =
             ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/gui/inventory_crafting.png");
@@ -33,6 +34,7 @@ public class ExpandedInventoryScreen extends AbstractContainerScreen<ExpandedInv
 
     private AbstractWidget curiosButton;
     private SoftCompatInventoryIconButton cosmeticButton;
+    private AbstractWidget apothicAttributesButton;
 
     public ExpandedInventoryScreen(ExpandedInventoryMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -50,13 +52,16 @@ public class ExpandedInventoryScreen extends AbstractContainerScreen<ExpandedInv
         this.inventoryLabelY = this.imageHeight - 94;
 
         addCuriosButtons();
+        addApothicAttributesButton();
     }
 
     private void addCuriosButtons() {
         this.curiosButton = null;
         this.cosmeticButton = null;
 
-        if (!CuriosClientCompat.isLoaded()) return;
+        if (!CuriosClientCompat.isLoaded()) {
+            return;
+        }
 
         AbstractWidget nativeCurios = CuriosClientCompat.createNativeCuriosButton(this);
         if (nativeCurios != null) {
@@ -77,6 +82,18 @@ public class ExpandedInventoryScreen extends AbstractContainerScreen<ExpandedInv
         this.addRenderableWidget(this.cosmeticButton);
     }
 
+    private void addApothicAttributesButton() {
+        this.apothicAttributesButton = null;
+
+        AbstractWidget button = ApothicAttributesClientCompat.createAttributesButton(this);
+        if (button == null) {
+            return;
+        }
+
+        this.apothicAttributesButton = button;
+        this.addRenderableWidget(button);
+    }
+
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         // Intentionally empty: removes the big vanilla labels.
@@ -95,7 +112,9 @@ public class ExpandedInventoryScreen extends AbstractContainerScreen<ExpandedInv
             drawSlotBackground(graphics, sx, sy1);
         }
 
-        if (this.minecraft == null || this.minecraft.player == null) return;
+        if (this.minecraft == null || this.minecraft.player == null) {
+            return;
+        }
 
         int x1 = leftPos + 26;
         int y1 = topPos + 8;
@@ -117,22 +136,26 @@ public class ExpandedInventoryScreen extends AbstractContainerScreen<ExpandedInv
         );
     }
 
-    private static void drawSlotBackground(GuiGraphics gg, int x, int y) {
+    private static void drawSlotBackground(GuiGraphics graphics, int x, int y) {
         int left = x - 1;
         int top = y - 1;
         int right = x + 17;
         int bottom = y + 17;
 
-        gg.fill(left, top, right, bottom, 0xE005070A);
+        graphics.fill(left, top, right, bottom, 0xE005070A);
 
-        gg.fill(left, top, right, top + 1, 0xFF4AB3FF);
-        gg.fill(left, bottom - 1, right, bottom, 0xFF4AB3FF);
-        gg.fill(left, top, left + 1, bottom, 0xFF4AB3FF);
-        gg.fill(right - 1, top, right, bottom, 0xFF4AB3FF);
+        graphics.fill(left, top, right, top + 1, 0xFF4AB3FF);
+        graphics.fill(left, bottom - 1, right, bottom, 0xFF4AB3FF);
+        graphics.fill(left, top, left + 1, bottom, 0xFF4AB3FF);
+        graphics.fill(right - 1, top, right, bottom, 0xFF4AB3FF);
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (this.apothicAttributesButton != null) {
+            ApothicAttributesClientCompat.positionAttributesButton(this.apothicAttributesButton, this);
+        }
+
         super.render(graphics, mouseX, mouseY, partialTick);
 
         if (this.cosmeticButton != null) {
