@@ -1,6 +1,9 @@
 ﻿{
   "translation_authors": "汉化贡献者 OrzMirror、MoFish",
 
+  "gui.createcybernetics.surgery.available_organs": "可用器官",
+  "gui.createcybernetics.surgery.no_available_organs": "没有兼容器官",
+
   "createcybernetics.configuration.humanity": "基础人性值",
   "createcybernetics.configuration.keepCyberware": "死亡后保留义体",
   "createcybernetics.configuration.scaleSurgeryDamage": "手术伤害缩放",

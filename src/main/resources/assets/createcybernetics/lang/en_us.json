@@ -1,8 +1,6 @@
 {
 
-  "translation_authors": "Original translation. Translators, please write your name and contact in this line in your language file, e.g. \"Discord: roll_54\"",
-
-  "createcybernetics.configuration.humanity": "Base Humanity Value",
+  "translation_authors": "Original translation. Translators, please write your name and contact in this line in your language file, e.g. \"Discord: roll_54\"",  "createcybernetics.configuration.humanity": "Base Humanity Value",
   "createcybernetics.configuration.keepCyberware": "Keep Cyberware on Death",
   "createcybernetics.configuration.scaleSurgeryDamage": "Scale Surgery Damage",
   "createcybernetics.configuration.epilepsyMode": "Epilepsy Mode",
@@ -1373,5 +1371,9 @@
 
 
 
-      "item.createcybernetics.anomalous_staff": "Anomalous Staff"
+      "item.createcybernetics.anomalous_staff": "Anomalous Staff",
+
+      
+"gui.createcybernetics.surgery.available_organs": "AvailableOrgans",
+"gui.createcybernetics.surgery.no_available_organs": "No compatible organs"
 }

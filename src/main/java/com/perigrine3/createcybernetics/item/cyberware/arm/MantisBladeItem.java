@@ -23,6 +23,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
@@ -47,6 +48,8 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentTarget;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -326,6 +329,8 @@ public class MantisBladeItem extends Item implements ICyberwareItem {
 
         private static final Map<UUID, Boolean> LAST_LEFT = new HashMap<>();
         private static final Map<UUID, Boolean> LAST_RIGHT = new HashMap<>();
+        private static final Map<UUID, CyberwareSlot> NEXT_ATTACK_SLOT = new HashMap<>();
+        private static final Map<UUID, PendingBladeAttack> PENDING_BLADE_ATTACKS = new HashMap<>();
 
         @SubscribeEvent
         public static void onPlayerTick(PlayerTickEvent.Post event) {
@@ -411,6 +416,21 @@ public class MantisBladeItem extends Item implements ICyberwareItem {
 
             float amount = event.getAmount();
 
+            EnabledBlade attackingBlade = selectBladeForAttack(attacker);
+            if (attackingBlade != null && target.level() instanceof ServerLevel serverLevel) {
+                amount = EnchantmentHelper.modifyDamage(
+                        serverLevel,
+                        attackingBlade.stack(),
+                        target,
+                        source,
+                        amount
+                );
+                PENDING_BLADE_ATTACKS.put(
+                        attacker.getUUID(),
+                        new PendingBladeAttack(target.getUUID(), attackingBlade.stack())
+                );
+            }
+
             if (variants.contains(Variant.GOLD)) {
                 amount *= GOLD_DAMAGE_MULTIPLIER;
             }
@@ -447,6 +467,8 @@ public class MantisBladeItem extends Item implements ICyberwareItem {
             if (variants.isEmpty()) {
                 return;
             }
+
+            applyPendingBladePostAttackEffects(attacker, target, source);
 
             if (variants.contains(Variant.IRON)) {
                 disableShieldIfBlocking(target);
@@ -663,10 +685,63 @@ public class MantisBladeItem extends Item implements ICyberwareItem {
                     continue;
                 }
 
-                return new EnabledBlade(blade.getVariant());
+                return new EnabledBlade(blade.getVariant(), stack);
             }
 
             return null;
+        }
+
+        private static EnabledBlade selectBladeForAttack(Player player) {
+            if (player == null || !player.hasData(ModAttachments.CYBERWARE)) {
+                return null;
+            }
+
+            PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
+            if (data == null) {
+                return null;
+            }
+
+            EnabledBlade leftBlade = getEnabledBladeInSlot(data, CyberwareSlot.LARM);
+            EnabledBlade rightBlade = getEnabledBladeInSlot(data, CyberwareSlot.RARM);
+
+            if (leftBlade == null) {
+                return rightBlade;
+            }
+
+            if (rightBlade == null) {
+                return leftBlade;
+            }
+
+            UUID id = player.getUUID();
+            CyberwareSlot selectedSlot = NEXT_ATTACK_SLOT.getOrDefault(id, CyberwareSlot.RARM);
+            NEXT_ATTACK_SLOT.put(id, selectedSlot == CyberwareSlot.RARM ? CyberwareSlot.LARM : CyberwareSlot.RARM);
+            return selectedSlot == CyberwareSlot.RARM ? rightBlade : leftBlade;
+        }
+
+        private static void applyPendingBladePostAttackEffects(Player attacker, LivingEntity target, DamageSource source) {
+            PendingBladeAttack pending = PENDING_BLADE_ATTACKS.remove(attacker.getUUID());
+
+            if (pending == null || !pending.targetId().equals(target.getUUID())) {
+                return;
+            }
+
+            if (!(target.level() instanceof ServerLevel serverLevel)) {
+                return;
+            }
+
+            EnchantmentHelper.runIterationOnItem(
+                    pending.stack(),
+                    EquipmentSlot.MAINHAND,
+                    attacker,
+                    (enchantment, level, enchantedItem) -> enchantment.value().doPostAttack(
+                            serverLevel,
+                            level,
+                            enchantedItem,
+                            EnchantmentTarget.ATTACKER,
+                            target,
+                            source
+                    )
+            );
         }
 
         private static void playToggleSound(Player player, boolean enabledNow) {
@@ -697,9 +772,14 @@ public class MantisBladeItem extends Item implements ICyberwareItem {
             UUID id = event.getEntity().getUUID();
             LAST_LEFT.remove(id);
             LAST_RIGHT.remove(id);
+            NEXT_ATTACK_SLOT.remove(id);
+            PENDING_BLADE_ATTACKS.remove(id);
         }
 
-        private record EnabledBlade(Variant variant) {
+        private record EnabledBlade(Variant variant, ItemStack stack) {
+        }
+
+        private record PendingBladeAttack(UUID targetId, ItemStack stack) {
         }
 
         private ServerHandler() {

@@ -14,6 +14,7 @@ import com.perigrine3.createcybernetics.common.surgery.RobosurgeonSlotMap;
 import com.perigrine3.createcybernetics.effect.ModEffects;
 import com.perigrine3.createcybernetics.item.ModItems;
 import com.perigrine3.createcybernetics.item.cyberware.brain.CerebralProcessingUnitItem;
+import com.perigrine3.createcybernetics.screen.custom.surgery.AvailableOrgansPanel;
 import com.perigrine3.createcybernetics.screen.custom.surgery.robosurgeon.RobosurgeonSlotItemHandler;
 import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.client.Minecraft;
@@ -39,12 +40,15 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public class SurgeryTableScreen extends AbstractContainerScreen<SurgeryTableMenu> {
     private ViewMode viewMode = ViewMode.FULL_BODY;
     private final SurgeryTableModelViewer modelViewer = new SurgeryTableModelViewer();
     private final SurgeryTableMarkerManager markerManager = new SurgeryTableMarkerManager(MARKER_ICON);
+    private final AvailableOrgansPanel availableOrgansPanel = new AvailableOrgansPanel();
     private int typingTicks = 0;
     private String animatedTitle = "";
     private static final int TYPE_DELAY = 4;
@@ -579,6 +583,16 @@ public class SurgeryTableScreen extends AbstractContainerScreen<SurgeryTableMenu
         return false;
     }
 
+    private Set<CyberwareSlot> getVisibleCyberwareSlots() {
+        Set<CyberwareSlot> slots = EnumSet.noneOf(CyberwareSlot.class);
+        for (Slot slot : menu.slots) {
+            if (slot instanceof RobosurgeonSlotItemHandler rsSlot && isSlotVisible(rsSlot)) {
+                slots.add(rsSlot.getSlotType());
+            }
+        }
+        return slots;
+    }
+
     private void registerSlotViews() {
         slotViews.clear();
 
@@ -803,6 +817,7 @@ public class SurgeryTableScreen extends AbstractContainerScreen<SurgeryTableMenu
         renderMarkerToggle(gui, mouseX, mouseY);
 
         renderRemovalWarning(gui, mouseX, mouseY);
+        availableOrgansPanel.render(gui, font, leftPos, topPos, getVisibleCyberwareSlots(), mouseX, mouseY);
         this.renderTooltip(gui, mouseX, mouseY);
     }
 
@@ -1012,6 +1027,14 @@ public class SurgeryTableScreen extends AbstractContainerScreen<SurgeryTableMenu
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (availableOrgansPanel.mouseScrolled(mouseX, mouseY, scrollY, leftPos, topPos)) {
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
     private boolean isMouseOverSlot(Slot slot, double mouseX, double mouseY) {
         int x = leftPos + slot.x;
         int y = topPos + slot.y;
@@ -1024,6 +1047,13 @@ public class SurgeryTableScreen extends AbstractContainerScreen<SurgeryTableMenu
 
     @Override
     protected void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        ItemStack availableStack = availableOrgansPanel.getHoveredStack();
+        if (!availableStack.isEmpty()) {
+            List<Component> tooltip = getTooltipFromContainerItem(availableStack);
+            guiGraphics.renderTooltip(this.font, tooltip, availableStack.getTooltipImage(), mouseX, mouseY);
+            return;
+        }
+
         if (isMouseOverHumanityBar(mouseX, mouseY)) {
             Player operator = minecraft.player;
 
