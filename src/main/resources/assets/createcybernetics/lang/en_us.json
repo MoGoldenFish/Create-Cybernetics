@@ -56,6 +56,11 @@
 
   "screen.createcybernetics.hud_layout": "HUD Layout",
   "screen.createcybernetics.cybereye_skin": "Cybereyes Layout",
+    "gui.createcybernetics.cyberware_toggle.enabled": "%s: Enabled (click to disable)",
+    "gui.createcybernetics.cyberware_toggle.disabled": "%s: Disabled (click to enable)",
+    "gui.createcybernetics.cyberware_button.open": "%s: Click to open",
+    "gui.createcybernetics.cyberware_button.enabled_open": "%s: Enabled (left-click to disable, right-click to open)",
+    "gui.createcybernetics.cyberware_button.disabled_open": "%s: Disabled (left-click to enable, right-click to open)",
 
   "jei.createcybernetics.dynamic_potion_autoinjector_crafting": "Potion Autoinjector Crafting",
   "jei.createcybernetics.dynamic_potion_autoinjector_filling": "Potion Autoinjector Filling",

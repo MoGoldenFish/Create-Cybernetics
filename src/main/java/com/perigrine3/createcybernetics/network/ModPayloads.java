@@ -1,6 +1,7 @@
 package com.perigrine3.createcybernetics.network;
 
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
+import com.perigrine3.createcybernetics.api.ICyberwareItem;
 import com.perigrine3.createcybernetics.api.InstalledCyberware;
 import com.perigrine3.createcybernetics.client.render.CyberentitySandevistanMirageTrail;
 import com.perigrine3.createcybernetics.client.render.SandevistanMirageTrail;
@@ -10,7 +11,6 @@ import com.perigrine3.createcybernetics.effect.*;
 import com.perigrine3.createcybernetics.event.custom.SandevistanSnapshotRelay;
 import com.perigrine3.createcybernetics.network.handler.*;
 import com.perigrine3.createcybernetics.network.payload.*;
-import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
@@ -371,7 +371,8 @@ public final class ModPayloads {
 
                             ItemStack stack = inst.getItem();
                             if (stack == null || stack.isEmpty()) continue;
-                            if (!stack.is(ModTags.Items.TOGGLEABLE_CYBERWARE)) continue;
+                            if (!(stack.getItem() instanceof ICyberwareItem item)) continue;
+                            if (!item.isToggleableByWheel(stack, slot)) continue;
 
                             boolean enabled = data.isEnabled(slot, i);
                             PacketDistributor.sendToPlayer(sp, new CyberwareEnabledStatePayload(slot.name(), i, enabled));
@@ -404,7 +405,8 @@ public final class ModPayloads {
 
                     ItemStack stack = inst.getItem();
                     if (stack == null || stack.isEmpty()) return;
-                    if (!stack.is(ModTags.Items.TOGGLEABLE_CYBERWARE)) return;
+                    if (!(stack.getItem() instanceof ICyberwareItem item)) return;
+                    if (!item.isToggleableByWheel(stack, slot)) return;
 
                     boolean nowEnabled = data.toggleEnabled(slot, index);
                     PacketDistributor.sendToPlayer(sp, new CyberwareEnabledStatePayload(slot.name(), index, nowEnabled));

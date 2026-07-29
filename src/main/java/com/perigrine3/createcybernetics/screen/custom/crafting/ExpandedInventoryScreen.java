@@ -1,6 +1,7 @@
 package com.perigrine3.createcybernetics.screen.custom.crafting;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
+import com.perigrine3.createcybernetics.client.gui.InventoryCyberwareToggleButtons;
 import com.perigrine3.createcybernetics.compat.apothicattributes.ApothicAttributesClientCompat;
 import com.perigrine3.createcybernetics.compat.curios.CuriosClientCompat;
 import net.minecraft.client.gui.GuiGraphics;
@@ -53,6 +54,7 @@ public class ExpandedInventoryScreen extends EffectRenderingInventoryScreen<Expa
 
         addCuriosButtons();
         addApothicAttributesButton();
+        InventoryCyberwareToggleButtons.addTo(this, this::addRenderableWidget);
     }
 
     private void addCuriosButtons() {
