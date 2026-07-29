@@ -1,5 +1,7 @@
 package com.perigrine3.createcybernetics.item.cyberware.wetware;
 
+import com.perigrine3.createcybernetics.api.CyberwareDurabilityCategory;
+import com.perigrine3.createcybernetics.api.CyberwareRepairType;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
 import com.perigrine3.createcybernetics.effect.ModEffects;
@@ -49,6 +51,21 @@ public class BlastemaInfusedSkeletonItem extends Item implements ICyberwareItem 
     @Override
     public Set<CyberwareSlot> getReplacedOrgans() {
         return Set.of(CyberwareSlot.BONE);
+    }
+
+    @Override
+    public CyberwareRepairType getRepairType(ItemStack installedStack, CyberwareSlot slot) {
+        return CyberwareRepairType.BIOLOGICAL;
+    }
+
+    @Override
+    public CyberwareDurabilityCategory getDurabilityCategory(ItemStack installedStack, CyberwareSlot slot) {
+        return CyberwareDurabilityCategory.WETWARE;
+    }
+
+    @Override
+    public int getMaxCyberwareDurability(ItemStack installedStack, CyberwareSlot slot) {
+        return 1000;
     }
 
     @Override

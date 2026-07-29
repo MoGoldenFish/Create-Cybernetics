@@ -1,0 +1,43 @@
+{
+  "type": "create:mechanical_crafting",
+  "accept_mirrored": true,
+  "category": "misc",
+
+  "key": {
+    "X": {
+      "item": "createcybernetics:empty_autoinjector"
+    },
+    "P": {
+      "item": "createcybernetics:component_plating"
+    },
+    "A": {
+      "item": "createcybernetics:component_actuator"
+    },
+    "S": {
+      "item": "createcybernetics:component_storage"
+    },
+    "N": {
+      "item": "createcybernetics:titaniumnugget"
+    },
+    "T": {
+      "item": "createcybernetics:titaniumingot"
+    },
+    "G": {
+      "item": "minecraft:glass_bottle"
+    }
+  },
+
+  "pattern": [
+    "S P S",
+    "GAAAG",
+    "XAPAX",
+    "N T N",
+    "     "
+  ],
+
+  "result": {
+    "count": 1,
+    "id": "createcybernetics:lungsupgrades_vampyres"
+  },
+  "show_notification": false
+}

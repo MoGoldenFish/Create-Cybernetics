@@ -26,6 +26,7 @@ public final class PlayerAttachmentClient {
         event.registerLayerDefinition(RipperClawAttachmentModel.LAYER, RipperClawAttachmentModel::createLayer);
         event.registerLayerDefinition(ArcCannonProngsAttachmentModel.LAYER, ArcCannonProngsAttachmentModel::createLayer);
         event.registerLayerDefinition(MantisBladeAttachmentModel.LAYER, MantisBladeAttachmentModel::createLayer);
+        event.registerLayerDefinition(VampyresAttachmentModel.LAYER, VampyresAttachmentModel::createLayer);
     }
 
     @SubscribeEvent

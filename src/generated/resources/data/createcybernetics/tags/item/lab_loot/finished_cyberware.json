@@ -6,6 +6,11 @@
     "createcybernetics:basecyberware_leftarm",
     "createcybernetics:basecyberware_cybereyes",
     "createcybernetics:basecyberware_linearframe",
+    "createcybernetics:eyeupgrades_monovision",
+    "createcybernetics:eyeupgrades_multioptics1",
+    "createcybernetics:eyeupgrades_multioptics2",
+    "createcybernetics:eyeupgrades_multioptics3",
+    "createcybernetics:eyeupgrades_multioptics4",
     "createcybernetics:eyeupgrades_hudlens",
     "createcybernetics:eyeupgrades_hudjack",
     "createcybernetics:eyeupgrades_nightvision",
@@ -81,6 +86,7 @@
     "createcybernetics:skinupgrades_syntheticsetules",
     "createcybernetics:skinupgrades_metalplating",
     "createcybernetics:muscleupgrades_synthmuscle",
-    "createcybernetics:muscleupgrades_wiredreflexes"
+    "createcybernetics:muscleupgrades_wiredreflexes",
+    "createcybernetics:muscleupgrades_ballisticgel"
   ]
 }

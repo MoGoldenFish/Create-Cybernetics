@@ -2,6 +2,9 @@ package com.perigrine3.createcybernetics.common.organs;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
+import com.perigrine3.createcybernetics.api.ICyberwareItem;
+import com.perigrine3.createcybernetics.api.InstalledCyberware;
+import com.perigrine3.createcybernetics.block.ModBlocks;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
 import com.perigrine3.createcybernetics.common.damage.ModDamageSources;
@@ -70,22 +73,22 @@ public final class MissingOrganController {
 
 
 // Resolve organ presence
-        boolean hasBrain = data.hasAnyTagged(ModTags.Items.BRAIN_ITEMS, CyberwareSlot.BRAIN) || data.hasAnyInSlots(CyberwareSlot.BRAIN);
-        boolean hasEyes = data.hasAnyTagged(ModTags.Items.EYE_ITEMS, CyberwareSlot.EYES);
-        boolean hasHeart = data.hasAnyTagged(ModTags.Items.HEART_ITEMS, CyberwareSlot.HEART);
-        boolean hasLungs = data.hasAnyTagged(ModTags.Items.LUNGS_ITEMS, CyberwareSlot.LUNGS);
+        boolean hasBrain = hasFunctionalOrgan(data, ModTags.Items.BRAIN_ITEMS, CyberwareSlot.BRAIN);
+        boolean hasEyes = hasFunctionalOrgan(data, ModTags.Items.EYE_ITEMS, CyberwareSlot.EYES);
+        boolean hasHeart = hasFunctionalOrgan(data, ModTags.Items.HEART_ITEMS, CyberwareSlot.HEART);
+        boolean hasLungs = hasFunctionalOrgan(data, ModTags.Items.LUNGS_ITEMS, CyberwareSlot.LUNGS);
 
-        boolean hasLiver = data.hasAnyTagged(ModTags.Items.LIVER_ITEMS, CyberwareSlot.ORGANS);
-        boolean hasIntestines = data.hasAnyTagged(ModTags.Items.INTESTINES_ITEMS, CyberwareSlot.ORGANS);
+        boolean hasLiver = hasFunctionalOrgan(data, ModTags.Items.LIVER_ITEMS, CyberwareSlot.ORGANS);
+        boolean hasIntestines = hasFunctionalOrgan(data, ModTags.Items.INTESTINES_ITEMS, CyberwareSlot.ORGANS);
 
-        boolean hasBone = data.hasAnyTagged(ModTags.Items.BONE_ITEMS, CyberwareSlot.BONE);
-        boolean hasMuscle = data.hasAnyTagged(ModTags.Items.MUSCLE_ITEMS, CyberwareSlot.MUSCLE);
-        boolean hasSkin = data.hasAnyTagged(ModTags.Items.SKIN_ITEMS, CyberwareSlot.SKIN);
+        boolean hasBone = hasFunctionalOrgan(data, ModTags.Items.BONE_ITEMS, CyberwareSlot.BONE);
+        boolean hasMuscle = hasFunctionalOrgan(data, ModTags.Items.MUSCLE_ITEMS, CyberwareSlot.MUSCLE);
+        boolean hasSkin = hasFunctionalOrgan(data, ModTags.Items.SKIN_ITEMS, CyberwareSlot.SKIN);
 
-        boolean hasLeftArm = data.hasAnyTagged(ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM);
-        boolean hasRightArm = data.hasAnyTagged(ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM);
-        boolean hasLeftLeg = data.hasAnyTagged(ModTags.Items.LEFTLEG_ITEMS, CyberwareSlot.LLEG);
-        boolean hasRightLeg = data.hasAnyTagged(ModTags.Items.RIGHTLEG_ITEMS, CyberwareSlot.RLEG);
+        boolean hasLeftArm = hasFunctionalOrgan(data, ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM);
+        boolean hasRightArm = hasFunctionalOrgan(data, ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM);
+        boolean hasLeftLeg = hasFunctionalOrgan(data, ModTags.Items.LEFTLEG_ITEMS, CyberwareSlot.LLEG);
+        boolean hasRightLeg = hasFunctionalOrgan(data, ModTags.Items.RIGHTLEG_ITEMS, CyberwareSlot.RLEG);
 
         boolean hasArms = hasLeftArm || hasRightArm;
         boolean hasLegs = hasLeftLeg || hasRightLeg;
@@ -109,7 +112,7 @@ public final class MissingOrganController {
         }
 
         /* -------------------- LUNGS -------------------- */
-        boolean hasGills = data.hasSpecificItem(ModItems.WETWARE_WATERBREATHINGLUNGS.get(), CyberwareSlot.LUNGS);
+        boolean hasGills = hasFunctionalSpecificItem(data, ModItems.WETWARE_WATERBREATHINGLUNGS.get(), CyberwareSlot.LUNGS);
         boolean inWater = player.isUnderWater() || player.isInWaterOrRain();
 
         // Cases:
@@ -206,9 +209,14 @@ public final class MissingOrganController {
         /* -------------------- ARMS -------------------- */
         updateMainArmForMissingArms(player, hasLeftArm, hasRightArm);
 
-        if (!player.getAbilities().instabuild
-                && !handWorks(player, InteractionHand.OFF_HAND, hasLeftArm, hasRightArm)) {
-            enforceOffhandEmpty(player);
+        if (!player.getAbilities().instabuild) {
+            if (!handWorks(player, InteractionHand.MAIN_HAND, hasLeftArm, hasRightArm)) {
+                dropHeldItem(player, InteractionHand.MAIN_HAND);
+            }
+
+            if (!handWorks(player, InteractionHand.OFF_HAND, hasLeftArm, hasRightArm)) {
+                dropHeldItem(player, InteractionHand.OFF_HAND);
+            }
         }
 
 
@@ -226,6 +234,47 @@ public final class MissingOrganController {
 
 
     /* -------------------- HELPERS -------------------- */
+
+    private static boolean hasFunctionalOrgan(PlayerCyberwareData data, TagKey<Item> tag, CyberwareSlot slot) {
+        InstalledCyberware[] arr = data.getAll().get(slot);
+        if (arr == null) return false;
+
+        for (InstalledCyberware installed : arr) {
+            if (installed == null) continue;
+            if (installed.isBroken()) continue;
+
+            ItemStack stack = installed.getItem();
+            if (stack == null || stack.isEmpty()) continue;
+
+            if (stack.is(tag)) return true;
+
+            if (stack.getItem() instanceof ICyberwareItem cyberwareItem
+                    && cyberwareItem.replacesOrgan()
+                    && cyberwareItem.getReplacedOrgans().contains(slot)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean hasFunctionalSpecificItem(PlayerCyberwareData data, Item item, CyberwareSlot slot) {
+        InstalledCyberware[] arr = data.getAll().get(slot);
+        if (arr == null) return false;
+
+        for (InstalledCyberware installed : arr) {
+            if (installed == null) continue;
+            if (installed.isBroken()) continue;
+
+            ItemStack stack = installed.getItem();
+            if (stack == null || stack.isEmpty()) continue;
+
+            if (stack.is(item)) return true;
+        }
+
+        return false;
+    }
+
     private static void forceProneLike(Player player) {
         CompoundTag pd = player.getPersistentData();
         pd.putBoolean(FORCED_PRONE, true);
@@ -256,7 +305,7 @@ public final class MissingOrganController {
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
         if (data == null) return;
 
-        boolean hasMuscle = data.hasAnyTagged(ModTags.Items.MUSCLE_ITEMS, CyberwareSlot.MUSCLE);
+        boolean hasMuscle = hasFunctionalOrgan(data, ModTags.Items.MUSCLE_ITEMS, CyberwareSlot.MUSCLE);
         if (!hasMuscle) {
             event.setNewSpeed(0.0F);
         }
@@ -272,7 +321,7 @@ public final class MissingOrganController {
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
         if (data == null) return;
 
-        boolean hasMuscle = data.hasAnyTagged(ModTags.Items.MUSCLE_ITEMS, CyberwareSlot.MUSCLE);
+        boolean hasMuscle = hasFunctionalOrgan(data, ModTags.Items.MUSCLE_ITEMS, CyberwareSlot.MUSCLE);
         if (!hasMuscle) {
             event.setCanceled(true);
         }
@@ -304,14 +353,14 @@ public final class MissingOrganController {
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
         if (data == null) return;
 
-        boolean hasMuscle = data.hasAnyTagged(ModTags.Items.MUSCLE_ITEMS, CyberwareSlot.MUSCLE);
+        boolean hasMuscle = hasFunctionalOrgan(data, ModTags.Items.MUSCLE_ITEMS, CyberwareSlot.MUSCLE);
         if (!hasMuscle) {
             event.setCanceled(true);
             return;
         }
 
-        boolean hasLeftArm = data.hasAnyTagged(ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM);
-        boolean hasRightArm = data.hasAnyTagged(ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM);
+        boolean hasLeftArm = hasFunctionalOrgan(data, ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM);
+        boolean hasRightArm = hasFunctionalOrgan(data, ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM);
 
         if (!handWorks(player, InteractionHand.MAIN_HAND, hasLeftArm, hasRightArm)) {
             event.setCanceled(true);
@@ -346,22 +395,16 @@ public final class MissingOrganController {
         return false;
     }
 
-    private static void enforceOffhandEmpty(Player player) {
-        ItemStack off = player.getOffhandItem();
-        if (off.isEmpty()) {
+    private static void dropHeldItem(Player player, InteractionHand hand) {
+        ItemStack heldStack = player.getItemInHand(hand);
+        if (heldStack.isEmpty()) {
             return;
         }
 
-        player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+        ItemStack droppedStack = heldStack.copy();
 
-        if (!player.getAbilities().instabuild) {
-            ItemStack removed = off.copy();
-
-            if (!player.getInventory().add(removed)) {
-                player.drop(removed, false);
-            }
-        }
-
+        player.setItemInHand(hand, ItemStack.EMPTY);
+        player.drop(droppedStack, false);
         player.inventoryMenu.broadcastChanges();
     }
 
@@ -444,14 +487,14 @@ public final class MissingOrganController {
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
         if (data == null) return;
 
-        boolean hasMuscle = data.hasAnyTagged(ModTags.Items.MUSCLE_ITEMS, CyberwareSlot.MUSCLE);
+        boolean hasMuscle = hasFunctionalOrgan(data, ModTags.Items.MUSCLE_ITEMS, CyberwareSlot.MUSCLE);
         if (!hasMuscle) {
             event.setCanceled(true);
             return;
         }
 
-        boolean hasLeftArm = data.hasAnyTagged(ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM);
-        boolean hasRightArm = data.hasAnyTagged(ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM);
+        boolean hasLeftArm = hasFunctionalOrgan(data, ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM);
+        boolean hasRightArm = hasFunctionalOrgan(data, ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM);
 
         updateMainArmForMissingArms(player, hasLeftArm, hasRightArm);
 
@@ -465,19 +508,28 @@ public final class MissingOrganController {
         Player player = event.getEntity();
         if (player.level().isClientSide) return;
 
+        var clickedState = event.getLevel().getBlockState(event.getPos());
+
+        if (clickedState.is(ModBlocks.SURGERY_TABLE.get())
+                || clickedState.is(ModBlocks.ROBOSURGEON.get())
+                || clickedState.is(ModBlocks.SURGERY_CHAMBER_TOP.get())
+                || clickedState.is(ModBlocks.SURGERY_CHAMBER_BOTTOM.get())) {
+            return;
+        }
+
         ensureFakePlayerDefaultOrgans(player);
 
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
         if (data == null) return;
 
-        boolean hasMuscle = data.hasAnyTagged(ModTags.Items.MUSCLE_ITEMS, CyberwareSlot.MUSCLE);
+        boolean hasMuscle = hasFunctionalOrgan(data, ModTags.Items.MUSCLE_ITEMS, CyberwareSlot.MUSCLE);
         if (!hasMuscle) {
             event.setCanceled(true);
             return;
         }
 
-        boolean hasLeftArm = data.hasAnyTagged(ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM);
-        boolean hasRightArm = data.hasAnyTagged(ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM);
+        boolean hasLeftArm = hasFunctionalOrgan(data, ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM);
+        boolean hasRightArm = hasFunctionalOrgan(data, ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM);
 
         updateMainArmForMissingArms(player, hasLeftArm, hasRightArm);
 

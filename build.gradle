@@ -28,12 +28,6 @@ base {
 // Mojang ships Java 21 to end users in 1.21.1, so mods should target Java 21.
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-// Register a 'sourcesJar' task that packages the mod's source code, and wire it
-// into the maven-publish publication below.
-java {
-    withSourcesJar()
-}
-
 neoForge {
     // Specify the version of NeoForge to use.
     version = project.neo_version
@@ -215,6 +209,16 @@ dependencies {
 
     implementation "curse.maven:ftb-essentials-410811:7608733"
     implementation "curse.maven:ftb-library-forge-404465:8226923"
+
+    //implementation "curse.maven:fancymenu-367706:8420116"
+    //implementation "curse.maven:fancy-entity-renderer-1173643:8257275"
+    //implementation "curse.maven:konkrete-410295:5453385"
+    //implementation "curse.maven:melody-938643:5453382"
+
+    implementation "curse.maven:vampirism-become-a-vampire-233029:8368444"
+
+    //compileOnly "curse.maven:neosync-1521718:8233799"
+    implementation "curse.maven:neosync-1521718:8233799"
 
 }
 

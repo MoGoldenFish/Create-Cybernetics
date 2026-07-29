@@ -1,5 +1,6 @@
 package com.perigrine3.createcybernetics;
 
+import com.perigrine3.createcybernetics.api.CyberwareDurabilityMode;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -36,6 +37,97 @@ public class Config {
             .comment("Epilepsy Mode")
             .comment("Activate this to disable the cyberware rejection overlay. Good if you or a friend has epilepsy.")
             .define("epilepsyMode", false);
+
+
+
+    public static final ModConfigSpec.EnumValue<CyberwareDurabilityMode> CYBERWARE_DURABILITY_MODE = BUILDER
+            .comment("Controls durability for installed organs and cyberware.")
+            .comment("ENABLED: Durability applies to default organs, wetware, and cybernetics.")
+            .comment("ONLY_IMPLANTS: Durability applies to wetware and cybernetics, but not default organs.")
+            .comment("ONLY_CYBERNETICS: Durability applies only to cybernetics.")
+            .comment("DISABLED: Durability is disabled.")
+            .defineEnum("cyberwareDurabilityMode", CyberwareDurabilityMode.ENABLED);
+
+    public static final ModConfigSpec.BooleanValue CRITICAL_DURABILITY_DEBUFFS = BUILDER
+            .comment("Controls critical durability effects for damaged organs and organ-replacement implants.")
+            .comment("When enabled, critically damaged organs may cause effects such as blindness, weakness, slowness, nausea, poison, reduced saturation, and prolonged harmful effects.")
+            .comment("When disabled, organ durability still functions, but critical durability debuffs are not applied.")
+            .define("criticalDurabilityDebuffs", true);
+
+    public static final ModConfigSpec.DoubleValue DURABILITY_DAMAGE_SCALE = BUILDER
+            .comment("Base installed-component durability damage for each point of health damage received.")
+            .defineInRange("durabilityDamageScale", 1.0D, 0.0D, 100.0D);
+
+    public static final ModConfigSpec.IntValue FOOD_DURABILITY_REPAIR_PER_NUTRITION = BUILDER
+            .comment("Biological durability restored per point of food nutrition before natural repair fatigue.")
+            .defineInRange("foodDurabilityRepairPerNutrition", 4, 0, 1000);
+
+    public static final ModConfigSpec.IntValue FOOD_REPAIR_FATIGUE_PER_NUTRITION = BUILDER
+            .comment("Natural repair fatigue gained per point of food nutrition after biological healing.")
+            .defineInRange("foodRepairFatiguePerNutrition", 1, 0, 100);
+
+    public static final ModConfigSpec.IntValue ANVIL_REPAIR_LOW = BUILDER
+            .comment("Durability restored by a low-value anvil repair material.")
+            .defineInRange("anvilRepairLow", 100, 0, 1000);
+
+    public static final ModConfigSpec.IntValue ANVIL_REPAIR_MODERATE = BUILDER
+            .comment("Durability restored by a moderate-value anvil repair material.")
+            .defineInRange("anvilRepairModerate", 250, 0, 1000);
+
+    public static final ModConfigSpec.IntValue ANVIL_REPAIR_HIGH = BUILDER
+            .comment("Durability restored by a high-value anvil repair material.")
+            .defineInRange("anvilRepairHigh", 500, 0, 1000);
+
+    public static final ModConfigSpec.DoubleValue MINIMUM_FOOD_REPAIR_EFFICIENCY = BUILDER
+            .comment("Minimum percentage of normal food durability repair after repeated healing.")
+            .defineInRange("minimumFoodRepairEfficiency", 0.10D, 0.0D, 1.0D);
+
+    public static final ModConfigSpec.IntValue REGENERATION_DURABILITY_REPAIR = BUILDER
+            .comment("Biological durability restored each second per regeneration-effect level.")
+            .defineInRange("regenerationDurabilityRepair", 4, 0, 1000);
+
+    public static final ModConfigSpec.IntValue REGENERATION_FATIGUE_RECOVERY = BUILDER
+            .comment("Natural repair fatigue removed each second per regeneration-effect level.")
+            .defineInRange("regenerationFatigueRecovery", 1, 0, 100);
+
+    public static final ModConfigSpec.IntValue BATTERY_ENERGY_RECEIVED_PER_DAMAGE = BUILDER
+            .comment("Energy a battery may receive before losing one durability.")
+            .comment("Set to 0 to disable battery degradation from receiving energy.")
+            .defineInRange("batteryEnergyReceivedPerDamage", 5000, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue BATTERY_ENERGY_EXTRACTED_PER_DAMAGE = BUILDER
+            .comment("Energy a battery may provide before losing one durability.")
+            .comment("Set to 0 to disable battery degradation from providing energy.")
+            .defineInRange("batteryEnergyExtractedPerDamage", 2500, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue BATTERY_PASSIVE_DAMAGE = BUILDER
+            .comment("Battery durability lost each passive-aging interval.")
+            .defineInRange("batteryPassiveDamage", 1, 0, 1000);
+
+    public static final ModConfigSpec.IntValue BATTERY_PASSIVE_DAMAGE_INTERVAL = BUILDER
+            .comment("Ticks between passive battery-aging damage.")
+            .comment("24000 ticks is one Minecraft day.")
+            .defineInRange("batteryPassiveDamageInterval", 24000, 20, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue BATTERY_EMP_DAMAGE_PER_SECOND = BUILDER
+            .comment("Battery durability lost each second while affected by EMP.")
+            .defineInRange("batteryEmpDamagePerSecond", 10, 0, 10000);
+
+    public static final ModConfigSpec.IntValue TITANIUM_SHEET_REPAIR = BUILDER
+            .comment("Cyberlimb durability restored by a titanium sheet.")
+            .defineInRange("titaniumSheetRepair", 100, 0, 100000);
+
+    public static final ModConfigSpec.IntValue TITANIUM_INGOT_REPAIR = BUILDER
+            .comment("Cyberlimb durability restored by a titanium ingot.")
+            .defineInRange("titaniumIngotRepair", 250, 0, 100000);
+
+    public static final ModConfigSpec.IntValue PLATING_COMPONENT_REPAIR = BUILDER
+            .comment("Cyberlimb durability restored by a plating component.")
+            .defineInRange("platingComponentRepair", 500, 0, 100000);
+
+    public static final ModConfigSpec.IntValue BATTERY_REPAIR_AMOUNT = BUILDER
+            .comment("Battery durability restored by one battery repair material.")
+            .defineInRange("batteryRepairAmount", 500, 0, 100000);
 
     public static final ModConfigSpec.EnumValue<ConfigValues.TattooUploadMode> TATTOO_UPLOAD_MODE = BUILDER
             .comment("Tattoo Upload Mode")
@@ -391,7 +483,6 @@ public class Config {
 
     private static void addDefaultEntityCyberwareRolls(List<String> defaults, String tableId) {
         if ("cyberzombie".equals(tableId)) {
-            defaults.add(tableId + ",createcybernetics:brainupgrades_cyberbrain,BRAIN,2");
             defaults.add(tableId + ",createcybernetics:brainupgrades_eyeofdefender,BRAIN,4");
             defaults.add(tableId + ",createcybernetics:brainupgrades_consciousnesstransmitter,BRAIN,4");
             defaults.add(tableId + ",createcybernetics:brainupgrades_corticalstack,BRAIN,3");
@@ -504,7 +595,6 @@ public class Config {
         }
 
         if ("cyberskeleton".equals(tableId)) {
-            defaults.add(tableId + ",createcybernetics:brainupgrades_cyberbrain,BRAIN,2");
             defaults.add(tableId + ",createcybernetics:brainupgrades_eyeofdefender,BRAIN,4");
             defaults.add(tableId + ",createcybernetics:brainupgrades_consciousnesstransmitter,BRAIN,4");
             defaults.add(tableId + ",createcybernetics:brainupgrades_corticalstack,BRAIN,3");
@@ -590,7 +680,6 @@ public class Config {
         }
 
         if ("smasher".equals(tableId)) {
-            defaults.add(tableId + ",createcybernetics:brainupgrades_cyberbrain,BRAIN,2");
             defaults.add(tableId + ",createcybernetics:brainupgrades_eyeofdefender,BRAIN,4");
             defaults.add(tableId + ",createcybernetics:brainupgrades_consciousnesstransmitter,BRAIN,4");
             defaults.add(tableId + ",createcybernetics:brainupgrades_corticalstack,BRAIN,3");
@@ -703,7 +792,6 @@ public class Config {
         }
 
         if ("hogboy".equals(tableId)) {
-            defaults.add(tableId + ",createcybernetics:brainupgrades_cyberbrain,BRAIN,2");
             defaults.add(tableId + ",createcybernetics:brainupgrades_eyeofdefender,BRAIN,4");
             defaults.add(tableId + ",createcybernetics:brainupgrades_consciousnesstransmitter,BRAIN,4");
             defaults.add(tableId + ",createcybernetics:brainupgrades_corticalstack,BRAIN,3");
@@ -716,7 +804,8 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:brainupgrades_iceprotocol,BRAIN,3");
             defaults.add(tableId + ",createcybernetics:brainupgrades_spelljammer,BRAIN,2,irons_spellbooks");
 
-            defaults.add(tableId + ",createcybernetics:basecyberware_cybereyes,EYES,12");
+            defaults.add(tableId + ",createcybernetics:basecyberware_cybereyes,EYES,6");
+            defaults.add(tableId + ",createcybernetics:eyeupgrades_monovision,EYES,12");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_hudlens,EYES,6");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_navigationchip,EYES,5");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_hudjack,EYES,5");
@@ -813,7 +902,6 @@ public class Config {
         }
 
         if ("punklin".equals(tableId)) {
-            defaults.add(tableId + ",createcybernetics:brainupgrades_cyberbrain,BRAIN,2");
             defaults.add(tableId + ",createcybernetics:brainupgrades_eyeofdefender,BRAIN,4");
             defaults.add(tableId + ",createcybernetics:brainupgrades_consciousnesstransmitter,BRAIN,4");
             defaults.add(tableId + ",createcybernetics:brainupgrades_corticalstack,BRAIN,3");
@@ -923,7 +1011,6 @@ public class Config {
         }
 
         if ("pigstrom".equals(tableId)) {
-            defaults.add(tableId + ",createcybernetics:brainupgrades_cyberbrain,BRAIN,2");
             defaults.add(tableId + ",createcybernetics:brainupgrades_eyeofdefender,BRAIN,4");
             defaults.add(tableId + ",createcybernetics:brainupgrades_consciousnesstransmitter,BRAIN,4");
             defaults.add(tableId + ",createcybernetics:brainupgrades_corticalstack,BRAIN,3");
@@ -936,7 +1023,11 @@ public class Config {
             defaults.add(tableId + ",createcybernetics:brainupgrades_iceprotocol,BRAIN,3");
             defaults.add(tableId + ",createcybernetics:brainupgrades_spelljammer,BRAIN,2,irons_spellbooks");
 
-            defaults.add(tableId + ",createcybernetics:basecyberware_cybereyes,EYES,12");
+            defaults.add(tableId + ",createcybernetics:basecyberware_cybereyes,EYES,5");
+            defaults.add(tableId + ",createcybernetics:eyeupgrades_multioptics1,EYES,12");
+            defaults.add(tableId + ",createcybernetics:eyeupgrades_multioptics2,EYES,12");
+            defaults.add(tableId + ",createcybernetics:eyeupgrades_multioptics3,EYES,12");
+            defaults.add(tableId + ",createcybernetics:eyeupgrades_multioptics4,EYES,12");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_hudlens,EYES,6");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_navigationchip,EYES,5");
             defaults.add(tableId + ",createcybernetics:eyeupgrades_hudjack,EYES,5");

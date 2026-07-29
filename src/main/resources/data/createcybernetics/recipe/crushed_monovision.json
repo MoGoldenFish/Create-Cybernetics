@@ -1,0 +1,36 @@
+{
+"type": "create:crushing",
+  "ingredients": [
+    {
+      "type": "neoforge:compound",
+      "ingredients": [
+        {
+          "item": "createcybernetics:eyeupgrades_monovision"
+        }
+      ]
+    }
+  ],
+  "processing_time": 100,
+  "results": [
+    {
+      "chance": 0.70,
+      "id": "minecraft:glass_pane"
+    },
+    {
+      "chance": 0.70,
+      "id": "createcybernetics:component_plating"
+    },
+    {
+      "chance": 0.20,
+      "id": "createcybernetics:scavenged_cybereyes"
+    },
+    {
+      "chance": 0.20,
+      "id": "createcybernetics:scavenged_hudjack"
+    },
+    {
+      "chance": 0.25,
+      "id": "create:experience_nugget"
+    }
+  ]
+}

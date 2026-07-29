@@ -105,14 +105,11 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.SCAVENGED_LEFTLEG);
                         output.accept(ModItems.SCAVENGED_RIGHTARM);
                         output.accept(ModItems.SCAVENGED_LEFTARM);
-                        output.accept(ModItems.SCAVENGED_CYBEREYES);
                         output.accept(ModItems.SCAVENGED_LINEARFRAME);
+                        output.accept(ModItems.SCAVENGED_CYBEREYES);
+                        output.accept(ModItems.SCAVENGED_MONOVISION);
                         output.accept(ModItems.SCAVENGED_HUDLENS);
-
-                        if (ModItems.SCAVENGED_NAVIGATIONCHIP != null) {
-                            output.accept(ModItems.SCAVENGED_NAVIGATIONCHIP);
-                        }
-
+                        output.accept(ModItems.SCAVENGED_NAVIGATIONCHIP);
                         output.accept(ModItems.SCAVENGED_HUDJACK);
                         output.accept(ModItems.SCAVENGED_NIGHTVISION);
                         output.accept(ModItems.SCAVENGED_TARGETING);
@@ -177,6 +174,7 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.SCAVENGED_HYPEROXYGENATION);
                         output.accept(ModItems.SCAVENGED_OXYGEN);
                         output.accept(ModItems.SCAVENGED_SYNTHLUNGS);
+                        output.accept(ModItems.SCAVENGED_VAMPYRES);
                         output.accept(ModItems.SCAVENGED_ADRENALINE);
                         output.accept(ModItems.SCAVENGED_BATTERY);
                         output.accept(ModItems.SCAVENGED_DIAMONDWAFERSTACK);
@@ -209,6 +207,7 @@ public class ModCreativeModeTabs {
 
                         output.accept(ModItems.SCAVENGED_SYNTHMUSCLE);
                         output.accept(ModItems.SCAVENGED_WIREDREFLEXES);
+                        output.accept(ModItems.SCAVENGED_BALLISTICGEL);
 
 
                     }).build());
@@ -241,21 +240,22 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.BASECYBERWARE_LEFTARM);
                         output.accept(ModItems.BASECYBERWARE_RIGHTLEG);
                         output.accept(ModItems.BASECYBERWARE_LEFTLEG);
-                        output.accept(ModItems.BASECYBERWARE_CYBEREYES);
                         output.accept(ModItems.BASECYBERWARE_LINEARFRAME);
+                        output.accept(ModItems.BASECYBERWARE_CYBEREYES);
                     //EYE UPGRADES
+                        output.accept(ModItems.EYEUPGRADES_MONOVISION);
+                        output.accept(ModItems.EYEUPGRADES_MULTIOPTICS1);
+                        output.accept(ModItems.EYEUPGRADES_MULTIOPTICS2);
+                        output.accept(ModItems.EYEUPGRADES_MULTIOPTICS3);
+                        output.accept(ModItems.EYEUPGRADES_MULTIOPTICS4);
                         output.accept(ModItems.EYEUPGRADES_HUDLENS);
-
-                        if (ModItems.EYEUPGRADES_NAVIGATIONCHIP != null) {
-                            output.accept(ModItems.EYEUPGRADES_NAVIGATIONCHIP);
-                        }
-
                         output.accept(ModItems.EYEUPGRADES_HUDJACK);
                         output.accept(ModItems.EYEUPGRADES_NIGHTVISION);
                         output.accept(ModItems.EYEUPGRADES_UNDERWATERVISION);
                         output.accept(ModItems.EYEUPGRADES_TARGETING);
                         output.accept(ModItems.EYEUPGRADES_ZOOM);
                         output.accept(ModItems.EYEUPGRADES_TRAJECTORYCALCULATOR);
+                        output.accept(ModItems.EYEUPGRADES_NAVIGATIONCHIP);
                         output.accept(ModItems.EYEUPGRADES_BIOMONITOR);
                     //ARM UPGRADES
                         output.accept(ModItems.ARMUPGRADES_ARMCANNON);
@@ -330,6 +330,7 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.LUNGSUPGRADES_HYPEROXYGENATION);
                         output.accept(ModItems.LUNGSUPGRADES_OXYGEN);
                         output.accept(ModItems.LUNGSUPGRADES_SYNTHLUNGS);
+                        output.accept(ModItems.LUNGSUPGRADES_VAMPYRES);
                     //ORGAN UPGRADES
                         output.accept(ModItems.ORGANSUPGRADES_ADRENALINE);
                         output.accept(ModItems.ORGANSUPGRADES_BATTERY);
@@ -365,10 +366,14 @@ public class ModCreativeModeTabs {
                         if (ModItems.SKINUPGRADES_MANASKIN != null) {
                             output.accept(ModItems.SKINUPGRADES_MANASKIN);
                         }
+                        if (ModItems.SKINUPGRADES_ULTRAVIOLENT != null) {
+                            output.accept(ModItems.SKINUPGRADES_ULTRAVIOLENT);
+                        }
 
                     //MUSCLE UPGRADES
                         output.accept(ModItems.MUSCLEUPGRADES_SYNTHMUSCLE);
                         output.accept(ModItems.MUSCLEUPGRADES_WIREDREFLEXES);
+                        output.accept(ModItems.MUSCLEUPGRADES_BALLISTICGEL);
                     //WETWARE UPGRADES
                         if (ModItems.WETWARE_BLUBBER != null) {
                             output.accept(ModItems.WETWARE_BLUBBER);
@@ -421,6 +426,7 @@ public class ModCreativeModeTabs {
 
                         //SPECIAL SHARDS
                         output.accept(ModItems.DATA_SHARD_BIOCHIP);
+                        output.accept(ModItems.DATA_SHARD_SHARED_NAVIGATION.get());
                         output.accept(ModItems.DATA_SHARD_INFOLOG);
 
                         //DATA SHARDS

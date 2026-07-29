@@ -1,0 +1,32 @@
+{
+  "type": "createcybernetics:engineering_table",
+  "accept_mirrored": true,
+
+  "key": {
+    "T": {
+      "item": "createcybernetics:titaniumsheet"
+    },
+    "C": {
+      "item": "minecraft:compass"
+    },
+    "S": {
+      "item": "createcybernetics:component_ssd"
+    },
+    "X": {
+      "tag": "createcybernetics:data_shards"
+    }
+  },
+
+  "pattern": [
+    "     ",
+    "  X  ",
+    " SCS ",
+    "  T  ",
+    "     "
+  ],
+
+  "result": {
+    "count": 1,
+    "id": "createcybernetics:data_shard_shared_navigation"
+  }
+}

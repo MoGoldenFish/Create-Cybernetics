@@ -10,9 +10,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class NeuralProcessorItem extends Item implements ICyberwareItem {
@@ -28,6 +30,17 @@ public class NeuralProcessorItem extends Item implements ICyberwareItem {
         if (Screen.hasShiftDown()) {
             tooltip.add(Component.translatable("tooltip.createcybernetics.humanity", humanityCost).withStyle(ChatFormatting.GOLD));
         }
+    }
+
+    @Override
+    public Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                Items.GOLD_INGOT, 250,
+                ModItems.COMPONENT_SYNTHNERVES.get(), 250,
+                ModItems.COMPONENT_WIRING.get(), 250,
+                ModItems.COMPONENT_SSD.get(), 350,
+                ModItems.COMPONENT_GRAPHICSCARD.get(), 350
+        );
     }
 
     @Override

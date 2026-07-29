@@ -12,6 +12,7 @@
     "createcybernetics:data_shard_gray",
     "createcybernetics:data_shard_black",
     "createcybernetics:data_shard_biochip",
+    "createcybernetics:data_shard_shared_navigation",
     "createcybernetics:data_shard_infolog",
     "createcybernetics:data_shard_infolog_getting_started",
     "createcybernetics:data_shard_infolog_robosurgeon_manual",

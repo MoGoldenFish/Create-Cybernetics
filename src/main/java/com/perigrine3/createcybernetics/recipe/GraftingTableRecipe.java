@@ -4,7 +4,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.perigrine3.createcybernetics.api.CyberwareSlot;
+import com.perigrine3.createcybernetics.api.ICyberwareItem;
+import com.perigrine3.createcybernetics.common.durability.CyberwareDurabilityData;
 import com.perigrine3.createcybernetics.item.ModItems;
+import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -106,6 +110,76 @@ public record GraftingTableRecipe(
         }
 
         return remains;
+    }
+
+    public static boolean isBiologicalRepair(GraftingTableRecipeInput input) {
+        if (input.size() < INPUT_COUNT) return false;
+        if (!input.getItem(SLOT_MESH).isEmpty()) return false;
+        if (!input.getItem(SLOT_STRING).isEmpty()) return false;
+        if (!input.getItem(SLOT_TEAR).is(Items.GHAST_TEAR)) return false;
+
+        int repairableItems = 0;
+
+        for (int i = 0; i < WETWARE_SLOTS; i++) {
+            ItemStack stack = input.getItem(i);
+            if (stack.isEmpty()) continue;
+            if (!stack.is(ModTags.Items.WETWARE_ITEM)) return false;
+
+            CyberwareSlot slot = findDurabilitySlot(stack);
+            if (slot == null) return false;
+            if (!CyberwareDurabilityData.isDamaged(stack, slot)) return false;
+
+            repairableItems++;
+        }
+
+        return repairableItems == 1;
+    }
+
+    public static ItemStack assembleBiologicalRepair(GraftingTableRecipeInput input) {
+        if (!isBiologicalRepair(input)) return ItemStack.EMPTY;
+
+        for (int i = 0; i < WETWARE_SLOTS; i++) {
+            ItemStack stack = input.getItem(i);
+            if (stack.isEmpty()) continue;
+
+            CyberwareSlot slot = findDurabilitySlot(stack);
+            if (slot == null) return ItemStack.EMPTY;
+
+            ItemStack repaired = stack.copy();
+            repaired.setCount(1);
+            CyberwareDurabilityData.fullyRepair(repaired, slot);
+
+            return repaired;
+        }
+
+        return ItemStack.EMPTY;
+    }
+
+    public static int findBiologicalRepairInputSlot(GraftingTableRecipeInput input) {
+        if (!isBiologicalRepair(input)) return -1;
+
+        for (int i = 0; i < WETWARE_SLOTS; i++) {
+            if (!input.getItem(i).isEmpty()) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static CyberwareSlot findDurabilitySlot(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return null;
+        if (!stack.is(ModTags.Items.WETWARE_ITEM)) return null;
+        if (!(stack.getItem() instanceof ICyberwareItem cyberwareItem)) return null;
+
+        for (CyberwareSlot slot : CyberwareSlot.values()) {
+            if (!cyberwareItem.supportsSlot(slot)) continue;
+            if (!CyberwareDurabilityData.supportsDurability(stack, slot)) continue;
+
+            return slot;
+        }
+
+        return null;
     }
 
     public static final class Serializer implements RecipeSerializer<GraftingTableRecipe> {

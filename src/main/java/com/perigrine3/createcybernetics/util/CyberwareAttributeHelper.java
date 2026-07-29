@@ -209,9 +209,9 @@ public class CyberwareAttributeHelper {
         registerModifier("synthmuscle_knockback", new AttributeModifierData(attackKnockbackAttribute,
                 ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "synthmuscle_attack_knockback"),
                 1.5, AttributeModifier.Operation.ADD_VALUE));
-        registerModifier("synthmuscle_speed", new AttributeModifierData(attackKnockbackAttribute,
+        registerModifier("synthmuscle_speed", new AttributeModifierData(speedAttribute,
                 ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "synthmuscle_speed_boost"),
-                0.15, AttributeModifier.Operation.ADD_VALUE));
+                0.05, AttributeModifier.Operation.ADD_VALUE));
         registerModifier("synthmuscle_jump", new AttributeModifierData(jumpStrengthAttribute,
                 ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "synthmuscle_jump_boost"),
                 0.1, AttributeModifier.Operation.ADD_VALUE));
@@ -361,6 +361,13 @@ public class CyberwareAttributeHelper {
         registerModifier("synthlungs_breath", new AttributeModifierData(oxygenBonusAttribute,
                 ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "synthlungs_breath"),
                 3, AttributeModifier.Operation.ADD_VALUE));
+        registerModifier("synthlungs_speed", new AttributeModifierData(speedAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "synthlungs_speed"),
+                0.05, AttributeModifier.Operation.ADD_VALUE));
+
+        registerModifier("ballisticgel_toughness", new AttributeModifierData(armorToughnessAttribute,
+                ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "ballisticgel_toughness"),
+                5, AttributeModifier.Operation.ADD_VALUE));
 
 
 
@@ -663,6 +670,18 @@ public class CyberwareAttributeHelper {
         if (inst == null) return;
 
         inst.removeModifier(data.name);
+    }
+
+    public static void removeAllRegisteredModifiers(LivingEntity entity) {
+        for (AttributeModifierData data : MODIFIER_REGISTRY.values()) {
+            Holder<Attribute> attr = data.resolveAttribute();
+            if (attr == null) continue;
+
+            var inst = entity.getAttribute(attr);
+            if (inst == null) continue;
+
+            inst.removeModifier(data.name);
+        }
     }
 
     public static boolean hasModifier(LivingEntity entity, String modifierId) {

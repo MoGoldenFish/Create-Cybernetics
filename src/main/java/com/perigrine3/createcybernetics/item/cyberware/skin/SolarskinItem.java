@@ -2,6 +2,7 @@ package com.perigrine3.createcybernetics.item.cyberware.skin;
 
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
+import com.perigrine3.createcybernetics.item.ModItems;
 import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -11,11 +12,13 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class SolarskinItem extends Item implements ICyberwareItem {
@@ -38,6 +41,14 @@ public class SolarskinItem extends Item implements ICyberwareItem {
             tooltip.add(Component.translatable("tooltip.createcybernetics.skinupgrades_solarskin.energy")
                     .withStyle(ChatFormatting.DARK_GREEN));
         }
+    }
+
+    @Override
+    public Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                Items.LAPIS_LAZULI, 250,
+                Items.LAPIS_BLOCK, 750
+        );
     }
 
     @Override

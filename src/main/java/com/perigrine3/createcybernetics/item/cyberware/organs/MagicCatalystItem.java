@@ -2,15 +2,18 @@ package com.perigrine3.createcybernetics.item.cyberware.organs;
 
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
+import com.perigrine3.createcybernetics.item.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class MagicCatalystItem extends Item implements ICyberwareItem {
@@ -32,6 +35,21 @@ public class MagicCatalystItem extends Item implements ICyberwareItem {
 
             tooltip.add(Component.translatable("tooltip.createcybernetics.organsupgrades_magiccatalyst.energy").withStyle(ChatFormatting.DARK_GREEN));
         }
+    }
+
+    @Override
+    public Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                Items.NETHER_STAR, 750,
+                Items.GHAST_TEAR, 300,
+                Items.REDSTONE_BLOCK, 500,
+                Items.REDSTONE, 200,
+                Items.LAPIS_BLOCK, 500,
+                Items.LAPIS_LAZULI, 200,
+                ModItems.COMPONENT_WIRING.get(), 100,
+                ModItems.COMPONENT_PLATING.get(), 100,
+                ModItems.COMPONENT_MESH.get(), 100
+        );
     }
 
     @Override

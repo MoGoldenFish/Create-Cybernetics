@@ -11,7 +11,7 @@
       "item": "minecraft:slime_block"
     },
     "V": {
-      "item": "minecraft:netherite_block"
+      "item": "minecraft:netherite_ingot"
     },
     "P": {
       "item": "createcybernetics:component_plating"

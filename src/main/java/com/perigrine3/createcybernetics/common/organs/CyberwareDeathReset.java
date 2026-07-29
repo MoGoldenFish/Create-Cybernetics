@@ -132,11 +132,9 @@ public final class CyberwareDeathReset {
     }
 
     private static void handlePlayerDeath(ServerPlayer player) {
-        if (player.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) return;
         if (ConfigValues.KEEP_CYBERWARE) return;
 
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
-        if (data == null) return;
 
         if (CorpseCompat.capturePlayerDeathForCorpse(player)) {
             CorpseCompat.syncPendingCorpseVisualSnapshotOnDeath(player);
@@ -192,6 +190,7 @@ public final class CyberwareDeathReset {
         dropSpinalInjectorInventory(player, data);
         dropArmCannonInventory(player, data);
         dropHeatEngineInventory(player, data);
+        dropFaceplateMaskInventory(player, data);
 
         clearTransferredStoredInventories(data);
         data.setDirty();
@@ -443,6 +442,27 @@ public final class CyberwareDeathReset {
         }
     }
 
+    private static void dropFaceplateMaskInventory(ServerPlayer player, PlayerCyberwareData data) {
+        ItemStack stored = data.removeFaceplateMaskStack();
+        if (stored.isEmpty()) return;
+
+        player.spawnAtLocation(stored.copy());
+        clearFaceplateAliasWithoutReturningMask(player);
+    }
+
+    private static void clearFaceplateAliasWithoutReturningMask(ServerPlayer player) {
+        CompoundTag persistentData = player.getPersistentData();
+
+        persistentData.remove("cc_faceplate_alias");
+        persistentData.putBoolean("cc_faceplate_active", false);
+
+        player.setCustomName(null);
+        player.setCustomNameVisible(false);
+
+        player.refreshDisplayName();
+        player.refreshTabListName();
+    }
+
     private static ItemStack getInstalledArmCannonStack(ServerPlayer player) {
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
         if (data == null) return ItemStack.EMPTY;
@@ -503,6 +523,7 @@ public final class CyberwareDeathReset {
         data.clearCyberdeckInventory();
         data.clearSpinalInjectorInventory();
         data.clearArmCannonInventory();
+        data.clearFaceplateMaskInventory();
 
         for (int i = 0; i < PlayerCyberwareData.HEAT_ENGINE_SLOT_COUNT; i++) {
             data.setHeatEngineStack(i, ItemStack.EMPTY);

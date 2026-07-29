@@ -1,15 +1,23 @@
 package com.perigrine3.createcybernetics.api;
 
+import com.perigrine3.createcybernetics.ConfigValues;
 import com.perigrine3.createcybernetics.common.capabilities.CyberwareAccess;
+import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.common.durability.CyberwareDurabilityData;
+import com.perigrine3.createcybernetics.item.ModItems;
 import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.DyedItemColor;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public interface ICyberwareItem {
@@ -30,6 +38,21 @@ public interface ICyberwareItem {
 
     default Set<TagKey<Item>> requiresCyberwareTags(ItemStack installedStack, CyberwareSlot slot) {
         return Set.of();
+    }
+
+    default boolean meetsCyberwareRequirements(PlayerCyberwareData data, ItemStack installedStack, CyberwareSlot slot) {
+        Set<Item> required = requiresCyberware(installedStack, slot);
+        if (required == null || required.isEmpty()) {
+            return true;
+        }
+
+        for (Item item : required) {
+            if (!data.hasSpecificItem(item, CyberwareSlot.values())) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     default Set<Item> incompatibleCyberware(ItemStack installedStack, CyberwareSlot slot) {
@@ -185,6 +208,163 @@ public interface ICyberwareItem {
 
         return false;
     }
+
+    /* -------------------- DURABILITY -------------------- */
+
+    default CyberwareDurabilityCategory getDurabilityCategory(ItemStack installedStack, CyberwareSlot slot) {
+        return CyberwareDurabilityCategory.CYBERNETIC;
+    }
+
+    default CyberwareRepairType getRepairType(ItemStack installedStack, CyberwareSlot slot) {
+        return CyberwareRepairType.CYBERNETIC;
+    }
+
+    default Map<Item, Integer> getDefaultAnvilRepairMaterials(ItemStack cyberwareStack) {
+        if (cyberwareStack == null || cyberwareStack.isEmpty()) return Map.of();
+
+        CyberwareSlot slot = getDurabilityDataSlot(cyberwareStack);
+        if (slot == null) return Map.of();
+
+        return switch (getRepairType(cyberwareStack, slot)) {
+            case NONE, BIOLOGICAL -> Map.of(); // NOTHING (Repaired in the grafting table with Ghast Tears)
+
+            case CYBERLIMB -> Map.of(
+                    ModItems.TITANIUMINGOT.get(), ConfigValues.ANVIL_REPAIR_HIGH,
+                    ModItems.TITANIUMSHEET.get(), ConfigValues.ANVIL_REPAIR_MODERATE,
+                    ModItems.COMPONENT_PLATING.get(), ConfigValues.ANVIL_REPAIR_HIGH,
+                    ModItems.COMPONENT_ACTUATOR.get(), ConfigValues.ANVIL_REPAIR_LOW,
+                    ModItems.COMPONENT_SYNTHNERVES.get(), ConfigValues.ANVIL_REPAIR_LOW
+            );
+            case CYBERNETIC -> Map.of(
+                    ModItems.COMPONENT_PLATING.get(), ConfigValues.ANVIL_REPAIR_HIGH,
+                    ModItems.COMPONENT_WIRING.get(), ConfigValues.ANVIL_REPAIR_MODERATE,
+                    ModItems.COMPONENT_MESH.get(), ConfigValues.ANVIL_REPAIR_LOW
+            );
+            case BATTERY -> Map.of(
+                    ModItems.COMPONENT_PLATING.get(), ConfigValues.ANVIL_REPAIR_MODERATE,
+                    ModItems.COMPONENT_STORAGE.get(), ConfigValues.ANVIL_REPAIR_LOW,
+                    Items.REDSTONE, ConfigValues.ANVIL_REPAIR_HIGH,
+                    Items.BLAZE_POWDER, ConfigValues.ANVIL_REPAIR_HIGH,
+                    Items.GOLD_NUGGET, 50
+            );
+        };
+    }
+
+    default Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of();
+    }
+
+    default Map<Item, Integer> getAnvilRepairMaterials(ItemStack cyberwareStack) {
+        Map<Item, Integer> defaults = getDefaultAnvilRepairMaterials(cyberwareStack);
+        Map<Item, Integer> additions = getAdditionalAnvilRepairMaterials(cyberwareStack);
+
+        if (defaults.isEmpty()) return additions;
+        if (additions.isEmpty()) return defaults;
+
+        Map<Item, Integer> combined = new HashMap<>(defaults);
+        combined.putAll(additions);
+
+        return Map.copyOf(combined);
+    }
+
+    default boolean canRepairInAnvil(ItemStack cyberwareStack) {
+        if (cyberwareStack == null || cyberwareStack.isEmpty()) return false;
+
+        CyberwareSlot slot = getDurabilityDataSlot(cyberwareStack);
+        if (slot == null) return false;
+
+        CyberwareDurabilityCategory durabilityCategory = getDurabilityCategory(cyberwareStack, slot);
+        if (durabilityCategory == CyberwareDurabilityCategory.DEFAULT_ORGAN || durabilityCategory == CyberwareDurabilityCategory.WETWARE) return false;
+
+        CyberwareRepairType repairType = getRepairType(cyberwareStack, slot);
+        if (repairType == CyberwareRepairType.NONE || repairType == CyberwareRepairType.BIOLOGICAL) return false;
+
+        return !getAnvilRepairMaterials(cyberwareStack).isEmpty();
+    }
+
+    default boolean isAnvilRepairMaterial(ItemStack cyberwareStack, ItemStack repairStack) {
+        if (!canRepairInAnvil(cyberwareStack)) return false;
+        if (repairStack == null || repairStack.isEmpty()) return false;
+
+        return getAnvilRepairMaterials(cyberwareStack).containsKey(repairStack.getItem());
+    }
+
+    default int getAnvilRepairAmount(ItemStack cyberwareStack, ItemStack repairStack) {
+        if (!isAnvilRepairMaterial(cyberwareStack, repairStack)) return 0;
+
+        return Math.max(0, getAnvilRepairMaterials(cyberwareStack).getOrDefault(repairStack.getItem(), 0));
+    }
+
+    default int getAnvilRepairLevelCost(ItemStack cyberwareStack, ItemStack repairStack, int materialsConsumed, int durabilityRestored) {
+        return Math.max(1, materialsConsumed);
+    }
+
+    default CyberwareSlot getDurabilityDataSlot(ItemStack cyberwareStack) {
+        for (CyberwareSlot slot : getSupportedSlots()) {
+            return slot;
+        }
+
+        return null;
+    }
+
+    default int getMaxCyberwareDurability(ItemStack installedStack, CyberwareSlot slot) {
+        return switch (slot) {
+            case BRAIN -> 1000;
+            case EYES -> 700;
+            case HEART -> 900;
+            case LUNGS -> 800;
+            case ORGANS -> 800;
+            case RARM, LARM -> 1600;
+            case RLEG, LLEG -> 1800;
+            case MUSCLE -> 1200;
+            case BONE -> 1800;
+            case SKIN -> 1000;
+        };
+    }
+
+    default boolean canDegradeFrom(LivingEntity entity, ItemStack installedStack, CyberwareSlot slot, CyberwareDegradationCause cause) {
+        return true;
+    }
+
+    default float getDegradationMultiplier(LivingEntity entity, ItemStack installedStack, CyberwareSlot slot, CyberwareDegradationCause cause) {
+        CyberwareDurabilityCategory category = getDurabilityCategory(installedStack, slot);
+
+        if (category == CyberwareDurabilityCategory.DEFAULT_ORGAN) {
+            if (cause == CyberwareDegradationCause.EXPLOSION && slot != CyberwareSlot.RARM && slot != CyberwareSlot.LARM && slot != CyberwareSlot.RLEG && slot != CyberwareSlot.LLEG) {
+                return 2.0F;
+            }
+
+            if (slot == CyberwareSlot.HEART || slot == CyberwareSlot.LUNGS || slot == CyberwareSlot.ORGANS || slot == CyberwareSlot.BRAIN) {
+                return 0.35F;
+            }
+
+            return 0.75F;
+        }
+
+        if (category == CyberwareDurabilityCategory.WETWARE) {
+            if (cause == CyberwareDegradationCause.EMP || cause == CyberwareDegradationCause.ENERGY_RECEIVED || cause == CyberwareDegradationCause.ENERGY_EXTRACTED) {
+                return 0.0F;
+            }
+
+            return 0.6F;
+        }
+
+        return 1.0F;
+    }
+
+    default int modifyDegradationAmount(LivingEntity entity, ItemStack installedStack, CyberwareSlot slot, CyberwareDegradationCause cause, int amount) {
+        return Math.max(0, amount);
+    }
+
+    default boolean functionsWhenBroken(LivingEntity entity, ItemStack installedStack, CyberwareSlot slot) {
+        return false;
+    }
+
+    default void onDurabilityDamaged(LivingEntity entity, ItemStack installedStack, CyberwareSlot slot, int previousDurability, int currentDurability, CyberwareDegradationCause cause) {}
+
+    default void onDurabilityBroken(LivingEntity entity, ItemStack installedStack, CyberwareSlot slot, CyberwareDegradationCause cause) {}
+
+    default void onDurabilityRepaired(LivingEntity entity, ItemStack installedStack, CyberwareSlot slot, int previousDurability, int currentDurability) {}
 
     /* -------------------- ENERGY -------------------- */
 

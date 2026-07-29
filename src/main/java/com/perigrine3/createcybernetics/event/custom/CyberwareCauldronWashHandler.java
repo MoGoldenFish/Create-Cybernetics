@@ -2,6 +2,7 @@ package com.perigrine3.createcybernetics.event.custom;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
+import com.perigrine3.createcybernetics.util.SecondaryDyeColor;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -31,9 +32,11 @@ public final class CyberwareCauldronWashHandler {
         if (stack.isEmpty()) return;
         if (!(stack.getItem() instanceof ICyberwareItem cw)) return;
         if (!cw.isDyeable(stack)) return;
-        if (!stack.has(DataComponents.DYED_COLOR)) return;
+        if (!stack.has(DataComponents.DYED_COLOR) && !SecondaryDyeColor.hasColor(stack)) return;
+
         if (!level.isClientSide) {
             stack.remove(DataComponents.DYED_COLOR);
+            SecondaryDyeColor.removeColor(stack);
 
             if (!event.getEntity().getAbilities().instabuild) {
                 LayeredCauldronBlock.lowerFillLevel(state, level, event.getPos());

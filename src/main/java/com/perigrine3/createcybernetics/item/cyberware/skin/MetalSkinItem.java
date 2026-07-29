@@ -38,6 +38,11 @@ public class MetalSkinItem extends Item implements ICyberwareItem {
     }
 
     @Override
+    public int getMaxCyberwareDurability(ItemStack installedStack, CyberwareSlot slot) {
+        return 1500;
+    }
+
+    @Override
     public boolean isDyeable(ItemStack stack, CyberwareSlot slot) {
         return slot == CyberwareSlot.SKIN;
     }

@@ -8,7 +8,10 @@
       "item": "minecraft:gold_nugget"
     },
     "R": {
-      "item": "minecraft:redstone_block"
+      "item": "minecraft:redstone"
+    },
+    "B": {
+      "item": "minecraft:blaze_powder"
     },
     "P": {
       "item": "createcybernetics:component_plating"
@@ -20,9 +23,9 @@
 
   "pattern": [
     "  PPG",
-    " PSRP",
-    "PSSSP",
-    "PRSP ",
+    " PBBP",
+    "PRSBP",
+    "PRRP ",
     "GPP  "
   ],
 

@@ -16,9 +16,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class SynthMuscleItem extends Item implements ICyberwareItem {
@@ -35,6 +37,18 @@ public class SynthMuscleItem extends Item implements ICyberwareItem {
             tooltip.add(Component.translatable("tooltip.createcybernetics.humanity", humanityCost).withStyle(ChatFormatting.GOLD));
             tooltip.add(Component.translatable("tooltip.createcybernetics.muscleupgrades_synthmuscle.energy").withStyle(ChatFormatting.RED));
         }
+    }
+
+    @Override
+    public Map<Item, Integer> getAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                Items.SLIME_BALL, 250,
+                Items.REDSTONE, 250,
+                Items.BLAZE_POWDER, 250,
+                ModItems.GRAPHENE_ELASTOMER.get(), 500,
+                ModItems.COMPONENT_SYNTHNERVES.get(), 100,
+                ModItems.COMPONENT_MESH.get(), 250
+        );
     }
 
     @Override

@@ -1,19 +1,19 @@
 package com.perigrine3.createcybernetics.common.capabilities;
 
 import com.perigrine3.createcybernetics.ConfigValues;
-import com.perigrine3.createcybernetics.api.CyberwareSlot;
-import com.perigrine3.createcybernetics.api.ICyberwareData;
-import com.perigrine3.createcybernetics.api.ICyberwareItem;
-import com.perigrine3.createcybernetics.api.InstalledCyberware;
+import com.perigrine3.createcybernetics.api.*;
 import com.perigrine3.createcybernetics.client.TrimColorPresets;
+import com.perigrine3.createcybernetics.common.durability.CyberwareDurabilityManager;
 import com.perigrine3.createcybernetics.common.humanity.HumanityAttributeModifiers;
 import com.perigrine3.createcybernetics.common.surgery.DefaultOrgans;
 import com.perigrine3.createcybernetics.item.cyberware.arm.ArmCannonItem;
 import com.perigrine3.createcybernetics.item.cyberware.bone.SpinalInjectorItem;
 import com.perigrine3.createcybernetics.item.cyberware.brain.ChipwareSlotsItem;
 import com.perigrine3.createcybernetics.item.cyberware.brain.CyberdeckItem;
+import com.perigrine3.createcybernetics.item.cyberware.lungs.VampyresItem;
 import com.perigrine3.createcybernetics.item.cyberware.organs.HeatEngineItem;
 import com.perigrine3.createcybernetics.util.ModTags;
+import com.perigrine3.createcybernetics.util.SecondaryDyeColor;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -82,6 +82,14 @@ public class PlayerCyberwareData implements ICyberwareData {
     private static final String NBT_CYBERDECK_INV = "CyberdeckInv";
     private final ItemStack[] cyberdeckInv = new ItemStack[CYBERDECK_SLOT_COUNT];
 
+    public static final int VAMPYRES_SLOT_COUNT = 2;
+    private static final String NBT_VAMPYRES_INV = "VampyresInv";
+    private final ItemStack[] vampyresInv = new ItemStack[VAMPYRES_SLOT_COUNT];
+
+    public static final int FACEPLATE_MASK_SLOT_COUNT = 1;
+    private static final String NBT_FACEPLATE_MASK_INV = "FaceplateMaskInv";
+    private final ItemStack[] faceplateMaskInv = new ItemStack[FACEPLATE_MASK_SLOT_COUNT];
+
     // ---- Heat Engine (fuel/input/output + timers) ----
     public static final int HEAT_ENGINE_SLOT_COUNT = 3;
     public static final int HEAT_ENGINE_FUEL = 0;
@@ -142,8 +150,14 @@ public class PlayerCyberwareData implements ICyberwareData {
         for (int i = 0; i < cyberdeckInv.length; i++) {
             cyberdeckInv[i] = ItemStack.EMPTY;
         }
+        for (int i = 0; i < vampyresInv.length; i++) {
+            vampyresInv[i] = ItemStack.EMPTY;
+        }
         for (int i = 0; i < heatEngineInv.length; i++) {
             heatEngineInv[i] = ItemStack.EMPTY;
+        }
+        for (int i = 0; i < faceplateMaskInv.length; i++) {
+            faceplateMaskInv[i] = ItemStack.EMPTY;
         }
 
         armCannonSelected = 0;
@@ -451,6 +465,45 @@ public class PlayerCyberwareData implements ICyberwareData {
         }
     }
 
+    /* ---------------- FACEPLATE MASK INVENTORY ---------------- */
+
+    public ItemStack getFaceplateMaskStack() {
+        ItemStack stack = faceplateMaskInv[0];
+        return stack == null ? ItemStack.EMPTY : stack;
+    }
+
+    public void setFaceplateMaskStack(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            faceplateMaskInv[0] = ItemStack.EMPTY;
+            dirty = true;
+            return;
+        }
+
+        ItemStack copy = stack.copy();
+        copy.setCount(1);
+
+        faceplateMaskInv[0] = copy;
+        dirty = true;
+    }
+
+    public ItemStack removeFaceplateMaskStack() {
+        ItemStack stored = getFaceplateMaskStack();
+        if (stored.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack removed = stored.copy();
+        faceplateMaskInv[0] = ItemStack.EMPTY;
+        dirty = true;
+
+        return removed;
+    }
+
+    public void clearFaceplateMaskInventory() {
+        faceplateMaskInv[0] = ItemStack.EMPTY;
+        dirty = true;
+    }
+
     /* ---------------- CHIPWARE INVENTORY (2 SLOTS) ---------------- */
 
     public ItemStack getChipwareStack(int slot) {
@@ -543,6 +596,78 @@ public class PlayerCyberwareData implements ICyberwareData {
         for (int i = 0; i < cyberdeckInv.length; i++) {
             cyberdeckInv[i] = ItemStack.EMPTY;
         }
+        dirty = true;
+    }
+
+    /* ---------------- VAMPYRES INVENTORY ---------------- */
+
+    public ItemStack getVampyresStack(int slot) {
+        if (slot < 0 || slot >= vampyresInv.length) return ItemStack.EMPTY;
+
+        ItemStack stack = vampyresInv[slot];
+        return stack == null ? ItemStack.EMPTY : stack;
+    }
+
+    public void setVampyresStack(int slot, ItemStack stack) {
+        if (slot < 0 || slot >= vampyresInv.length) return;
+
+        if (stack == null || stack.isEmpty()) {
+            vampyresInv[slot] = ItemStack.EMPTY;
+            dirty = true;
+            return;
+        }
+
+        if (!VampyresItem.isInjectable(stack)) {
+            vampyresInv[slot] = ItemStack.EMPTY;
+            dirty = true;
+            return;
+        }
+
+        ItemStack copy = stack.copy();
+        copy.setCount(Math.min(VampyresItem.SLOT_STACK_LIMIT, copy.getCount()));
+
+        vampyresInv[slot] = copy;
+        dirty = true;
+    }
+
+    public ItemStack removeVampyresStack(int slot, int amount) {
+        if (slot < 0 || slot >= vampyresInv.length) return ItemStack.EMPTY;
+        if (amount <= 0) return ItemStack.EMPTY;
+
+        ItemStack current = getVampyresStack(slot);
+        if (current.isEmpty()) return ItemStack.EMPTY;
+
+        int removedCount = Math.min(amount, current.getCount());
+
+        ItemStack removed = current.copy();
+        removed.setCount(removedCount);
+
+        current.shrink(removedCount);
+
+        if (current.isEmpty()) {
+            vampyresInv[slot] = ItemStack.EMPTY;
+        } else {
+            vampyresInv[slot] = current;
+        }
+
+        dirty = true;
+        return removed;
+    }
+
+    public void clearVampyresInventory() {
+        for (int i = 0; i < vampyresInv.length; i++) {
+            vampyresInv[i] = ItemStack.EMPTY;
+        }
+
+        dirty = true;
+    }
+
+    public void ejectVampyresInventory(Player player) {
+        for (int slot = 0; slot < vampyresInv.length; slot++) {
+            giveOrDropStoredStack(player, vampyresInv[slot]);
+            vampyresInv[slot] = ItemStack.EMPTY;
+        }
+
         dirty = true;
     }
 
@@ -776,6 +901,66 @@ public class PlayerCyberwareData implements ICyberwareData {
         return 0xFFFFFFFF;
     }
 
+    public boolean isSecondaryDyed(CyberwareSlot slot, int index) {
+        InstalledCyberware installed = get(slot, index);
+        if (installed == null) return false;
+
+        ItemStack st = installed.getItem();
+        if (st == null || st.isEmpty()) return false;
+
+        return SecondaryDyeColor.hasColor(st);
+    }
+
+    public int secondaryDyeColor(CyberwareSlot slot, int index) {
+        InstalledCyberware installed = get(slot, index);
+        if (installed == null) return 0xFFFFFFFF;
+
+        ItemStack st = installed.getItem();
+        if (st == null || st.isEmpty()) return 0xFFFFFFFF;
+
+        return SecondaryDyeColor.getColor(st);
+    }
+
+    public boolean isSecondaryDyed(Item item, CyberwareSlot slotToCheck) {
+        if (item == null) return false;
+
+        InstalledCyberware[] arr = slots.get(slotToCheck);
+        if (arr == null) return false;
+
+        for (InstalledCyberware installed : arr) {
+            if (installed == null) continue;
+
+            ItemStack st = installed.getItem();
+            if (st == null || st.isEmpty()) continue;
+
+            if (!st.is(item)) continue;
+
+            return SecondaryDyeColor.hasColor(st);
+        }
+
+        return false;
+    }
+
+    public int secondaryDyeColor(Item item, CyberwareSlot slotToCheck) {
+        if (item == null) return 0xFFFFFFFF;
+
+        InstalledCyberware[] arr = slots.get(slotToCheck);
+        if (arr == null) return 0xFFFFFFFF;
+
+        for (InstalledCyberware installed : arr) {
+            if (installed == null) continue;
+
+            ItemStack st = installed.getItem();
+            if (st == null || st.isEmpty()) continue;
+
+            if (!st.is(item)) continue;
+
+            return SecondaryDyeColor.getColor(st);
+        }
+
+        return 0xFFFFFFFF;
+    }
+
     public boolean isTrimmed(CyberwareSlot slot, int index) {
         InstalledCyberware installed = get(slot, index);
         if (installed == null) return false;
@@ -884,6 +1069,95 @@ public class PlayerCyberwareData implements ICyberwareData {
         return TrimColorPresets.colorFor(trim.material());
     }
 
+
+    /* ---------------- DURABILITY ---------------- */
+
+    public boolean isFunctional(Player player, CyberwareSlot slot, int index) {
+        InstalledCyberware installed = get(slot, index);
+        return CyberwareDurabilityManager.isFunctional(player, installed);
+    }
+
+    public boolean hasFunctionalSpecificItem(Player player, Item item, CyberwareSlot... slotsToCheck) {
+        if (item == null || slotsToCheck == null) return false;
+
+        for (CyberwareSlot slot : slotsToCheck) {
+            InstalledCyberware[] arr = slots.get(slot);
+            if (arr == null) continue;
+
+            for (InstalledCyberware installed : arr) {
+                if (installed == null) continue;
+
+                ItemStack stack = installed.getItem();
+                if (stack == null || stack.isEmpty()) continue;
+                if (!stack.is(item)) continue;
+                if (!CyberwareDurabilityManager.isFunctional(player, installed)) continue;
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean hasAnyFunctionalTagged(Player player, TagKey<Item> tag, CyberwareSlot... slotsToCheck) {
+        if (tag == null || slotsToCheck == null) return false;
+
+        for (CyberwareSlot slot : slotsToCheck) {
+            InstalledCyberware[] arr = slots.get(slot);
+            if (arr == null) continue;
+
+            for (InstalledCyberware installed : arr) {
+                if (installed == null) continue;
+
+                ItemStack stack = installed.getItem();
+                if (stack == null || stack.isEmpty()) continue;
+                if (!stack.is(tag)) continue;
+                if (!CyberwareDurabilityManager.isFunctional(player, installed)) continue;
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean hasFunctionalOrgan(Player player, CyberwareSlot slot) {
+        InstalledCyberware[] arr = slots.get(slot);
+        if (arr == null) return false;
+
+        for (InstalledCyberware installed : arr) {
+            if (installed == null) continue;
+
+            ItemStack stack = installed.getItem();
+            if (stack == null || stack.isEmpty()) continue;
+            if (!CyberwareDurabilityManager.isFunctional(player, installed)) continue;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean isOrganFunctionallyReplaced(Player player, CyberwareSlot slot) {
+        InstalledCyberware[] arr = slots.get(slot);
+        if (arr == null) return false;
+
+        for (InstalledCyberware installed : arr) {
+            if (installed == null) continue;
+
+            ItemStack stack = installed.getItem();
+            if (stack == null || stack.isEmpty()) continue;
+            if (!(stack.getItem() instanceof ICyberwareItem item)) continue;
+            if (!item.replacesOrgan()) continue;
+            if (!item.getReplacedOrgans().contains(slot)) continue;
+            if (!CyberwareDurabilityManager.isFunctional(player, installed)) continue;
+
+            return true;
+        }
+
+        return false;
+    }
+
     /* ---------------- SPINAL INJECTOR INVENTORY ---------------- */
 
     public ItemStack getSpinalInjectorStack(int slot) {
@@ -975,6 +1249,9 @@ public class PlayerCyberwareData implements ICyberwareData {
         }
         for (int i = 0; i < cyberdeckInv.length; i++) {
             cyberdeckInv[i] = ItemStack.EMPTY;
+        }
+        for (int i = 0; i < vampyresInv.length; i++) {
+            vampyresInv[i] = ItemStack.EMPTY;
         }
         for (int i = 0; i < heatEngineInv.length; i++) {
             heatEngineInv[i] = ItemStack.EMPTY;
@@ -1261,6 +1538,11 @@ public class PlayerCyberwareData implements ICyberwareData {
             return;
         }
 
+        if (item instanceof VampyresItem) {
+            ejectVampyresInventory(player);
+            return;
+        }
+
         if (item instanceof HeatEngineItem) {
             ejectHeatEngineInventory(player);
         }
@@ -1403,6 +1685,7 @@ public class PlayerCyberwareData implements ICyberwareData {
                 if (stack == null || stack.isEmpty()) continue;
 
                 if (!(stack.getItem() instanceof ICyberwareItem item)) continue;
+                if (!CyberwareDurabilityManager.isFunctional(player, cw)) continue;
 
                 int cap = item.getEnergyCapacity(player, stack, slot);
                 if (cap > 0) total += cap;
@@ -1426,10 +1709,16 @@ public class PlayerCyberwareData implements ICyberwareData {
             dirty = true;
         }
 
-        return after - before;
+        int received = after - before;
+
+        if (received > 0 && player != null && !player.level().isClientSide) {
+            CyberwareDurabilityManager.recordBatteryEnergyReceived(player, this, received);
+        }
+
+        return received;
     }
 
-    public int extractEnergy(int amount) {
+    public int extractEnergy(Player player, int amount) {
         if (amount <= 0) return 0;
 
         int before = energyStored;
@@ -1440,16 +1729,35 @@ public class PlayerCyberwareData implements ICyberwareData {
             dirty = true;
         }
 
-        return before - after;
+        int extracted = before - after;
+
+        if (extracted > 0 && player != null && !player.level().isClientSide) {
+            CyberwareDurabilityManager.recordBatteryEnergyExtracted(player, this, extracted);
+        }
+
+        return extracted;
     }
 
-    public boolean tryConsumeEnergy(int amount) {
+    public int extractEnergy(int amount) {
+        return extractEnergy(null, amount);
+    }
+
+    public boolean tryConsumeEnergy(Player player, int amount) {
         if (amount <= 0) return true;
         if (energyStored < amount) return false;
 
         energyStored -= amount;
         dirty = true;
+
+        if (player != null && !player.level().isClientSide) {
+            CyberwareDurabilityManager.recordBatteryEnergyExtracted(player, this, amount);
+        }
+
         return true;
+    }
+
+    public boolean tryConsumeEnergy(int amount) {
+        return tryConsumeEnergy(null, amount);
     }
 
     public void clampEnergyToCapacity(Player player) {
@@ -1585,6 +1893,37 @@ public class PlayerCyberwareData implements ICyberwareData {
             }
         }
 
+        ListTag vampyres = new ListTag();
+
+        for (int i = 0; i < vampyresInv.length; i++) {
+            ItemStack stack = vampyresInv[i];
+
+            if (stack != null && !stack.isEmpty() && VampyresItem.isInjectable(stack)) {
+                ItemStack copy = stack.copy();
+                copy.setCount(Math.min(VampyresItem.SLOT_STACK_LIMIT, copy.getCount()));
+                vampyres.add(cc$saveStackToCompound(provider, copy));
+            } else {
+                vampyres.add(new CompoundTag());
+            }
+        }
+
+        ListTag faceplateMaskList = new ListTag();
+
+        for (int i = 0; i < faceplateMaskInv.length; i++) {
+            ItemStack stack = faceplateMaskInv[i];
+            if (stack == null || stack.isEmpty()) {
+                continue;
+            }
+
+            CompoundTag entry = new CompoundTag();
+            entry.putInt("Slot", i);
+            entry.put("Stack", stack.save(provider));
+
+            faceplateMaskList.add(entry);
+        }
+
+        tag.put(NBT_FACEPLATE_MASK_INV, faceplateMaskList);
+
         ListTag heat = new ListTag();
         for (int i = 0; i < heatEngineInv.length; i++) {
             ItemStack st = heatEngineInv[i];
@@ -1599,6 +1938,8 @@ public class PlayerCyberwareData implements ICyberwareData {
 
         tag.put(NBT_CHIPWARE_INV, chip);
         tag.put(NBT_CYBERDECK_INV, cyberdeck);
+
+        tag.put(NBT_VAMPYRES_INV, vampyres);
 
         tag.putInt(NBT_NEUROPOZYNE_APPLY_COUNT, neuropozyneApplyCount);
 
@@ -1752,6 +2093,44 @@ public class PlayerCyberwareData implements ICyberwareData {
 
                 st.setCount(1);
                 cyberdeckInv[i] = st;
+            }
+        }
+
+        if (tag.contains(NBT_FACEPLATE_MASK_INV, Tag.TAG_LIST)) {
+            ListTag faceplateMaskList = tag.getList(NBT_FACEPLATE_MASK_INV, Tag.TAG_COMPOUND);
+
+            for (int i = 0; i < faceplateMaskList.size(); i++) {
+                CompoundTag entry = faceplateMaskList.getCompound(i);
+                int slot = entry.getInt("Slot");
+
+                if (slot < 0 || slot >= faceplateMaskInv.length) {
+                    continue;
+                }
+
+                faceplateMaskInv[slot] = ItemStack.parseOptional(
+                        provider,
+                        entry.getCompound("Stack")
+                );
+            }
+        }
+
+        for (int i = 0; i < vampyresInv.length; i++) {
+            vampyresInv[i] = ItemStack.EMPTY;
+        }
+
+        if (tag.contains(NBT_VAMPYRES_INV, Tag.TAG_LIST)) {
+            ListTag vampyres = tag.getList(NBT_VAMPYRES_INV, Tag.TAG_COMPOUND);
+
+            for (int i = 0; i < vampyresInv.length && i < vampyres.size(); i++) {
+                ItemStack stack = ItemStack.parseOptional(provider, vampyres.getCompound(i));
+
+                if (stack.isEmpty() || !VampyresItem.isInjectable(stack)) {
+                    vampyresInv[i] = ItemStack.EMPTY;
+                    continue;
+                }
+
+                stack.setCount(Math.min(VampyresItem.SLOT_STACK_LIMIT, stack.getCount()));
+                vampyresInv[i] = stack;
             }
         }
 
@@ -1917,21 +2296,27 @@ public class PlayerCyberwareData implements ICyberwareData {
     private InstallTarget findFirstValidSpaceInSlotGroup(ItemStack incoming, ICyberwareItem cw, CyberwareSlot slot) {
         InstalledCyberware[] arr = slots.get(slot);
         if (arr == null) return null;
+        if (incoming == null || incoming.isEmpty()) return null;
 
         int max = Math.max(1, cw.maxStacksPerSlotType(incoming, slot));
         int already = 0;
 
         for (InstalledCyberware installed : arr) {
             if (installed == null) continue;
+
             ItemStack st = installed.getItem();
             if (st == null || st.isEmpty()) continue;
-            if (ItemStack.isSameItemSameComponents(st, incoming)) already++;
+
+            if (st.is(incoming.getItem())) {
+                already++;
+            }
         }
 
         if (already >= max) return null;
 
         for (int i = 0; i < arr.length; i++) {
             InstalledCyberware installed = arr[i];
+
             if (installed == null || installed.getItem() == null || installed.getItem().isEmpty()) {
                 return new InstallTarget(slot, i);
             }
@@ -1980,6 +2365,13 @@ public class PlayerCyberwareData implements ICyberwareData {
 
     public static PlayerCyberwareData getForVisual(Player player, HolderLookup.Provider provider) {
         if (player == null) return null;
+
+        if (player instanceof ICyberwareVisualDataHolder holder) {
+            PlayerCyberwareData visualData = holder.createcybernetics$getCyberwareVisualData(provider);
+            if (visualData != null) {
+                return visualData;
+            }
+        }
 
         CompoundTag pd = player.getPersistentData();
         if (pd.getBoolean(HOLO_SNAPSHOT_FLAG) && pd.contains(HOLO_SNAPSHOT_CYBERWARE, Tag.TAG_COMPOUND)) {

@@ -29,6 +29,7 @@ public final class ModTooltipHandler {
         }
         if (stack.getItem() == ModBlocks.SURGERY_TABLE.asItem()) {
             event.getToolTip().add(Component.translatable("tooltip.createcybernetics.surgery_table").withStyle(ChatFormatting.AQUA));
+            event.getToolTip().add(Component.translatable("tooltip.createcybernetics.surgery_table.using").withStyle(ChatFormatting.GRAY));
         }
         if (stack.getItem() == ModBlocks.ENGINEERING_TABLE.asItem()) {
             event.getToolTip().add(Component.translatable("tooltip.createcybernetics.engineering_table").withStyle(ChatFormatting.AQUA));

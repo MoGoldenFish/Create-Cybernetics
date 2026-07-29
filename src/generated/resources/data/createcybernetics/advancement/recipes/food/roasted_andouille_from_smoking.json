@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_andouille_sausage": {
+      "conditions": {
+        "items": [
+          {
+            "items": "createcybernetics:andouille_sausage"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "createcybernetics:roasted_andouille_from_smoking"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_andouille_sausage"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "createcybernetics:roasted_andouille_from_smoking"
+    ]
+  }
+}

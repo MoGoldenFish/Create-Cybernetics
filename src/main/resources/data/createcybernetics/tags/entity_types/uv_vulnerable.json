@@ -1,0 +1,25 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "vampirism:vampire",
+      "required": false
+    },
+    {
+      "id": "vampirism:advanced_vampire",
+      "required": false
+    },
+    {
+      "id": "vampirism:vampire_baron",
+      "required": false
+    },
+    {
+      "id": "vampirism:vampire_minion",
+      "required": false
+    },
+    {
+      "id": "vampirism:vampire_villager",
+      "required": false
+    }
+  ]
+}

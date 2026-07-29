@@ -17,6 +17,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -54,13 +55,23 @@ public class OpticZoomModuleItem extends Item implements ICyberwareItem {
     }
 
     @Override
+    public Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                Items.SPYGLASS, 500,
+                Items.AMETHYST_SHARD, 100
+        );
+    }
+
+    @Override
     public int getHumanityCost() {
         return humanityCost;
     }
 
     @Override
     public Set<Item> requiresCyberware(ItemStack installedStack, CyberwareSlot slot) {
-        return Set.of(ModItems.BASECYBERWARE_CYBEREYES.get());
+        return Set.of(ModItems.BASECYBERWARE_CYBEREYES.get(), ModItems.EYEUPGRADES_MULTIOPTICS1.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS2.get(), ModItems.EYEUPGRADES_MULTIOPTICS3.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS4.get(), ModItems.EYEUPGRADES_MONOVISION.get());
     }
 
     @Override

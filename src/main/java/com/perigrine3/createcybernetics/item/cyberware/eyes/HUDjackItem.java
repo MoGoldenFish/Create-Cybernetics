@@ -62,7 +62,8 @@ public class HUDjackItem extends Item implements ICyberwareItem {
 
     @Override
     public Set<Item> requiresCyberware(ItemStack installedStack, CyberwareSlot slot) {
-        return Set.of(ModItems.BASECYBERWARE_CYBEREYES.get());
+        return Set.of(ModItems.BASECYBERWARE_CYBEREYES.get(), ModItems.EYEUPGRADES_MULTIOPTICS1.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS2.get(), ModItems.EYEUPGRADES_MULTIOPTICS3.get(), ModItems.EYEUPGRADES_MULTIOPTICS4.get());
     }
 
     @Override

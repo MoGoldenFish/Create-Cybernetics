@@ -28,13 +28,22 @@ public final class FaceplateAliasHandler {
 
     private static final String NBT_ALIAS_ACTIVE = "cc_faceplate_active";
     private static final String NBT_ALIAS_TEXT   = "cc_faceplate_alias";
-    private static final String NBT_FACEPLATE_ST = "cc_faceplate_stack";
 
     private FaceplateAliasHandler() {}
 
     public static boolean hasActive(ServerPlayer player) {
         CompoundTag p = player.getPersistentData();
-        return p.getBoolean(NBT_ALIAS_ACTIVE) && p.contains(NBT_ALIAS_TEXT, Tag.TAG_STRING);
+
+        if (!p.getBoolean(NBT_ALIAS_ACTIVE)) {
+            return false;
+        }
+
+        if (!p.contains(NBT_ALIAS_TEXT, Tag.TAG_STRING)) {
+            return false;
+        }
+
+        PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
+        return data != null && !data.getFaceplateMaskStack().isEmpty();
     }
 
     public static String getAlias(ServerPlayer player) {
@@ -69,6 +78,9 @@ public final class FaceplateAliasHandler {
 
         if (!hasInterchangeableFaceplateInstalled(player)) return false;
 
+        PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
+        if (data == null) return false;
+
         if (hasActive(player)) {
             clear(player, true);
         }
@@ -76,16 +88,13 @@ public final class FaceplateAliasHandler {
         String alias = customName.getString().trim();
         if (alias.isEmpty()) return false;
 
+        ItemStack stored = faceplateOne.copy();
+        stored.setCount(1);
+        data.setFaceplateMaskStack(stored);
+
         CompoundTag p = player.getPersistentData();
         p.putBoolean(NBT_ALIAS_ACTIVE, true);
         p.putString(NBT_ALIAS_TEXT, alias);
-
-        Tag stTag = faceplateOne.saveOptional(player.level().registryAccess());
-        if (stTag instanceof CompoundTag c) {
-            p.put(NBT_FACEPLATE_ST, c);
-        } else {
-            p.remove(NBT_FACEPLATE_ST);
-        }
 
         player.setCustomName(Component.literal(alias));
         player.setCustomNameVisible(true);
@@ -93,29 +102,35 @@ public final class FaceplateAliasHandler {
         player.refreshDisplayName();
         player.refreshTabListName();
 
+        data.setDirty();
+        player.syncData(ModAttachments.CYBERWARE);
+
         return true;
     }
 
     public static void clear(ServerPlayer player, boolean returnFaceplate) {
-        CompoundTag p = player.getPersistentData();
+        PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
 
-        if (returnFaceplate && p.contains(NBT_FACEPLATE_ST, Tag.TAG_COMPOUND)) {
-            ItemStack stored = ItemStack.parseOptional(player.level().registryAccess(), p.getCompound(NBT_FACEPLATE_ST));
-            if (!stored.isEmpty()) {
+        if (data != null) {
+            ItemStack stored = data.removeFaceplateMaskStack();
+
+            if (returnFaceplate && !stored.isEmpty()) {
                 if (!player.getInventory().add(stored.copy())) {
                     player.drop(stored.copy(), false);
                 }
             }
+
+            data.setDirty();
+            player.syncData(ModAttachments.CYBERWARE);
         }
 
-        p.remove(NBT_FACEPLATE_ST);
+        CompoundTag p = player.getPersistentData();
         p.remove(NBT_ALIAS_TEXT);
         p.putBoolean(NBT_ALIAS_ACTIVE, false);
 
         player.setCustomName(null);
         player.setCustomNameVisible(false);
 
-        // IMPORTANT: mirror apply()
         player.refreshDisplayName();
         player.refreshTabListName();
     }

@@ -39,7 +39,8 @@ public final class HudConfigClient {
         COORDS,
         TOGGLE_LIST,
         SHARDS,
-        TARGET
+        TARGET,
+        MINIMAP
     }
 
     public static final class ComponentLayout {
@@ -153,40 +154,26 @@ public final class HudConfigClient {
         public ComponentLayout toggleList;
         public ComponentLayout shards;
         public ComponentLayout target;
+        public ComponentLayout minimap;
 
         public TargetMode targetMode;
         public BatteryMode batteryMode;
 
-        public HudConfig(HudLayerLayout hudLayer,
-                         ComponentLayout battery,
-                         ComponentLayout coords,
-                         ComponentLayout toggleList,
-                         ComponentLayout shards,
-                         ComponentLayout target,
-                         TargetMode targetMode,
-                         BatteryMode batteryMode) {
+        public HudConfig(HudLayerLayout hudLayer, ComponentLayout battery, ComponentLayout coords, ComponentLayout toggleList, ComponentLayout shards, ComponentLayout target, ComponentLayout minimap, TargetMode targetMode, BatteryMode batteryMode) {
             this.hudLayer = hudLayer;
             this.battery = battery;
             this.coords = coords;
             this.toggleList = toggleList;
             this.shards = shards;
             this.target = target;
+            this.minimap = minimap;
             this.targetMode = targetMode;
             this.batteryMode = batteryMode;
             sanitize();
         }
 
         public HudConfig copy() {
-            return new HudConfig(
-                    hudLayer.copy(),
-                    battery.copy(),
-                    coords.copy(),
-                    toggleList.copy(),
-                    shards.copy(),
-                    target.copy(),
-                    targetMode,
-                    batteryMode
-            );
+            return new HudConfig(hudLayer.copy(), battery.copy(), coords.copy(), toggleList.copy(), shards.copy(), target.copy(), minimap.copy(), targetMode, batteryMode);
         }
 
         public ComponentLayout layout(HudComponent component) {
@@ -196,6 +183,7 @@ public final class HudConfigClient {
                 case TOGGLE_LIST -> toggleList;
                 case SHARDS -> shards;
                 case TARGET -> target;
+                case MINIMAP -> minimap;
                 case HUD_LEFT, HUD_RIGHT -> throw new IllegalArgumentException("HUD layer uses hudLayer, not ComponentLayout.");
             };
         }
@@ -208,6 +196,7 @@ public final class HudConfigClient {
                 case TOGGLE_LIST -> toggleList.enabled;
                 case SHARDS -> shards.enabled;
                 case TARGET -> target.enabled && targetMode != TargetMode.OFF;
+                case MINIMAP -> minimap.enabled;
             };
         }
 
@@ -219,6 +208,7 @@ public final class HudConfigClient {
             if (toggleList == null) toggleList = defaultToggleList();
             if (shards == null) shards = defaultShards();
             if (target == null) target = defaultTarget();
+            if (minimap == null) minimap = defaultMinimap();
 
             hudLayer.sanitize();
 
@@ -227,6 +217,7 @@ public final class HudConfigClient {
             toggleList.sanitize();
             shards.sanitize();
             target.sanitize();
+            minimap.sanitize();
 
             if (targetMode == null) targetMode = TargetMode.ABOVE_HOTBAR;
             if (batteryMode == null) batteryMode = BatteryMode.ICON_PLUS_CAPACITY_PLUS_STATS;
@@ -268,17 +259,14 @@ public final class HudConfigClient {
         return new ComponentLayout(true, 0.500f, 0.735f, 1.0f);
     }
 
+    private static ComponentLayout defaultMinimap() {
+        return new ComponentLayout(true, 0.865f, 0.025f, 1.0f);
+    }
+
     public static HudConfig defaultConfig() {
-        return new HudConfig(
-                defaultHudLayer(),
-                defaultBattery(),
-                defaultCoords(),
-                defaultToggleList(),
-                defaultShards(),
-                defaultTarget(),
-                TargetMode.ABOVE_HOTBAR,
-                BatteryMode.ICON_PLUS_CAPACITY_PLUS_STATS
-        );
+        return new HudConfig(defaultHudLayer(), defaultBattery(), defaultCoords(),
+                defaultToggleList(), defaultShards(), defaultTarget(), defaultMinimap(),
+                TargetMode.ABOVE_HOTBAR, BatteryMode.ICON_PLUS_CAPACITY_PLUS_STATS);
     }
 
     private static Path fileFor(UUID playerId) {
@@ -327,6 +315,7 @@ public final class HudConfigClient {
             root.add("toggleList", writeLayout(cfg.toggleList));
             root.add("shards", writeLayout(cfg.shards));
             root.add("target", writeLayout(cfg.target));
+            root.add("minimap", writeLayout(cfg.minimap));
 
             root.addProperty("targetMode", cfg.targetMode.name());
             root.addProperty("batteryMode", cfg.batteryMode.name());
@@ -355,6 +344,7 @@ public final class HudConfigClient {
             cfg.toggleList = readLayout(obj, "toggleList", cfg.toggleList);
             cfg.shards = readLayout(obj, "shards", cfg.shards);
             cfg.target = readLayout(obj, "target", cfg.target);
+            cfg.minimap = readLayout(obj, "minimap", cfg.minimap);
 
             if (obj.has("targetMode")) {
                 cfg.targetMode = parseTargetMode(obj.get("targetMode").getAsString());

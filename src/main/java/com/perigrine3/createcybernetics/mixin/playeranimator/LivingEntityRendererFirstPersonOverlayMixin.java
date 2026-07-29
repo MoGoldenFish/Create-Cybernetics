@@ -33,6 +33,21 @@ public abstract class LivingEntityRendererFirstPersonOverlayMixin {
     @Unique
     private boolean createcybernetics$storedArmVisibility;
 
+    @Unique
+    private boolean createcybernetics$storedRightLegVisible;
+
+    @Unique
+    private boolean createcybernetics$storedRightPantsVisible;
+
+    @Unique
+    private boolean createcybernetics$storedLeftLegVisible;
+
+    @Unique
+    private boolean createcybernetics$storedLeftPantsVisible;
+
+    @Unique
+    private boolean createcybernetics$storedLegVisibility;
+
     @Inject(
             method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             at = @At(
@@ -42,7 +57,7 @@ public abstract class LivingEntityRendererFirstPersonOverlayMixin {
             ),
             require = 0
     )
-    private void createcybernetics$hideBetterCombatFirstPersonPlayerModelArmsBeforeRender(
+    private void createcybernetics$hideFirstPersonPlayerModelPartsBeforeRender(
             LivingEntity entity,
             float entityYaw,
             float partialTick,
@@ -52,17 +67,31 @@ public abstract class LivingEntityRendererFirstPersonOverlayMixin {
             CallbackInfo ci
     ) {
         createcybernetics$storedArmVisibility = false;
+        createcybernetics$storedLegVisibility = false;
 
         if (!(entity instanceof AbstractClientPlayer player)) {
             return;
         }
 
-        if (!BetterCombatFirstPersonCompat.shouldHideFirstPersonPlayerModelArms(player)) {
+        PlayerModel<AbstractClientPlayer> model = createcybernetics$getPlayerModel();
+        if (model == null) {
             return;
         }
 
-        PlayerModel<AbstractClientPlayer> model = createcybernetics$getPlayerModel();
-        if (model == null) {
+        if (PlayerAnimatorFirstPersonOverlayCompat.shouldRenderFirstPersonPlayerOverlay(player)) {
+            createcybernetics$storedRightLegVisible = model.rightLeg.visible;
+            createcybernetics$storedRightPantsVisible = model.rightPants.visible;
+            createcybernetics$storedLeftLegVisible = model.leftLeg.visible;
+            createcybernetics$storedLeftPantsVisible = model.leftPants.visible;
+            createcybernetics$storedLegVisibility = true;
+
+            model.rightLeg.visible = false;
+            model.rightPants.visible = false;
+            model.leftLeg.visible = false;
+            model.leftPants.visible = false;
+        }
+
+        if (!BetterCombatFirstPersonCompat.shouldHideFirstPersonPlayerModelArms(player)) {
             return;
         }
 
@@ -87,7 +116,7 @@ public abstract class LivingEntityRendererFirstPersonOverlayMixin {
             ),
             require = 0
     )
-    private void createcybernetics$restoreBetterCombatFirstPersonPlayerModelArmsAfterRender(
+    private void createcybernetics$restoreFirstPersonPlayerModelPartsAfterRender(
             LivingEntity entity,
             float entityYaw,
             float partialTick,
@@ -96,22 +125,31 @@ public abstract class LivingEntityRendererFirstPersonOverlayMixin {
             int packedLight,
             CallbackInfo ci
     ) {
-        if (!createcybernetics$storedArmVisibility) {
-            return;
-        }
-
         PlayerModel<AbstractClientPlayer> model = createcybernetics$getPlayerModel();
+
         if (model == null) {
             createcybernetics$storedArmVisibility = false;
+            createcybernetics$storedLegVisibility = false;
             return;
         }
 
-        model.rightArm.visible = createcybernetics$storedRightArmVisible;
-        model.rightSleeve.visible = createcybernetics$storedRightSleeveVisible;
-        model.leftArm.visible = createcybernetics$storedLeftArmVisible;
-        model.leftSleeve.visible = createcybernetics$storedLeftSleeveVisible;
+        if (createcybernetics$storedArmVisibility) {
+            model.rightArm.visible = createcybernetics$storedRightArmVisible;
+            model.rightSleeve.visible = createcybernetics$storedRightSleeveVisible;
+            model.leftArm.visible = createcybernetics$storedLeftArmVisible;
+            model.leftSleeve.visible = createcybernetics$storedLeftSleeveVisible;
 
-        createcybernetics$storedArmVisibility = false;
+            createcybernetics$storedArmVisibility = false;
+        }
+
+        if (createcybernetics$storedLegVisibility) {
+            model.rightLeg.visible = createcybernetics$storedRightLegVisible;
+            model.rightPants.visible = createcybernetics$storedRightPantsVisible;
+            model.leftLeg.visible = createcybernetics$storedLeftLegVisible;
+            model.leftPants.visible = createcybernetics$storedLeftPantsVisible;
+
+            createcybernetics$storedLegVisibility = false;
+        }
     }
 
     @Inject(

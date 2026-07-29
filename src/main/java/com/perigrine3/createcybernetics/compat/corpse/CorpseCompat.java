@@ -382,6 +382,14 @@ public final class CorpseCompat {
             putFirstEmpty(stored, st.copy());
         }
 
+        ItemStack faceplateMask = data.getFaceplateMaskStack();
+        if (faceplateMask != null && !faceplateMask.isEmpty()) {
+            ItemStack storedFaceplate = faceplateMask.copy();
+            storedFaceplate.setCount(1);
+
+            putFirstEmpty(stored, storedFaceplate);
+        }
+
         return stored;
     }
 

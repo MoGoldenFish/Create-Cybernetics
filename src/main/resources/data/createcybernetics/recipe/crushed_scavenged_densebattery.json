@@ -14,11 +14,11 @@
   "results": [
     {
       "chance": 0.70,
-      "id": "createcybernetics:organsupgrades_battery"
+      "id": "createcybernetics:component_plating"
     },
     {
-      "chance": 0.70,
-      "id": "createcybernetics:titaniumnugget"
+      "chance": 0.25,
+      "id": "minecraft:gold_ingot"
     },
     {
       "chance": 0.25,
@@ -26,11 +26,15 @@
     },
     {
       "chance": 0.25,
-      "id": "createcybernetics:component_mesh"
+      "id": "minecraft:redstone_block"
     },
     {
       "chance": 0.25,
-      "id": "createcybernetics:component_diodes"
+      "id": "minecraft:blaze_rod"
+    },
+    {
+      "chance": 0.25,
+      "id": "createcybernetics:component_storage"
     },
     {
       "chance": 0.25,

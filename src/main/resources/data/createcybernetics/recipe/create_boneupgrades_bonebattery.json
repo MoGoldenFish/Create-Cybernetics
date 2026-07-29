@@ -14,14 +14,17 @@
       "item": "minecraft:redstone"
     },
     "B": {
-      "item": "createcybernetics:organsupgrades_battery"
+      "item": "minecraft:blaze_powder"
+    },
+    "S": {
+      "item": "createcybernetics:component_storage"
     }
   },
 
   "pattern": [
     "   PG",
-    "  PRP",
-    " PBP ",
+    "  PBP",
+    " PSP ",
     "PRP  ",
     "GP   "
   ],

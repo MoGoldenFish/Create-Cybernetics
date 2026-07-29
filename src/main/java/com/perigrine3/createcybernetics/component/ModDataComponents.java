@@ -1,5 +1,6 @@
 package com.perigrine3.createcybernetics.component;
 
+import com.mojang.serialization.Codec;
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
@@ -23,6 +24,10 @@ public final class ModDataComponents {
             register("potion_autoinjector_contents", builder -> builder
                     .persistent(PotionContents.CODEC)
                     .networkSynchronized(PotionContents.STREAM_CODEC));
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> SECONDARY_DYED_COLOR =
+            register("secondary_dyed_color", builder -> builder
+                    .persistent(Codec.INT));
 
     private static <T> DeferredHolder<DataComponentType<?>, DataComponentType<T>> register(
             String name,

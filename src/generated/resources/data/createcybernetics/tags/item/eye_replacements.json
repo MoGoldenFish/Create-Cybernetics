@@ -2,6 +2,11 @@
   "values": [
     "createcybernetics:wetware_spidereyes",
     "createcybernetics:wetware_wardenantlers",
+    "createcybernetics:eyeupgrades_monovision",
+    "createcybernetics:eyeupgrades_multioptics1",
+    "createcybernetics:eyeupgrades_multioptics2",
+    "createcybernetics:eyeupgrades_multioptics3",
+    "createcybernetics:eyeupgrades_multioptics4",
     "createcybernetics:basecyberware_cybereyes"
   ]
 }

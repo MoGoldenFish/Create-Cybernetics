@@ -1,5 +1,7 @@
 package com.perigrine3.createcybernetics.item.cyberware.wetware;
 
+import com.perigrine3.createcybernetics.api.CyberwareDurabilityCategory;
+import com.perigrine3.createcybernetics.api.CyberwareRepairType;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
 import com.perigrine3.createcybernetics.util.ModTags;
@@ -55,6 +57,21 @@ public class WardenAntlersItem extends Item implements ICyberwareItem {
     @Override
     public Set<TagKey<Item>> incompatibleCyberwareTags(ItemStack installedStack, CyberwareSlot slot) {
         return Set.of(ModTags.Items.EYE_ITEMS);
+    }
+
+    @Override
+    public CyberwareRepairType getRepairType(ItemStack installedStack, CyberwareSlot slot) {
+        return CyberwareRepairType.BIOLOGICAL;
+    }
+
+    @Override
+    public CyberwareDurabilityCategory getDurabilityCategory(ItemStack installedStack, CyberwareSlot slot) {
+        return CyberwareDurabilityCategory.WETWARE;
+    }
+
+    @Override
+    public int getMaxCyberwareDurability(ItemStack installedStack, CyberwareSlot slot) {
+        return 1000;
     }
 
     @Override

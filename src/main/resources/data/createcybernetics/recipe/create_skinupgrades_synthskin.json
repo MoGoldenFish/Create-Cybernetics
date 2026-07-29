@@ -11,13 +11,16 @@
       "item": "createcybernetics:component_synthnerves"
     },
     "S": {
-      "item": "createcybernetics:bodypart_skin"
+      "item": "createcybernetics:graphene_elastomer"
+    },
+    "D": {
+      "tag": "minecraft:dyes"
     }
   },
 
   "pattern": [
     "     ",
-    "     ",
+    "  D  ",
     "PSPSP",
     "NPNPN",
     "     "

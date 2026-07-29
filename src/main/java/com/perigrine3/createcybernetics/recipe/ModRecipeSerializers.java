@@ -14,9 +14,13 @@ public final class ModRecipeSerializers {
     public static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS =
             DeferredRegister.create(Registries.RECIPE_SERIALIZER, CreateCybernetics.MODID);
 
-    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<CyberwarePrimaryDyeRecipe>> CYBERWARE_PRIMARY_DYE =
-            SERIALIZERS.register("cyberware_primary_dye",
-                    () -> new SimpleCraftingRecipeSerializer<>(CyberwarePrimaryDyeRecipe::new));
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<CyberwareDyeRecipe>> CYBERWARE_DYE =
+            SERIALIZERS.register("cyberware_dye",
+                    () -> new SimpleCraftingRecipeSerializer<>(CyberwareDyeRecipe::new));
+
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<SharedNavigationShardRecipe>> SHARED_NAVIGATION_SHARD =
+            SERIALIZERS.register("shared_navigation_shard",
+                    () -> new SimpleCraftingRecipeSerializer<>(SharedNavigationShardRecipe::new));
 
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<DynamicPotionAutoinjectorRecipe>> DYNAMIC_POTION_AUTOINJECTOR =
             SERIALIZERS.register("dynamic_potion_autoinjector",

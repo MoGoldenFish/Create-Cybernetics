@@ -9,13 +9,18 @@
     "CorpseEntityMixin",
     "CorpseEntityRemoveMixin",
     "InventoryMenuChipwareSlotsMixin",
+    "ItemCyberwareDurabilityMixin",
     "LivingEntitySandevistanTrailMixin",
     "LivingEntitySurgerySleepDamageMixin",
     "PlayerSprintWhileCrouchingMixin",
     "ProjectileInaccuracyMixin",
     "RaidMixin",
     "VillagerHostilesSensorMixin",
-    "create.FillingBySpoutMixin"
+    "create.FillingBySpoutMixin",
+    "neosync.NeoSyncShellContainerCollisionMixin",
+    "neosync.ShellStateMixin",
+    "neosync.NeoSyncShellContainerCollisionMixin"
+
   ],
   "client": [
     "PlayerEyeHeightMixin",
@@ -24,7 +29,7 @@
     "client.CorpseInventoryScreenMixin",
     "client.CorpseRendererMixin",
     "client.CorpseRendererSkeletonOverlayMixin",
-    "client.CreativeModeInventoryChipwareButtonMixin",
+    "client.CreativeModeInventoryButtonsMixin",
     "client.CreativeSlotWrapperHideChipwareMixin",
     "client.InventoryScreenChipwareSlotsMixin",
     "client.ItemInHandRendererMixin",
@@ -36,6 +41,9 @@
     "client.PlayerModelVanillaWearHideMixin",
     "client.PlayerRendererSkinHideMixin",
     "client.ScreenInvoker",
+    "fancymenu.FancyMenuPlayerEntityModelMixin",
+    "neosync.ShellEntityMixin",
+    "neosync.ShellEntityRendererMixin",
     "parcool.ParCoolStaminaHandlerMixin",
     "playeranimator.LivingEntityRendererFirstPersonOverlayMixin",
     "pointblank.GunItemRendererMixin",

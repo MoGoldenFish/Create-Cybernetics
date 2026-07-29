@@ -16,6 +16,7 @@ import com.perigrine3.createcybernetics.screen.custom.surgery.ripper.RipperTrade
 import com.perigrine3.createcybernetics.screen.custom.surgery.ripper.SurgeryPaymentMenu;
 import com.perigrine3.createcybernetics.screen.custom.surgery.robosurgeon.RobosurgeonMenu;
 import com.perigrine3.createcybernetics.screen.custom.surgery.surgery_table.SurgeryTableMenu;
+import com.perigrine3.createcybernetics.screen.custom.vampyres.VampyresMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -59,6 +60,8 @@ public class ModMenuTypes {
             registerMenuType("heat_engine_menu", HeatEngineMenu::new);
     public static final DeferredHolder<MenuType<?>, MenuType<CyberdeckMenu>> CYBERDECK_MENU =
             registerMenuType("cyberdeck_menu", CyberdeckMenu::new);
+    public static final DeferredHolder<MenuType<?>, MenuType<VampyresMenu>> VAMPYRES_MENU =
+            registerMenuType("vampyres_menu", VampyresMenu::new);
 
 
     public static final DeferredHolder<MenuType<?>, MenuType<RipperTradeMenu>> RIPPER_TRADE_MENU =

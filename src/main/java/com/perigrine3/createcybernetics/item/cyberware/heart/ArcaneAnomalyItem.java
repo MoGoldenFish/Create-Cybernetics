@@ -1,5 +1,6 @@
 package com.perigrine3.createcybernetics.item.cyberware.heart;
 
+import com.perigrine3.createcybernetics.api.CyberwareDurabilityCategory;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
 import com.perigrine3.createcybernetics.compat.ironsspells.IronsSpellbooksManaCompat;
@@ -31,6 +32,11 @@ public class ArcaneAnomalyItem extends Item implements ICyberwareItem {
             tooltip.add(Component.translatable("tooltip.createcybernetics.humanity", humanityCost).withStyle(ChatFormatting.GOLD));
             tooltip.add(Component.translatable("tooltip.createcybernetics.heartupgrades_anomaly.energy").withStyle(ChatFormatting.DARK_GREEN));
         }
+    }
+
+    @Override
+    public CyberwareDurabilityCategory getDurabilityCategory(ItemStack installedStack, CyberwareSlot slot) {
+        return null;
     }
 
     @Override

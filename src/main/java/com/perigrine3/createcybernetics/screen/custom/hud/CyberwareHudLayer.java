@@ -14,6 +14,8 @@ import com.perigrine3.createcybernetics.compat.creatingspace.CreatingSpaceSuitPr
 import com.perigrine3.createcybernetics.compat.northstar.CopernicusSuitPredicate;
 import com.perigrine3.createcybernetics.item.ModItems;
 import com.perigrine3.createcybernetics.item.cyberware.eyes.CybereyeItem;
+import com.perigrine3.createcybernetics.item.cyberware.eyes.MonovisionOpticsItem;
+import com.perigrine3.createcybernetics.item.cyberware.eyes.MultiopticsItem;
 import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -124,7 +126,8 @@ public final class CyberwareHudLayer {
     private static final int TOGGLE_ROW_GAP_PX = 2;
     private static final int TOGGLE_ICON_TEXT_GAP_PX = 4;
     private static final boolean TOGGLE_SHADOW = true;
-    private static final int TOGGLE_MAX_ROWS = 16;
+    private static final int TOGGLE_VISIBLE_ROWS = 5;
+    private static int toggleScrollOffset;
 
     private static final Component ENABLED_TXT = Component.literal("ENABLED");
     private static final Component DISABLED_TXT = Component.literal("DISABLED");
@@ -188,7 +191,8 @@ public final class CyberwareHudLayer {
             HudRect coords,
             HudRect toggleList,
             HudRect shards,
-            HudRect target
+            HudRect target,
+            HudRect minimap
     ) {
         public HudRect rect(HudConfigClient.HudComponent component) {
             return switch (component) {
@@ -199,6 +203,7 @@ public final class CyberwareHudLayer {
                 case TOGGLE_LIST -> toggleList;
                 case SHARDS -> shards;
                 case TARGET -> target;
+                case MINIMAP -> minimap;
             };
         }
     }
@@ -250,7 +255,7 @@ public final class CyberwareHudLayer {
         int iconPx = Math.round(16f * toggleIconScale);
         int lineH = Math.round(mc.font.lineHeight * toggleTextScale);
         int rowH = Math.max(iconPx, lineH);
-        int rows = Math.max(1, Math.min(TOGGLE_MAX_ROWS, 10));
+        int rows = TOGGLE_VISIBLE_ROWS;
 
         int enabledW = Math.round(mc.font.width(ENABLED_TXT.getString()) * toggleTextScale);
         int disabledW = Math.round(mc.font.width(DISABLED_TXT.getString()) * toggleTextScale);
@@ -286,6 +291,8 @@ public final class CyberwareHudLayer {
                 screenPxH
         );
 
+        HudRect minimap = CyberpunkMinimapRenderer.computeRect(cfg.minimap, screenPxW, screenPxH);
+
         return new HudWidgetRects(
                 hudLeft,
                 hudRight,
@@ -293,7 +300,8 @@ public final class CyberwareHudLayer {
                 coords,
                 toggleList,
                 shards,
-                target
+                target,
+                minimap
         );
     }
 
@@ -400,6 +408,10 @@ public final class CyberwareHudLayer {
 
         if (cfg.target.enabled && cfg.targetMode != HudConfigClient.TargetMode.OFF) {
             renderTargetNamePixels(gg, mc, player, screenPxW, screenPxH, hudTintArgb, cfg);
+        }
+
+        if (cfg.minimap.enabled) {
+            CyberpunkMinimapRenderer.render(gg, mc, player, screenPxW, screenPxH, cfg);
         }
 
         gg.pose().popPose();
@@ -957,15 +969,7 @@ public final class CyberwareHudLayer {
         }
     }
 
-    private static void renderToggleListPixels(
-            GuiGraphics gg,
-            Minecraft mc,
-            LocalPlayer player,
-            int screenPxW,
-            int screenPxH,
-            int hudTintArgb,
-            HudConfigClient.HudConfig cfg
-    ) {
+    private static void renderToggleListPixels(GuiGraphics gg, Minecraft mc, LocalPlayer player, int screenPxW, int screenPxH, int hudTintArgb, HudConfigClient.HudConfig cfg) {
         HudConfigClient.ComponentLayout layout = cfg.toggleList;
 
         float hudTextScale = BATTERY_SCALE_PX * VALUE_SCALE_REL * layout.scale;
@@ -975,9 +979,16 @@ public final class CyberwareHudLayer {
         if (data == null) return;
 
         List<ToggleEntry> entries = collectToggleEntries(data);
-        if (entries.isEmpty()) return;
 
-        int rows = Math.min(TOGGLE_MAX_ROWS, entries.size());
+        if (entries.isEmpty()) {
+            toggleScrollOffset = 0;
+            return;
+        }
+
+        int maxScrollOffset = Math.max(0, entries.size() - TOGGLE_VISIBLE_ROWS);
+        toggleScrollOffset = Mth.clamp(toggleScrollOffset, 0, maxScrollOffset);
+
+        int rows = Math.min(TOGGLE_VISIBLE_ROWS, entries.size());
 
         int iconPx = Math.round(16f * hudIconScale);
         int lineH = Math.round(mc.font.lineHeight * hudTextScale);
@@ -991,23 +1002,25 @@ public final class CyberwareHudLayer {
         int rgbTint = hudTintArgb & 0x00FFFFFF;
         int disabledColor = rgbTint != 0 ? rgbTint : 0xFFFFFF;
 
-        for (int i = 0; i < rows; i++) {
-            ToggleEntry e = entries.get(i);
+        for (int row = 0; row < rows; row++) {
+            int entryIndex = toggleScrollOffset + row;
 
-            int rowY = y0 + i * (rowH + TOGGLE_ROW_GAP_PX);
+            if (entryIndex >= entries.size()) break;
+
+            ToggleEntry entry = entries.get(entryIndex);
+            int rowY = y0 + row * (rowH + TOGGLE_ROW_GAP_PX);
 
             gg.pose().pushPose();
             gg.pose().translate(x0, rowY + (rowH - iconPx) / 2, 0);
             gg.pose().scale(hudIconScale, hudIconScale, 1.0f);
-            gg.renderItem(e.stack, 0, 0);
+            gg.renderItem(entry.stack(), 0, 0);
             gg.pose().popPose();
 
-            boolean enabled = e.enabled;
-            String line = enabled ? ENABLED_TXT.getString() : DISABLED_TXT.getString();
+            boolean enabled = entry.enabled();
+            Component line = enabled ? ENABLED_TXT : DISABLED_TXT;
 
             int textX = x0 + iconPx + TOGGLE_ICON_TEXT_GAP_PX;
             int textY = rowY + (rowH - lineH) / 2;
-
             int color = enabled ? TOGGLE_ENABLED_COLOR : disabledColor;
 
             gg.pose().pushPose();
@@ -1016,6 +1029,65 @@ public final class CyberwareHudLayer {
             gg.drawString(mc.font, line, 0, 0, color, TOGGLE_SHADOW);
             gg.pose().popPose();
         }
+
+        renderToggleScrollIndicators(gg, rect, entries.size(), rows);
+    }
+
+    private static void renderToggleScrollIndicators(GuiGraphics gg, HudRect rect, int entryCount, int visibleRows) {
+        if (entryCount <= visibleRows) return;
+
+        int indicatorX = rect.x() + rect.w() + 3;
+        int indicatorTop = rect.y();
+        int indicatorBottom = rect.y() + rect.h();
+        int trackHeight = Math.max(1, indicatorBottom - indicatorTop);
+
+        gg.fill(indicatorX, indicatorTop, indicatorX + 1, indicatorBottom, 0x6600E5FF);
+
+        int maxScrollOffset = Math.max(1, entryCount - visibleRows);
+        int thumbHeight = Math.max(3, Math.round(trackHeight * visibleRows / (float) entryCount));
+        int availableTravel = Math.max(0, trackHeight - thumbHeight);
+        int thumbY = indicatorTop + Math.round(availableTravel * toggleScrollOffset / (float) maxScrollOffset);
+
+        gg.fill(indicatorX - 1, thumbY, indicatorX + 2, thumbY + thumbHeight, 0xFF00E5FF);
+    }
+
+    public static boolean scrollToggleSidebar(double scrollDelta) {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+
+        if (player == null) return false;
+        if (!CyberwareInstallQueries.hasHudAccess(player)) return false;
+
+        HudConfigClient.HudConfig cfg = HudConfigClient.get(player.getUUID());
+
+        if (!cfg.toggleList.enabled) return false;
+
+        PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
+
+        if (data == null) return false;
+
+        List<ToggleEntry> entries = collectToggleEntries(data);
+        int maxScrollOffset = Math.max(0, entries.size() - TOGGLE_VISIBLE_ROWS);
+
+        if (maxScrollOffset == 0) {
+            toggleScrollOffset = 0;
+            return false;
+        }
+
+        int previousOffset = toggleScrollOffset;
+
+        if (scrollDelta > 0.0D) {
+            toggleScrollOffset--;
+        } else if (scrollDelta < 0.0D) {
+            toggleScrollOffset++;
+        }
+
+        toggleScrollOffset = Mth.clamp(toggleScrollOffset, 0, maxScrollOffset);
+        return toggleScrollOffset != previousOffset;
+    }
+
+    public static void resetToggleSidebarScroll() {
+        toggleScrollOffset = 0;
     }
 
     private static List<ToggleEntry> collectToggleEntries(PlayerCyberwareData data) {
@@ -1024,18 +1096,20 @@ public final class CyberwareHudLayer {
         for (var entry : data.getAll().entrySet()) {
             CyberwareSlot slot = entry.getKey();
             InstalledCyberware[] arr = entry.getValue();
+
             if (arr == null) continue;
 
             for (int idx = 0; idx < arr.length; idx++) {
-                InstalledCyberware cw = arr[idx];
-                if (cw == null) continue;
+                InstalledCyberware installed = arr[idx];
 
-                ItemStack stack = cw.getItem();
+                if (installed == null) continue;
+
+                ItemStack stack = installed.getItem();
+
                 if (stack == null || stack.isEmpty()) continue;
                 if (!stack.is(ModTags.Items.TOGGLEABLE_CYBERWARE)) continue;
 
-                boolean enabled = data.isEnabled(slot, idx);
-                out.add(new ToggleEntry(stack.copy(), enabled));
+                out.add(new ToggleEntry(stack.copy(), data.isEnabled(slot, idx)));
             }
         }
 
@@ -1187,6 +1261,13 @@ public final class CyberwareHudLayer {
     private static int resolveHudTintArgb(LocalPlayer player) {
         PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
         if (data == null) return HUD_TINT_WHITE_ARGB;
+
+        if (data.hasSpecificItem(ModItems.EYEUPGRADES_MONOVISION.get(), CyberwareSlot.EYES)
+                && data.isDyed(ModItems.EYEUPGRADES_MONOVISION.get(), CyberwareSlot.EYES)) {
+
+            int rgb = data.dyeColor(ModItems.EYEUPGRADES_MONOVISION.get(), CyberwareSlot.EYES);
+            return (rgb & 0x00FFFFFF) | 0xFF000000;
+        }
 
         if (data.hasSpecificItem(ModItems.BASECYBERWARE_CYBEREYES.get(), CyberwareSlot.EYES)
                 && data.isDyed(ModItems.BASECYBERWARE_CYBEREYES.get(), CyberwareSlot.EYES)) {
@@ -1410,21 +1491,15 @@ public final class CyberwareHudLayer {
 
         public static boolean hasHudAccess(LocalPlayer player) {
             PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
+            if (data == null) return false;
 
-            return hasHudUpgrade(data) && cybereyesAreFunctionalForHud(data);
+            return hasFunctionalHudUpgrade(player, data)
+                    && hasFunctionalCybereyes(player, data);
         }
 
-        private static boolean hasHudUpgrade(PlayerCyberwareData data) {
-            return data.hasSpecificItem(ModItems.EYEUPGRADES_HUDLENS.get(), CyberwareSlot.EYES)
-                    || data.hasSpecificItem(ModItems.EYEUPGRADES_HUDJACK.get(), CyberwareSlot.EYES);
-        }
-
-        private static boolean cybereyesAreFunctionalForHud(PlayerCyberwareData data) {
+        private static boolean hasFunctionalHudUpgrade(LocalPlayer player, PlayerCyberwareData data) {
             InstalledCyberware[] arr = data.getAll().get(CyberwareSlot.EYES);
             if (arr == null) return false;
-
-            boolean foundEnabledCybereyes = false;
-            boolean foundPoweredEnabledCybereyes = false;
 
             for (int idx = 0; idx < arr.length; idx++) {
                 InstalledCyberware installed = arr[idx];
@@ -1432,17 +1507,66 @@ public final class CyberwareHudLayer {
 
                 ItemStack stack = installed.getItem();
                 if (stack == null || stack.isEmpty()) continue;
-                if (!(stack.getItem() instanceof CybereyeItem)) continue;
-                if (!data.isEnabled(CyberwareSlot.EYES, idx)) continue;
 
-                foundEnabledCybereyes = true;
+                boolean isHudUpgrade =
+                        stack.is(ModItems.EYEUPGRADES_HUDLENS.get())
+                                || stack.is(ModItems.EYEUPGRADES_HUDJACK.get())
+                                || stack.is(ModItems.EYEUPGRADES_MONOVISION.get());
 
-                if (installed.isPowered()) {
-                    foundPoweredEnabledCybereyes = true;
-                }
+                if (!isHudUpgrade) continue;
+                if (!isFunctional(player, data, installed, stack, idx)) continue;
+
+                return true;
             }
 
-            return !foundEnabledCybereyes || foundPoweredEnabledCybereyes;
+            return false;
+        }
+
+        private static boolean hasFunctionalCybereyes(LocalPlayer player, PlayerCyberwareData data) {
+            InstalledCyberware[] arr = data.getAll().get(CyberwareSlot.EYES);
+            if (arr == null) return false;
+
+            for (int idx = 0; idx < arr.length; idx++) {
+                InstalledCyberware installed = arr[idx];
+                if (installed == null) continue;
+
+                ItemStack stack = installed.getItem();
+                if (stack == null || stack.isEmpty()) continue;
+
+                if (!(stack.getItem() instanceof CybereyeItem) &&
+                        !(stack.getItem() instanceof MonovisionOpticsItem) &&
+                        !(stack.getItem() instanceof MultiopticsItem)) {
+                    continue;
+                }
+
+                if (!isFunctional(player, data, installed, stack, idx)) continue;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private static boolean isFunctional(
+                LocalPlayer player,
+                PlayerCyberwareData data,
+                InstalledCyberware installed,
+                ItemStack stack,
+                int idx
+        ) {
+            if (!data.isEnabled(CyberwareSlot.EYES, idx)) {
+                return false;
+            }
+
+            if (!(stack.getItem() instanceof ICyberwareItem cyberwareItem)) {
+                return true;
+            }
+
+            if (!cyberwareItem.requiresEnergyToFunction(player, stack, CyberwareSlot.EYES)) {
+                return true;
+            }
+
+            return installed.isPowered();
         }
     }
 
