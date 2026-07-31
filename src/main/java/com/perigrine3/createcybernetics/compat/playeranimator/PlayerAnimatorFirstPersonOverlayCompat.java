@@ -57,92 +57,67 @@ public final class PlayerAnimatorFirstPersonOverlayCompat {
 
         PlayerSkin.Model modelType = player.getSkin().model();
 
-        renderModifiers(modifiers, modelType, model, poseStack, buffer, packedLight);
-        renderHighlights(highlights, modelType, model, poseStack, buffer, packedLight);
+        renderAnimatedArmOverlays(
+                modifiers,
+                highlights,
+                modelType,
+                model.rightArm,
+                model.rightSleeve,
+                poseStack,
+                buffer,
+                packedLight
+        );
+
+        renderAnimatedArmOverlays(
+                modifiers,
+                highlights,
+                modelType,
+                model.leftArm,
+                model.leftSleeve,
+                poseStack,
+                buffer,
+                packedLight
+        );
     }
 
-    private static void renderModifiers(
+    private static void renderAnimatedArmOverlays(
             List<SkinModifier> modifiers,
-            PlayerSkin.Model modelType,
-            PlayerModel<AbstractClientPlayer> model,
-            PoseStack poseStack,
-            MultiBufferSource buffer,
-            int packedLight
-    ) {
-        if (modifiers.isEmpty()) return;
-
-        for (SkinModifier modifier : modifiers) {
-            if (modifier == null) continue;
-
-            ResourceLocation texture = modifier.getTexture(modelType);
-            int color = modifier.getColor();
-
-            var vc = buffer.getBuffer(RenderType.entityTranslucent(texture));
-            model.renderToBuffer(
-                    poseStack,
-                    vc,
-                    packedLight,
-                    OverlayTexture.NO_OVERLAY,
-                    color
-            );
-
-            if (modifier.hasGlint()) {
-                var glintVc = buffer.getBuffer(RenderType.entityGlint());
-                model.renderToBuffer(
-                        poseStack,
-                        glintVc,
-                        packedLight,
-                        OverlayTexture.NO_OVERLAY,
-                        0xFFFFFFFF
-                );
-            }
-        }
-    }
-
-    private static void renderHighlights(
             List<SkinHighlight> highlights,
             PlayerSkin.Model modelType,
-            PlayerModel<AbstractClientPlayer> model,
+            ModelPart armPart,
+            ModelPart sleevePart,
             PoseStack poseStack,
             MultiBufferSource buffer,
             int packedLight
     ) {
-        if (highlights.isEmpty()) return;
+        boolean renderArm = armPart.visible;
+        boolean renderSleeve = sleevePart.visible;
 
-        for (SkinHighlight highlight : highlights) {
-            if (highlight == null) continue;
+        if (!renderArm && !renderSleeve) return;
 
-            ResourceLocation texture = highlight.getTexture(modelType);
+        renderArmModifiers(
+                modifiers,
+                modelType,
+                armPart,
+                sleevePart,
+                renderArm,
+                renderSleeve,
+                poseStack,
+                buffer,
+                packedLight
+        );
 
-            RenderType renderType;
-            int light;
-            int color;
-
-            if (highlight.isEmissive()) {
-                light = 0x00F000F0;
-
-                if (highlight.tintOnEmissive()) {
-                    renderType = SkinRenderTypes.emissiveTinted(texture);
-                    color = highlight.getColor();
-                } else {
-                    renderType = RenderType.entityTranslucent(texture);
-                    color = 0xFFFFFFFF;
-                }
-            } else {
-                light = packedLight;
-                renderType = RenderType.entityTranslucent(texture);
-                color = highlight.getColor();
-            }
-
-            var vc = buffer.getBuffer(renderType);
-            model.renderToBuffer(
-                    poseStack,
-                    vc,
-                    light,
-                    OverlayTexture.NO_OVERLAY,
-                    color
-            );
-        }
+        renderArmHighlights(
+                highlights,
+                modelType,
+                armPart,
+                sleevePart,
+                renderArm,
+                renderSleeve,
+                poseStack,
+                buffer,
+                packedLight
+        );
     }
 
     private static boolean isFirstPersonPass() {
@@ -192,8 +167,29 @@ public final class PlayerAnimatorFirstPersonOverlayCompat {
         ModelPart armPart = arm == HumanoidArm.RIGHT ? model.rightArm : model.leftArm;
         ModelPart sleevePart = arm == HumanoidArm.RIGHT ? model.rightSleeve : model.leftSleeve;
 
-        renderArmModifiers(modifiers, modelType, armPart, sleevePart, poseStack, buffer, packedLight);
-        renderArmHighlights(highlights, modelType, armPart, sleevePart, poseStack, buffer, packedLight);
+        renderArmModifiers(
+                modifiers,
+                modelType,
+                armPart,
+                sleevePart,
+                true,
+                true,
+                poseStack,
+                buffer,
+                packedLight
+        );
+
+        renderArmHighlights(
+                highlights,
+                modelType,
+                armPart,
+                sleevePart,
+                true,
+                true,
+                poseStack,
+                buffer,
+                packedLight
+        );
     }
 
     private static void renderArmModifiers(
@@ -201,6 +197,8 @@ public final class PlayerAnimatorFirstPersonOverlayCompat {
             PlayerSkin.Model modelType,
             ModelPart armPart,
             ModelPart sleevePart,
+            boolean renderArm,
+            boolean renderSleeve,
             PoseStack poseStack,
             MultiBufferSource buffer,
             int packedLight
@@ -214,37 +212,49 @@ public final class PlayerAnimatorFirstPersonOverlayCompat {
             int color = modifier.getColor();
 
             var vc = buffer.getBuffer(RenderType.entityTranslucent(texture));
-            armPart.render(
-                    poseStack,
-                    vc,
-                    packedLight,
-                    OverlayTexture.NO_OVERLAY,
-                    color
-            );
-            sleevePart.render(
-                    poseStack,
-                    vc,
-                    packedLight,
-                    OverlayTexture.NO_OVERLAY,
-                    color
-            );
+
+            if (renderArm) {
+                armPart.render(
+                        poseStack,
+                        vc,
+                        packedLight,
+                        OverlayTexture.NO_OVERLAY,
+                        color
+                );
+            }
+
+            if (renderSleeve) {
+                sleevePart.render(
+                        poseStack,
+                        vc,
+                        packedLight,
+                        OverlayTexture.NO_OVERLAY,
+                        color
+                );
+            }
 
             if (modifier.hasGlint()) {
                 var glintVc = buffer.getBuffer(RenderType.entityGlint());
-                armPart.render(
-                        poseStack,
-                        glintVc,
-                        packedLight,
-                        OverlayTexture.NO_OVERLAY,
-                        0xFFFFFFFF
-                );
-                sleevePart.render(
-                        poseStack,
-                        glintVc,
-                        packedLight,
-                        OverlayTexture.NO_OVERLAY,
-                        0xFFFFFFFF
-                );
+
+                if (renderArm) {
+                    armPart.render(
+                            poseStack,
+                            glintVc,
+                            packedLight,
+                            OverlayTexture.NO_OVERLAY,
+                            0xFFFFFFFF
+                    );
+                }
+
+                if (renderSleeve) {
+                    sleevePart.render(
+                            poseStack,
+                            glintVc,
+                            packedLight,
+                            OverlayTexture.NO_OVERLAY,
+                            0xFFFFFFFF
+                    );
+                }
             }
         }
     }
@@ -254,6 +264,8 @@ public final class PlayerAnimatorFirstPersonOverlayCompat {
             PlayerSkin.Model modelType,
             ModelPart armPart,
             ModelPart sleevePart,
+            boolean renderArm,
+            boolean renderSleeve,
             PoseStack poseStack,
             MultiBufferSource buffer,
             int packedLight
@@ -286,20 +298,26 @@ public final class PlayerAnimatorFirstPersonOverlayCompat {
             }
 
             var vc = buffer.getBuffer(renderType);
-            armPart.render(
-                    poseStack,
-                    vc,
-                    light,
-                    OverlayTexture.NO_OVERLAY,
-                    color
-            );
-            sleevePart.render(
-                    poseStack,
-                    vc,
-                    light,
-                    OverlayTexture.NO_OVERLAY,
-                    color
-            );
+
+            if (renderArm) {
+                armPart.render(
+                        poseStack,
+                        vc,
+                        light,
+                        OverlayTexture.NO_OVERLAY,
+                        color
+                );
+            }
+
+            if (renderSleeve) {
+                sleevePart.render(
+                        poseStack,
+                        vc,
+                        light,
+                        OverlayTexture.NO_OVERLAY,
+                        color
+                );
+            }
         }
     }
 }

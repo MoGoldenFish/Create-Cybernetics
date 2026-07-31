@@ -1,19 +1,36 @@
 {
   "replace": false,
   "values": [
+    "createcybernetics:data_shard_shared_navigation",
     "createcybernetics:data_shard_infolog",
+    "createcybernetics:data_shard_infolog_getting_started",
+    "createcybernetics:data_shard_infolog_robosurgeon_manual",
+    "createcybernetics:data_shard_infolog_fbc_guide",
+    "createcybernetics:data_shard_infolog_cyberbestiary",
+    "createcybernetics:data_shard_infolog_surgery_table_manual",
+    "createcybernetics:data_shard_infolog_cyberdeck",
+    "createcybernetics:data_shard_infolog_harvester_enchantment",
+    "createcybernetics:data_shard_infolog_datura",
+    "createcybernetics:data_shard_infolog_wait_your_turn",
+    "createcybernetics:data_shard_infolog_the_breach",
+    "createcybernetics:data_shard_infolog_ai_chat",
+    "createcybernetics:data_shard_infolog_cyberpsycho_transcript",
+    "createcybernetics:data_shard_infolog_cpu_install",
+    {
+      "id": "createcybernetics:data_shard_infolog_cyberchems",
+      "required": false
+    },
+    "createcybernetics:data_shard_game_minesweeper",
+    "createcybernetics:data_shard_game_chess",
 
-    "createcybernetics:basecyberware_cybereyes",
-
-    "createcybernetics:basecyberware_rightleg",
-    "createcybernetics:basecyberware_leftleg",
-    "createcybernetics:basecyberware_rightarm",
-    "createcybernetics:basecyberware_leftarm",
+    "createcybernetics:eyeupgrades_monovision",
+    "createcybernetics:eyeupgrades_multioptics1",
+    "createcybernetics:eyeupgrades_multioptics2",
+    "createcybernetics:eyeupgrades_multioptics3",
+    "createcybernetics:eyeupgrades_multioptics4",
 
     "createcybernetics:skinupgrades_metalplating",
     "createcybernetics:legupgrades_ocelotpaws",
     "createcybernetics:armupgrades_arccannon"
-
-
   ]
 }

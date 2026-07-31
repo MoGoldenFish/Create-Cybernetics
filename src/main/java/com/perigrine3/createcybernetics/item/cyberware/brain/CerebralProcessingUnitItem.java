@@ -1,6 +1,7 @@
 package com.perigrine3.createcybernetics.item.cyberware.brain;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.perigrine3.createcybernetics.ConfigValues;
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.advancement.ModCriteria;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
@@ -12,6 +13,7 @@ import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
 import com.perigrine3.createcybernetics.common.damage.ModDamageSources;
 import com.perigrine3.createcybernetics.common.humanity.DataIntegrityHandler;
+import com.perigrine3.createcybernetics.item.ModItems;
 import com.perigrine3.createcybernetics.item.generic.BiochipDataShardItem;
 import com.perigrine3.createcybernetics.network.payload.CerebralShutdownStatePayload;
 import com.perigrine3.createcybernetics.util.CyberwareAttributeHelper;
@@ -27,6 +29,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -44,6 +47,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class CerebralProcessingUnitItem extends Item implements ICyberwareItem {
@@ -110,6 +114,21 @@ public class CerebralProcessingUnitItem extends Item implements ICyberwareItem {
                     .withStyle(ChatFormatting.RED));
         }
     }
+
+    @Override
+    public Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                Items.GOLD_INGOT, 100,
+                ModItems.COMPONENT_SYNTHNERVES.get(), 100,
+                ModItems.COMPONENT_SSD.get(), 200,
+                ModItems.COMPONENT_GRAPHICSCARD.get(), 200,
+
+                ModItems.COMPONENT_PLATING.get(), 100,
+                ModItems.COMPONENT_WIRING.get(), 150,
+                ModItems.COMPONENT_MESH.get(), 150
+        );
+    }
+
 
     @Override
     public int getHumanityCost() {

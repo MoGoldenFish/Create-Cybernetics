@@ -9,9 +9,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class UnderwaterVisionModuleItem extends Item implements ICyberwareItem {
@@ -31,13 +33,24 @@ public class UnderwaterVisionModuleItem extends Item implements ICyberwareItem {
     }
 
     @Override
+    public Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                Items.PHANTOM_MEMBRANE, 350,
+                ModItems.COMPONENT_SYNTHNERVES.get(), 250,
+                ModItems.COMPONENT_WIRING.get(), 250
+        );
+    }
+
+    @Override
     public int getHumanityCost() {
         return humanityCost;
     }
 
     @Override
     public Set<Item> requiresCyberware(ItemStack installedStack, CyberwareSlot slot) {
-        return Set.of(ModItems.BASECYBERWARE_CYBEREYES.get());
+        return Set.of(ModItems.BASECYBERWARE_CYBEREYES.get(), ModItems.EYEUPGRADES_MULTIOPTICS1.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS2.get(), ModItems.EYEUPGRADES_MULTIOPTICS3.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS4.get(), ModItems.EYEUPGRADES_MONOVISION.get());
     }
 
     @Override

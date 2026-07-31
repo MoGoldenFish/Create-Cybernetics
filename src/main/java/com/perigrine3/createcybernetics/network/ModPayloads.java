@@ -252,6 +252,54 @@ public final class ModPayloads {
                 )
         );
 
+        r.playToServer(
+                NavigationMapPayloads.RequestMapImportPayload.TYPE,
+                NavigationMapPayloads.RequestMapImportPayload.STREAM_CODEC,
+                NavigationMapPayloads.RequestMapImportPayload::handle
+        );
+
+        r.playToClient(
+                NavigationMapPayloads.ImportMapPayload.TYPE,
+                NavigationMapPayloads.ImportMapPayload.STREAM_CODEC,
+                NavigationMapPayloads.ImportMapPayload::handle
+        );
+
+        r.playToClient(
+                SharedNavigationPlayersPayload.TYPE,
+                SharedNavigationPlayersPayload.STREAM_CODEC,
+                SharedNavigationPlayersPayload::handle
+        );
+
+        r.playToClient(
+                SharedNavigationClearPayload.TYPE,
+                SharedNavigationClearPayload.STREAM_CODEC,
+                SharedNavigationClearPayload::handle
+        );
+
+        r.playToServer(
+                SharedNavigationTileUploadPayload.TYPE,
+                SharedNavigationTileUploadPayload.STREAM_CODEC,
+                SharedNavigationTileUploadPayload::handle
+        );
+
+        r.playToServer(
+                SharedNavigationWaypointUploadPayload.TYPE,
+                SharedNavigationWaypointUploadPayload.STREAM_CODEC,
+                SharedNavigationWaypointUploadPayload::handle
+        );
+
+        r.playToClient(
+                SharedNavigationTileSyncPayload.TYPE,
+                SharedNavigationTileSyncPayload.STREAM_CODEC,
+                SharedNavigationTileSyncPayload::handle
+        );
+
+        r.playToClient(
+                SharedNavigationWaypointSyncPayload.TYPE,
+                SharedNavigationWaypointSyncPayload.STREAM_CODEC,
+                SharedNavigationWaypointSyncPayload::handle
+        );
+
         // ---------------- CYBEREYE IRIS LAYOUT SYNC ----------------
 
 // Client -> Server
@@ -342,6 +390,18 @@ public final class ModPayloads {
                 IronsManaClientSyncPayload.TYPE,
                 IronsManaClientSyncPayload.STREAM_CODEC,
                 IronsManaClientSyncPayload::handle
+        );
+
+        r.playToServer(
+                OpenVampyresPayload.TYPE,
+                OpenVampyresPayload.STREAM_CODEC,
+                (payload, context) -> context.enqueueWork(() -> OpenVampyresPayload.handle(payload, context))
+        );
+
+        r.playToServer(
+                VampyresBiteHeldPayload.TYPE,
+                VampyresBiteHeldPayload.STREAM_CODEC,
+                (payload, context) -> context.enqueueWork(() -> VampyresBiteHeldPayload.handle(payload, context))
         );
 
 

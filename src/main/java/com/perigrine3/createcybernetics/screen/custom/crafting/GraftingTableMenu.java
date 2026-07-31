@@ -1,6 +1,7 @@
 package com.perigrine3.createcybernetics.screen.custom.crafting;
 
 import com.perigrine3.createcybernetics.item.ModItems;
+import com.perigrine3.createcybernetics.recipe.GraftingTableRecipe;
 import com.perigrine3.createcybernetics.recipe.GraftingTableRecipeInput;
 import com.perigrine3.createcybernetics.recipe.ModRecipes;
 import com.perigrine3.createcybernetics.screen.ModMenuTypes;
@@ -85,12 +86,16 @@ public final class GraftingTableMenu extends AbstractContainerMenu {
         if (p == null || p.level().isClientSide) return;
 
         Level level = p.level();
-
         GraftingTableRecipeInput input = buildRecipeInput();
-        computedResult = level.getRecipeManager()
-                .getRecipeFor(ModRecipes.GRAFTING_TABLE_TYPE.get(), input, level)
-                .map(holder -> holder.value().assemble(input, level.registryAccess()))
-                .orElse(ItemStack.EMPTY);
+
+        if (GraftingTableRecipe.isBiologicalRepair(input)) {
+            computedResult = GraftingTableRecipe.assembleBiologicalRepair(input);
+        } else {
+            computedResult = level.getRecipeManager()
+                    .getRecipeFor(ModRecipes.GRAFTING_TABLE_TYPE.get(), input, level)
+                    .map(holder -> holder.value().assemble(input, level.registryAccess()))
+                    .orElse(ItemStack.EMPTY);
+        }
 
         result.setItem(0, computedResult);
         broadcastChanges();
@@ -132,10 +137,7 @@ public final class GraftingTableMenu extends AbstractContainerMenu {
             if (!stack.isEmpty()) player.getInventory().placeItemBackInInventory(stack);
         }
 
-        for (int i = 0; i < result.getContainerSize(); i++) {
-            ItemStack stack = result.removeItemNoUpdate(i);
-            if (!stack.isEmpty()) player.getInventory().placeItemBackInInventory(stack);
-        }
+        result.setItem(0, ItemStack.EMPTY);
     }
 
     @Override
@@ -215,33 +217,62 @@ public final class GraftingTableMenu extends AbstractContainerMenu {
             super.onTake(player, taken);
 
             access.execute((level, pos) -> {
-                com.perigrine3.createcybernetics.recipe.GraftingTableRecipeInput input = buildRecipeInput();
+                GraftingTableRecipeInput input = buildRecipeInput();
+
+                if (GraftingTableRecipe.isBiologicalRepair(input)) {
+                    int biologicalSlot = GraftingTableRecipe.findBiologicalRepairInputSlot(input);
+                    if (biologicalSlot < 0) return;
+
+                    ItemStack biologicalStack = inputs.getItem(biologicalSlot);
+                    biologicalStack.shrink(1);
+
+                    if (biologicalStack.isEmpty()) {
+                        inputs.setItem(biologicalSlot, ItemStack.EMPTY);
+                    } else {
+                        inputs.setItem(biologicalSlot, biologicalStack);
+                    }
+
+                    ItemStack tear = inputs.getItem(GraftingTableRecipe.SLOT_TEAR);
+                    tear.shrink(1);
+
+                    if (tear.isEmpty()) {
+                        inputs.setItem(GraftingTableRecipe.SLOT_TEAR, ItemStack.EMPTY);
+                    } else {
+                        inputs.setItem(GraftingTableRecipe.SLOT_TEAR, tear);
+                    }
+
+                    slotsChanged(inputs);
+                    return;
+                }
 
                 var opt = level.getRecipeManager()
-                        .getRecipeFor(com.perigrine3.createcybernetics.recipe.ModRecipes.GRAFTING_TABLE_TYPE.get(), input, level);
+                        .getRecipeFor(ModRecipes.GRAFTING_TABLE_TYPE.get(), input, level);
 
                 if (opt.isEmpty()) return;
 
                 var recipe = opt.get().value();
                 var remains = recipe.getRemainingItems(input);
 
-                for (int i = 0; i < 7; i++) {
+                for (int i = 0; i < SLOT_IN_COUNT; i++) {
                     ItemStack in = inputs.getItem(i);
+
                     if (!in.isEmpty()) {
                         in.shrink(1);
                         inputs.setItem(i, in);
                     }
                 }
 
-                for (int i = 0; i < 7; i++) {
+                for (int i = 0; i < SLOT_IN_COUNT; i++) {
                     ItemStack rem = remains.get(i);
-                    if (!rem.isEmpty()) {
-                        ItemStack cur = inputs.getItem(i);
-                        if (cur.isEmpty()) {
-                            inputs.setItem(i, rem);
-                        } else if (!player.getInventory().add(rem)) {
-                            player.drop(rem, false);
-                        }
+
+                    if (rem.isEmpty()) continue;
+
+                    ItemStack cur = inputs.getItem(i);
+
+                    if (cur.isEmpty()) {
+                        inputs.setItem(i, rem);
+                    } else if (!player.getInventory().add(rem)) {
+                        player.drop(rem, false);
                     }
                 }
 

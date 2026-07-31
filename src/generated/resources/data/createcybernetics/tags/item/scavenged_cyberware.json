@@ -6,6 +6,7 @@
     "createcybernetics:scavenged_leftarm",
     "createcybernetics:scavenged_cybereyes",
     "createcybernetics:scavenged_linearframe",
+    "createcybernetics:scavenged_monovision",
     "createcybernetics:scavenged_hudlens",
     "createcybernetics:scavenged_hudjack",
     "createcybernetics:scavenged_nightvision",
@@ -59,6 +60,8 @@
     "createcybernetics:scavenged_platelets",
     "createcybernetics:scavenged_hyperoxygenation",
     "createcybernetics:scavenged_oxygen",
+    "createcybernetics:scavenged_synthlungs",
+    "createcybernetics:scavenged_vampyres",
     "createcybernetics:scavenged_adrenaline",
     "createcybernetics:scavenged_battery",
     "createcybernetics:scavenged_diamondwaferstack",
@@ -81,6 +84,7 @@
     "createcybernetics:scavenged_metalplating",
     "createcybernetics:scavenged_synthmuscle",
     "createcybernetics:scavenged_wiredreflexes",
+    "createcybernetics:scavenged_ballisticgel",
     {
       "id": "createcybernetics:scavenged_elytra",
       "required": false
@@ -107,6 +111,10 @@
     },
     {
       "id": "createcybernetics:scavenged_manaskin",
+      "required": false
+    },
+    {
+      "id": "createcybernetics:scavenged_ultraviolent",
       "required": false
     },
     {

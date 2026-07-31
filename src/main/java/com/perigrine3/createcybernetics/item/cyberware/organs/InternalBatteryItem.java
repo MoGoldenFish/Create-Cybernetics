@@ -1,5 +1,7 @@
 package com.perigrine3.createcybernetics.item.cyberware.organs;
 
+import com.perigrine3.createcybernetics.api.CyberwareDegradationCause;
+import com.perigrine3.createcybernetics.api.CyberwareRepairType;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
 import com.perigrine3.createcybernetics.item.ModItems;
@@ -83,6 +85,26 @@ public class InternalBatteryItem extends Item implements ICyberwareItem {
     @Override
     public Set<Item> incompatibleCyberware(ItemStack installedStack, CyberwareSlot slot) {
         return Set.of(ModItems.ORGANSUPGRADES_DENSEBATTERY.get());
+    }
+
+    @Override
+    public CyberwareRepairType getRepairType(ItemStack installedStack, CyberwareSlot slot) {
+        return CyberwareRepairType.BATTERY;
+    }
+
+    @Override
+    public int getMaxCyberwareDurability(ItemStack installedStack, CyberwareSlot slot) {
+        return 2500;
+    }
+
+    @Override
+    public float getDegradationMultiplier(LivingEntity entity, ItemStack installedStack, CyberwareSlot slot, CyberwareDegradationCause cause) {
+        if (cause == CyberwareDegradationCause.EMP) return 3.0F;
+        if (cause == CyberwareDegradationCause.ENERGY_RECEIVED) return 1.0F;
+        if (cause == CyberwareDegradationCause.ENERGY_EXTRACTED) return 1.0F;
+        if (cause == CyberwareDegradationCause.PASSIVE_AGING) return 1.0F;
+
+        return 0.25F;
     }
 
     @Override

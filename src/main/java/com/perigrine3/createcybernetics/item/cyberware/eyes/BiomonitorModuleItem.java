@@ -2,10 +2,13 @@ package com.perigrine3.createcybernetics.item.cyberware.eyes;
 
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
+import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
 import com.perigrine3.createcybernetics.item.ModItems;
+import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -51,12 +54,20 @@ public class BiomonitorModuleItem extends Item implements ICyberwareItem {
 
     @Override
     public Set<CyberwareSlot> getReplacedOrgans() {
-        return Set.of(CyberwareSlot.EYES);
+        return Set.of();
     }
 
     @Override
-    public Set<Item> requiresCyberware(ItemStack installedStack, CyberwareSlot slot) {
-        return Set.of(ModItems.BASECYBERWARE_CYBEREYES.get(), ModItems.EYEUPGRADES_HUDJACK.get());
+    public boolean meetsCyberwareRequirements(PlayerCyberwareData data, ItemStack installedStack, CyberwareSlot slot) {
+        boolean hasMonovision = data.hasSpecificItem(ModItems.EYEUPGRADES_MONOVISION.get(), CyberwareSlot.EYES);
+        boolean hasCybereyes = data.hasSpecificItem(ModItems.BASECYBERWARE_CYBEREYES.get(), CyberwareSlot.EYES)
+                || data.hasSpecificItem(ModItems.EYEUPGRADES_MULTIOPTICS1.get(), CyberwareSlot.EYES)
+                || data.hasSpecificItem(ModItems.EYEUPGRADES_MULTIOPTICS2.get(), CyberwareSlot.EYES)
+                || data.hasSpecificItem(ModItems.EYEUPGRADES_MULTIOPTICS3.get(), CyberwareSlot.EYES)
+                || data.hasSpecificItem(ModItems.EYEUPGRADES_MULTIOPTICS4.get(), CyberwareSlot.EYES);
+        boolean hasHudjack = data.hasSpecificItem(ModItems.EYEUPGRADES_HUDJACK.get(), CyberwareSlot.EYES);
+
+        return hasMonovision || (hasCybereyes && hasHudjack);
     }
 
     @Override

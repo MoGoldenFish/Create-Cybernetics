@@ -15,9 +15,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class PropellersItem extends Item implements ICyberwareItem {
@@ -36,6 +38,14 @@ public class PropellersItem extends Item implements ICyberwareItem {
             tooltip.add(Component.translatable("tooltip.createcybernetics.humanity", humanityCost).withStyle(ChatFormatting.GOLD));
             tooltip.add(Component.translatable("tooltip.createcybernetics.legupgrades_propellers.energy").withStyle(ChatFormatting.RED));
         }
+    }
+
+    @Override
+    public Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                ModItems.TITANIUMSHEET.get(), 500,
+                ModItems.COMPONENT_WIRING.get(), 250
+        );
     }
 
     @Override

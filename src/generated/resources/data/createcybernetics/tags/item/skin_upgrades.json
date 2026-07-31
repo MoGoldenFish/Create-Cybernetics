@@ -18,6 +18,10 @@
     {
       "id": "createcybernetics:skinupgrades_manaskin",
       "required": false
+    },
+    {
+      "id": "createcybernetics:skinupgrades_ultraviolent",
+      "required": false
     }
   ]
 }

@@ -2,22 +2,25 @@ package com.perigrine3.createcybernetics.item.cyberware.organs;
 
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
+import com.perigrine3.createcybernetics.item.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class DiamondWaferstackItem extends Item implements ICyberwareItem {
 
     private final int humanityCost;
 
-    private static final int ENERGY_PER_PULSE = 5;
+    private static final int ENERGY_PER_PULSE = 25;
     private static final int PULSE_TICKS = 60;
 
     public DiamondWaferstackItem(Properties props, int humanityCost) {
@@ -33,6 +36,14 @@ public class DiamondWaferstackItem extends Item implements ICyberwareItem {
 
             tooltip.add(Component.translatable("tooltip.createcybernetics.organsupgrades_diamondwaferstack.energy").withStyle(ChatFormatting.DARK_GREEN));
         }
+    }
+
+    @Override
+    public Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                Items.DIAMOND, 750,
+                ModItems.COMPONENT_WIRING.get(), 500
+        );
     }
 
     @Override

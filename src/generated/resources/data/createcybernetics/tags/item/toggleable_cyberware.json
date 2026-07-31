@@ -13,6 +13,7 @@
     "createcybernetics:legupgrades_jumpboost",
     "createcybernetics:skinupgrades_syntheticsetules",
     "createcybernetics:armupgrades_arccannon",
+    "createcybernetics:lungsupgrades_vampyres",
     "createcybernetics:armupgrades_mantisblade_iron",
     "createcybernetics:armupgrades_mantisblade_copper",
     "createcybernetics:armupgrades_mantisblade_titanium",
@@ -27,6 +28,10 @@
     "createcybernetics:wetware_webshootingintestines",
     {
       "id": "createcybernetics:boneupgrades_elytra",
+      "required": false
+    },
+    {
+      "id": "createcybernetics:skinupgrades_ultraviolent",
       "required": false
     }
   ]

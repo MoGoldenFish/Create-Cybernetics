@@ -36,6 +36,7 @@ public final class CybereyeOverlayHandler {
     public enum Variant { V1x1, V1x2, V2x2 }
 
     public record EyePlacement(int x, int y, Variant variant) {}
+    public record ResolvedPlacements(EyePlacement left, EyePlacement right) {}
 
     private static final Map<UUID, Entry> CACHE = new ConcurrentHashMap<>();
     private static final Map<UUID, CompoundTag> SYNCED_CONFIGS = new ConcurrentHashMap<>();
@@ -56,10 +57,9 @@ public final class CybereyeOverlayHandler {
     private static boolean templatesLoaded = false;
     private static boolean templatesFailed = false;
 
-    public static ResourceLocation getOrBuildOverlay(Player player) {
+    public static ResolvedPlacements getResolvedPlacements(Player player) {
         if (player == null) return null;
 
-        UUID id = player.getUUID();
         CompoundTag root = getEffectiveRoot(player);
 
         EyePlacement left = readPlacement(root, EyeSide.LEFT);
@@ -70,6 +70,19 @@ public final class CybereyeOverlayHandler {
 
         left = clampToFace(left);
         right = clampToFace(right);
+
+        return new ResolvedPlacements(left, right);
+    }
+
+    public static ResourceLocation getOrBuildOverlay(Player player) {
+        if (player == null) return null;
+
+        ResolvedPlacements placements = getResolvedPlacements(player);
+        if (placements == null) return null;
+
+        UUID id = player.getUUID();
+        EyePlacement left = placements.left();
+        EyePlacement right = placements.right();
 
         int hash = hash(left, right);
 

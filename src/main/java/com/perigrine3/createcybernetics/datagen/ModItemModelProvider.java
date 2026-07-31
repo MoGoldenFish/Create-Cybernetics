@@ -231,6 +231,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.LUNGSUPGRADES_HYPEROXYGENATION.get());
         basicItem(ModItems.LUNGSUPGRADES_OXYGEN.get());
         basicItem(ModItems.LUNGSUPGRADES_SYNTHLUNGS.get());
+        basicItem(ModItems.LUNGSUPGRADES_VAMPYRES.get());
     }
 
 //ORGANS
@@ -266,6 +267,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         {
         basicItem(ModItems.MUSCLEUPGRADES_SYNTHMUSCLE.get());
         basicItem(ModItems.MUSCLEUPGRADES_WIREDREFLEXES.get());
+        basicItem(ModItems.MUSCLEUPGRADES_BALLISTICGEL.get());
     }
 
 //WETWARE
@@ -301,6 +303,7 @@ public class ModItemModelProvider extends ItemModelProvider {
             basicItem(ModItems.SCAVENGED_LEFTARM.get());
             basicItem(ModItems.SCAVENGED_CYBEREYES.get());
             basicItem(ModItems.SCAVENGED_LINEARFRAME.get());
+            basicItem(ModItems.SCAVENGED_MONOVISION.get());
             basicItem(ModItems.SCAVENGED_HUDLENS.get());
             basicItem(ModItems.SCAVENGED_HUDJACK.get());
             basicItem(ModItems.SCAVENGED_NIGHTVISION.get());
@@ -355,6 +358,7 @@ public class ModItemModelProvider extends ItemModelProvider {
             basicItem(ModItems.SCAVENGED_HYPEROXYGENATION.get());
             basicItem(ModItems.SCAVENGED_OXYGEN.get());
             basicItem(ModItems.SCAVENGED_SYNTHLUNGS.get());
+            basicItem(ModItems.SCAVENGED_VAMPYRES.get());
             basicItem(ModItems.SCAVENGED_ADRENALINE.get());
             basicItem(ModItems.SCAVENGED_BATTERY.get());
             basicItem(ModItems.SCAVENGED_DIAMONDWAFERSTACK.get());
@@ -377,6 +381,7 @@ public class ModItemModelProvider extends ItemModelProvider {
             basicItem(ModItems.SCAVENGED_METALPLATING.get());
             basicItem(ModItems.SCAVENGED_SYNTHMUSCLE.get());
             basicItem(ModItems.SCAVENGED_WIREDREFLEXES.get());
+            basicItem(ModItems.SCAVENGED_BALLISTICGEL.get());
         }
 
 // DATA SHARDS

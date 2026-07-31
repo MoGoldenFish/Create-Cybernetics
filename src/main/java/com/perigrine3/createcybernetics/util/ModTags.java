@@ -105,11 +105,15 @@ public class ModTags {
         public static final TagKey<Item> RIGHTLEG_REPLACEMENTS = createTag("rightleg_replacements");
         public static final TagKey<Item> RIGHT_CYBERLEG = createTag("right_cyberleg");
 
+        public static final TagKey<Item> CYBEREYE_VARIANTS = createTag("cybereye_variants");
+
         public static final TagKey<Item> MEAT_LIMBS = createTag("meat_limbs");
         public static final TagKey<Item> MEAT_ARMS = createTag("meat_arms");
         public static final TagKey<Item> MEAT_LEGS = createTag("meat_legs");
 
         public static final TagKey<Item> DEFAULTS_FAIL_AS_MISSING_WHEN_UNPOWERED = createTag("defaults_fail_as_missing_when_unpowered");
+
+        public static final TagKey<Item> BATTERY_REPAIR_MATERIALS = createTag("battery_repair_materials");
 
         private static TagKey<Item> createTag(String name) {
             return ItemTags.create(ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, name));

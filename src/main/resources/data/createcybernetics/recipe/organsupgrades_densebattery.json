@@ -11,28 +11,28 @@
       "item": "minecraft:redstone_block"
     },
     "B": {
-      "item": "createcybernetics:organsupgrades_battery"
+      "item": "minecraft:blaze_rod"
     },
     "W": {
       "item": "createcybernetics:component_wiring"
     },
-    "M": {
-      "item": "createcybernetics:component_mesh"
-    },
     "D": {
       "item": "createcybernetics:component_diodes"
     },
-    "T": {
-      "item": "createcybernetics:titanium_block"
+    "P": {
+      "item": "createcybernetics:component_plating"
+    },
+    "S": {
+      "item": "createcybernetics:component_storage"
     }
   },
 
   "pattern": [
-    "GRDRG",
-    "TBWBT",
-    "TBBBT",
-    "TBMBT",
-    "TBBBT"
+    " GDG ",
+    "PBBBP",
+    "PWSWP",
+    "PRRRP",
+    "PWPWP"
   ],
 
   "result": {

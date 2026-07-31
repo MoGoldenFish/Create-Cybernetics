@@ -7,6 +7,7 @@ import com.perigrine3.createcybernetics.api.ICyberwareItem;
 import com.perigrine3.createcybernetics.api.InstalledCyberware;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.item.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -22,6 +24,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class CybereyeItem extends Item implements ICyberwareItem {
@@ -42,6 +45,17 @@ public class CybereyeItem extends Item implements ICyberwareItem {
             tooltip.add(Component.translatable("tooltip.basecyberware_cybereye.energy")
                     .withStyle(ChatFormatting.RED));
         }
+    }
+
+    @Override
+    public Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                Items.AMETHYST_SHARD, 400,
+                ModItems.COMPONENT_SYNTHNERVES.get(), 250,
+                ModItems.COMPONENT_WIRING.get(), 250,
+                ModItems.COMPONENT_FIBEROPTICS.get(), 350,
+                ModItems.COMPONENT_GRAPHICSCARD.get(), 350
+        );
     }
 
     @Override
@@ -86,7 +100,7 @@ public class CybereyeItem extends Item implements ICyberwareItem {
 
     @Override
     public int maxStacksPerSlotType(ItemStack stack, CyberwareSlot slotType) {
-        return 3;
+        return 2;
     }
 
     @Override

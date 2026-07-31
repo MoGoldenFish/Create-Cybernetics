@@ -18,6 +18,11 @@
     "createcybernetics:basecyberware_leftarm",
     "createcybernetics:basecyberware_cybereyes",
     "createcybernetics:basecyberware_linearframe",
+    "createcybernetics:eyeupgrades_monovision",
+    "createcybernetics:eyeupgrades_multioptics1",
+    "createcybernetics:eyeupgrades_multioptics2",
+    "createcybernetics:eyeupgrades_multioptics3",
+    "createcybernetics:eyeupgrades_multioptics4",
     "createcybernetics:eyeupgrades_hudlens",
     "createcybernetics:eyeupgrades_hudjack",
     "createcybernetics:eyeupgrades_nightvision",
@@ -25,6 +30,7 @@
     "createcybernetics:eyeupgrades_underwatervision",
     "createcybernetics:eyeupgrades_zoom",
     "createcybernetics:eyeupgrades_trajectorycalculator",
+    "createcybernetics:eyeupgrades_biomonitor",
     "createcybernetics:armupgrades_armcannon",
     "createcybernetics:armupgrades_flywheel",
     "createcybernetics:armupgrades_claws",
@@ -35,12 +41,12 @@
     "createcybernetics:armupgrades_reinforcedknuckles",
     "createcybernetics:armupgrades_ripperclaw",
     "createcybernetics:armupgrades_arccannon",
-    "createcybernetics:scavenged_mantisblade_titanium",
-    "createcybernetics:scavenged_mantisblade_iron",
-    "createcybernetics:scavenged_mantisblade_gold",
-    "createcybernetics:scavenged_mantisblade_copper",
-    "createcybernetics:scavenged_mantisblade_diamond",
-    "createcybernetics:scavenged_mantisblade_netherite",
+    "createcybernetics:armupgrades_mantisblade_titanium",
+    "createcybernetics:armupgrades_mantisblade_iron",
+    "createcybernetics:armupgrades_mantisblade_gold",
+    "createcybernetics:armupgrades_mantisblade_copper",
+    "createcybernetics:armupgrades_mantisblade_diamond",
+    "createcybernetics:armupgrades_mantisblade_netherite",
     "createcybernetics:legupgrades_metaldetector",
     "createcybernetics:legupgrades_anklebracers",
     "createcybernetics:legupgrades_jumpboost",
@@ -74,6 +80,7 @@
     "createcybernetics:lungsupgrades_hyperoxygenation",
     "createcybernetics:lungsupgrades_oxygen",
     "createcybernetics:lungsupgrades_synthlungs",
+    "createcybernetics:lungsupgrades_vampyres",
     "createcybernetics:organsupgrades_adrenaline",
     "createcybernetics:organsupgrades_battery",
     "createcybernetics:organsupgrades_diamondwaferstack",
@@ -98,6 +105,7 @@
     "createcybernetics:skinupgrades_empthreading",
     "createcybernetics:muscleupgrades_synthmuscle",
     "createcybernetics:muscleupgrades_wiredreflexes",
+    "createcybernetics:muscleupgrades_ballisticgel",
     {
       "id": "createcybernetics:boneupgrades_elytra",
       "required": false
@@ -108,6 +116,10 @@
     },
     {
       "id": "createcybernetics:skinupgrades_manaskin",
+      "required": false
+    },
+    {
+      "id": "createcybernetics:skinupgrades_ultraviolent",
       "required": false
     },
     {

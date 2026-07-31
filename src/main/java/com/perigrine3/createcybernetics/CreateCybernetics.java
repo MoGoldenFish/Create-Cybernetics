@@ -10,12 +10,15 @@ import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.ModBlockCapabilities;
 import com.perigrine3.createcybernetics.common.capabilities.ModMobAttachments;
 import com.perigrine3.createcybernetics.compat.CompatBootstrap;
+import com.perigrine3.createcybernetics.compat.ModCompats;
 import com.perigrine3.createcybernetics.compat.corpse.CorpseCompat;
 import com.perigrine3.createcybernetics.compat.corpse.CorpseCyberwareScreen;
 import com.perigrine3.createcybernetics.compat.corpse.ModCorpseCompatMenus;
 import com.perigrine3.createcybernetics.compat.ironsspells.IronsSpellbooksCompatBlockEntities;
 import com.perigrine3.createcybernetics.compat.ironsspells.IronsSpellbooksCompatBlocks;
 import com.perigrine3.createcybernetics.compat.ironsspells.IronsSpellbooksCyberwareAttributes;
+import com.perigrine3.createcybernetics.compat.neosync.NeoSyncCompat;
+import com.perigrine3.createcybernetics.compat.neosync.NeoSyncCompatLoader;
 import com.perigrine3.createcybernetics.component.ModDataComponents;
 import com.perigrine3.createcybernetics.effect.ModEffects;
 import com.perigrine3.createcybernetics.effect.PneumaticCalvesEffect;
@@ -55,6 +58,7 @@ import com.perigrine3.createcybernetics.screen.custom.surgery.ripper.SurgeryPaym
 import com.perigrine3.createcybernetics.screen.custom.surgery.robosurgeon.RobosurgeonScreen;
 import com.perigrine3.createcybernetics.screen.custom.surgery.surgery_table.SurgeryTableScreen;
 import com.perigrine3.createcybernetics.screen.custom.tattoo_system.TattooArtistScreen;
+import com.perigrine3.createcybernetics.screen.custom.vampyres.VampyresScreen;
 import com.perigrine3.createcybernetics.sound.ModSounds;
 import com.perigrine3.createcybernetics.worldgen.ModBiomeModifierSerializers;
 import com.perigrine3.createcybernetics.worldgen.ModStructureTypes;
@@ -138,6 +142,10 @@ public class CreateCybernetics {
 
         if (CorpseCompat.isLoaded()) {
             ModCorpseCompatMenus.register(eventBus);
+        }
+
+        if (ModCompats.isInstalled("neosync")) {
+            NeoSyncCompatLoader.initialize();
         }
 
         IronsSpellbooksCompatBlocks.register(eventBus);
@@ -405,6 +413,7 @@ public class CreateCybernetics {
             event.register(ModMenuTypes.ARM_CANNON_MENU.get(), ArmCannonScreen::new);
             event.register(ModMenuTypes.HEAT_ENGINE_MENU.get(), HeatEngineScreen::new);
             event.register(ModMenuTypes.CYBERDECK_MENU.get(), CyberdeckScreen::new);
+            event.register(ModMenuTypes.VAMPYRES_MENU.get(), VampyresScreen::new);
             event.register(ModMenuTypes.SURGERY_TABLE_MENU.get(), SurgeryTableScreen::new);
             event.register(ModMenuTypes.RIPPER_TRADE_MENU.get(), RipperTradeScreen::new);
             event.register(ModMenuTypes.SURGERY_PAYMENT_MENU.get(), SurgeryPaymentScreen::new);

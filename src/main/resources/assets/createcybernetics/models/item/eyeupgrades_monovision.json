@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "createcybernetics:item/eyeupgrades_monovision",
+    "layer1": "createcybernetics:item/eyeupgrades_monovision_mask"
+  }
+}

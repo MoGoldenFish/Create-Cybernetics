@@ -2,6 +2,7 @@
   "parent": "minecraft:item/generated",
   "textures": {
     "layer0": "createcybernetics:item/basecyberware_rightarm",
-    "layer1": "createcybernetics:item/basecyberware_rightarm_mask"
+    "layer1": "createcybernetics:item/basecyberware_rightarm_mask",
+    "layer2": "createcybernetics:item/basecyberware_rightarm_mask2"
   }
 }

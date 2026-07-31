@@ -29,6 +29,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -45,6 +46,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class DrillFistItem extends Item implements ICyberwareItem {
@@ -64,6 +66,16 @@ public class DrillFistItem extends Item implements ICyberwareItem {
                     .withStyle(ChatFormatting.GOLD));
         }
     }
+
+    @Override
+    public Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                Items.DIAMOND, 350,
+                Items.IRON_INGOT, 150,
+                ModItems.TITANIUMINGOT.get(), 250
+        );
+    }
+
 
     @Override
     public int getHumanityCost() {

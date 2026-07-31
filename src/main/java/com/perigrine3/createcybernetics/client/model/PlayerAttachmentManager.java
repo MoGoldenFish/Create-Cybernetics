@@ -358,6 +358,33 @@ public final class PlayerAttachmentManager {
         return MANTIS_BLADE_CLOSED_TEXTURE;
     }
 
+    // =========================
+    // VAMPYRES
+    // =========================
+    private static final ResourceLocation VAMPYRES_ITEM_ID =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "lungsupgrades_vampyres");
+
+    public static final ResourceLocation VAMPYRES_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(CreateCybernetics.MODID, "textures/entity/vampyres_vials.png");
+
+    private static VampyresAttachmentModel VAMPYRES_MODEL;
+
+    public static VampyresAttachmentModel vampyresModel() {
+        if (VAMPYRES_MODEL == null) {
+            var baked = Minecraft.getInstance().getEntityModels().bakeLayer(VampyresAttachmentModel.LAYER);
+            VAMPYRES_MODEL = new VampyresAttachmentModel(baked);
+        }
+
+        return VAMPYRES_MODEL;
+    }
+
+    private static Item vampyresItemOrNull() {
+        if (!BuiltInRegistries.ITEM.containsKey(VAMPYRES_ITEM_ID)) return null;
+
+        Item item = BuiltInRegistries.ITEM.get(VAMPYRES_ITEM_ID);
+        return item == null ? null : item;
+    }
+
 
 
 
@@ -385,10 +412,11 @@ public final class PlayerAttachmentManager {
         Item neuralProcessorItem = neuralProcessorItemOrNull();
         Item ripperClawItem = ripperClawItemOrNull();
         Item arcCannonItem = arcCannonItemOrNull();
+        Item vampyresItem = vampyresItemOrNull();
 
         if (clawsItem == null && drillItem == null && ripperClawItem == null && pawsItem == null && calfPropellerItem == null
                 && spurItem == null && guardianEyeItem == null && wardenAntlersItem == null && arcCannonItem == null
-                && !mantisBladeItemsRegistered()) return state;
+                && vampyresItem == null && !mantisBladeItemsRegistered()) return state;
 
         for (var entry : data.getAll().entrySet()) {
             CyberwareSlot slot = entry.getKey();
@@ -417,6 +445,11 @@ public final class PlayerAttachmentManager {
 
 
                 if (!data.isEnabled(slot, idx)) continue;
+
+                if (vampyresItem != null && stack.is(vampyresItem)) {
+                    state.add(new VampyresAttachment(AttachmentAnchor.HEAD));
+                    continue;
+                }
 
                 if (clawsItem != null && stack.is(clawsItem)) {
                     state.add(new ClawAttachment(anchor));
@@ -568,6 +601,13 @@ public final class PlayerAttachmentManager {
         pose.mulPose(Axis.YP.rotationDegrees(0.0F));
 
         pose.scale(1, 1, 1);
+    }
+
+    public static void applyVampyresTransform(PoseStack pose, AttachmentAnchor headAnchor) {
+        pose.translate(0.0F, 0.15F, 0.075F);
+        pose.mulPose(Axis.XN.rotationDegrees(0.0F));
+        pose.mulPose(Axis.YP.rotationDegrees(0.0F));
+        pose.scale(1.25F, 1.25F, 1.25F);
     }
 
     public static void applyWardenAntlersTransform(PoseStack pose, AttachmentAnchor headAnchor) {
@@ -1089,6 +1129,50 @@ public final class PlayerAttachmentManager {
         @Override
         public void setupPose(PoseStack poseStack, AbstractClientPlayer player, PlayerModel<AbstractClientPlayer> parentModel, PlayerSkin.Model modelType, float partialTick) {
             applyMantisBladeTransform(poseStack, anchor);
+        }
+    }
+
+    private static final class VampyresAttachment implements PlayerAttachment {
+        private final AttachmentAnchor anchor;
+
+        private VampyresAttachment(AttachmentAnchor anchor) {
+            this.anchor = anchor;
+        }
+
+        @Override
+        public AttachmentAnchor anchor() {
+            return anchor;
+        }
+
+        @Override
+        public ResourceLocation texture(PlayerSkin.Model modelType) {
+            return VAMPYRES_TEXTURE;
+        }
+
+        @Override
+        public Model model(PlayerSkin.Model modelType) {
+            return vampyresModel();
+        }
+
+        @Override
+        public int color() {
+            return 0xFFFFFFFF;
+        }
+
+        @Override
+        public boolean thirdPersonOnly() {
+            return true;
+        }
+
+        @Override
+        public void setupPose(
+                PoseStack poseStack,
+                AbstractClientPlayer player,
+                PlayerModel<AbstractClientPlayer> parentModel,
+                PlayerSkin.Model modelType,
+                float partialTick
+        ) {
+            applyVampyresTransform(poseStack, anchor);
         }
     }
 }

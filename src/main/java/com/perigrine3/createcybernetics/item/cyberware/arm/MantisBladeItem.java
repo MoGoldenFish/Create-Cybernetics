@@ -184,6 +184,46 @@ public class MantisBladeItem extends Item implements ICyberwareItem {
     }
 
     @Override
+    public int getEnergyUsedPerTick(LivingEntity entity, ItemStack installedStack, CyberwareSlot slot) {
+        return isInstalledBladeEnabled(entity, installedStack, slot) ? 15 : 0;
+    }
+
+    private static boolean isInstalledBladeEnabled(LivingEntity entity, ItemStack installedStack, CyberwareSlot slot) {
+        if (entity == null || installedStack == null || installedStack.isEmpty() || slot == null) {
+            return false;
+        }
+
+        if (!entity.hasData(ModAttachments.CYBERWARE)) {
+            return false;
+        }
+
+        PlayerCyberwareData data = entity.getData(ModAttachments.CYBERWARE);
+        InstalledCyberware[] arr = data.getAll().get(slot);
+
+        if (arr == null) {
+            return false;
+        }
+
+        for (int i = 0; i < arr.length; i++) {
+            InstalledCyberware cyberware = arr[i];
+
+            if (cyberware == null) {
+                continue;
+            }
+
+            ItemStack stack = cyberware.getItem();
+
+            if (stack != installedStack) {
+                continue;
+            }
+
+            return data.isEnabled(slot, i);
+        }
+
+        return false;
+    }
+
+    @Override
     public boolean replacesOrgan() {
         return false;
     }

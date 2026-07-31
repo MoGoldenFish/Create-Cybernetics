@@ -15,9 +15,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class ChipwareSlotsItem extends Item implements ICyberwareItem {
@@ -33,6 +35,14 @@ public class ChipwareSlotsItem extends Item implements ICyberwareItem {
         if (Screen.hasShiftDown()) {
             tooltip.add(Component.translatable("tooltip.createcybernetics.humanity", humanityCost).withStyle(ChatFormatting.GOLD));
         }
+    }
+
+    @Override
+    public Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                ModItems.COMPONENT_SYNTHNERVES.get(), 250,
+                ModItems.COMPONENT_SSD.get(), 500
+        );
     }
 
     @Override

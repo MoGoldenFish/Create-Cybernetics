@@ -1,5 +1,7 @@
 package com.perigrine3.createcybernetics.item.organs;
 
+import com.perigrine3.createcybernetics.api.CyberwareDurabilityCategory;
+import com.perigrine3.createcybernetics.api.CyberwareRepairType;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
 import net.minecraft.util.RandomSource;
@@ -35,6 +37,16 @@ public class MuscleItem extends Item implements ICyberwareItem {
     @Override
     public Set<CyberwareSlot> getReplacedOrgans() {
         return Set.of(CyberwareSlot.MUSCLE);
+    }
+
+    @Override
+    public CyberwareRepairType getRepairType(ItemStack installedStack, CyberwareSlot slot) {
+        return CyberwareRepairType.BIOLOGICAL;
+    }
+
+    @Override
+    public CyberwareDurabilityCategory getDurabilityCategory(ItemStack installedStack, CyberwareSlot slot) {
+        return CyberwareDurabilityCategory.DEFAULT_ORGAN;
     }
 
     @Override

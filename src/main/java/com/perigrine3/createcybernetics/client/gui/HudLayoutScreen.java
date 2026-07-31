@@ -22,6 +22,8 @@ public final class HudLayoutScreen extends Screen {
     private static final int PANEL_W = BUTTON_W + PANEL_PAD * 2;
     private static final int PANEL_BG = 0xAA050505;
     private static final int PANEL_BORDER = 0xFF2A2A2A;
+    private static final int PANEL_FOOTER_H = 50;
+    private static final int PANEL_SCROLL_STEP = BUTTON_H + BUTTON_GAP;
 
     private static final int TAB_W = 14;
     private static final int TAB_H = 52;
@@ -46,6 +48,8 @@ public final class HudLayoutScreen extends Screen {
     private int dragOffsetPxY;
 
     private boolean panelOpen = true;
+    private int panelScrollOffset;
+    private int panelMaxScrollOffset;
     private boolean savedPulse;
     private int savedPulseTicks;
 
@@ -61,6 +65,7 @@ public final class HudLayoutScreen extends Screen {
     private Button btnToggleables;
     private Button btnShards;
     private Button btnTarget;
+    private Button btnMinimap;
 
     public HudLayoutScreen(Screen parent) {
         super(Component.translatable("screen.createcybernetics.hud_layout"));
@@ -79,14 +84,18 @@ public final class HudLayoutScreen extends Screen {
             this.working = HudConfigClient.defaultConfig();
         }
 
+        fitWorkingToScreen();
         clampWorkingToScreenBounds();
+        clampPanelScroll();
         rebuildWidgets();
     }
 
     @Override
     public void resize(Minecraft mc, int width, int height) {
         super.resize(mc, width, height);
+        fitWorkingToScreen();
         clampWorkingToScreenBounds();
+        clampPanelScroll();
         rebuildWidgets();
     }
 
@@ -107,8 +116,11 @@ public final class HudLayoutScreen extends Screen {
             return;
         }
 
+        panelMaxScrollOffset = Math.max(0, panelContentHeight() - panelViewportBottom());
+        panelScrollOffset = clampInt(panelScrollOffset, 0, panelMaxScrollOffset);
+
         int x = panelX + PANEL_PAD;
-        int y = PANEL_PAD;
+        int y = PANEL_PAD - panelScrollOffset;
 
         btnBack = addRenderableWidget(Button.builder(Component.translatable("gui.back"), b -> onClose())
                 .pos(x, y)
@@ -162,6 +174,14 @@ public final class HudLayoutScreen extends Screen {
                 .pos(x, y)
                 .size(BUTTON_W, BUTTON_H)
                 .build());
+        y += BUTTON_H + BUTTON_GAP;
+
+        btnMinimap = addRenderableWidget(Button.builder(minimapLabel(), b -> toggle(HudConfigClient.HudComponent.MINIMAP))
+                .pos(x, y)
+                .size(BUTTON_W, BUTTON_H)
+                .build());
+
+        updatePanelButtonVisibility();
     }
 
     private void togglePanel() {
@@ -172,6 +192,7 @@ public final class HudLayoutScreen extends Screen {
     private void save() {
         if (playerId == null) return;
 
+        fitWorkingToScreen();
         clampWorkingToScreenBounds();
         working.sanitize();
         HudConfigClient.save(playerId, working.copy());
@@ -184,12 +205,15 @@ public final class HudLayoutScreen extends Screen {
         working = HudConfigClient.defaultConfig();
         selected = null;
         dragging = null;
+        panelScrollOffset = 0;
+        fitWorkingToScreen();
         clampWorkingToScreenBounds();
         refreshButtonLabels();
     }
 
     private void toggleHudLayer() {
         working.hudLayer.enabled = !working.hudLayer.enabled;
+        fitWorkingToScreen();
         clampWorkingToScreenBounds();
         refreshButtonLabels();
     }
@@ -197,6 +221,7 @@ public final class HudLayoutScreen extends Screen {
     private void toggle(HudConfigClient.HudComponent component) {
         HudConfigClient.ComponentLayout layout = working.layout(component);
         layout.enabled = !layout.enabled;
+        fitWorkingToScreen();
         clampWorkingToScreenBounds();
         refreshButtonLabels();
     }
@@ -211,6 +236,7 @@ public final class HudLayoutScreen extends Screen {
             case ICON_PLUS_CAPACITY_PLUS_STATS -> HudConfigClient.BatteryMode.TEXT_ONLY;
         };
 
+        fitWorkingToScreen();
         clampWorkingToScreenBounds();
         refreshButtonLabels();
     }
@@ -224,6 +250,7 @@ public final class HudLayoutScreen extends Screen {
 
         working.target.enabled = working.targetMode != HudConfigClient.TargetMode.OFF;
 
+        fitWorkingToScreen();
         clampWorkingToScreenBounds();
         refreshButtonLabels();
     }
@@ -235,6 +262,7 @@ public final class HudLayoutScreen extends Screen {
         if (btnToggleables != null) btnToggleables.setMessage(toggleablesLabel());
         if (btnShards != null) btnShards.setMessage(shardsLabel());
         if (btnTarget != null) btnTarget.setMessage(targetLabel());
+        if (btnMinimap != null) btnMinimap.setMessage(minimapLabel());
     }
 
     private Component hudLayerLabel() {
@@ -270,6 +298,10 @@ public final class HudLayoutScreen extends Screen {
         });
     }
 
+    private Component minimapLabel() {
+        return Component.literal("MINIMAP: " + onOff(working.minimap.enabled));
+    }
+
     private static String onOff(boolean value) {
         return value ? "ON" : "OFF";
     }
@@ -292,6 +324,7 @@ public final class HudLayoutScreen extends Screen {
 
     @Override
     public void render(GuiGraphics gg, int mouseX, int mouseY, float partialTick) {
+        fitWorkingToScreen();
         clampWorkingToScreenBounds();
 
         CyberwareHudLayer.renderHudLayerPreview(gg, partialTick, working);
@@ -334,6 +367,62 @@ public final class HudLayoutScreen extends Screen {
 
         gg.fill(x0, 0, x1, this.height, PANEL_BG);
         gg.fill(x0, 0, x0 + 1, this.height, PANEL_BORDER);
+
+        renderPanelScrollbar(gg);
+    }
+
+    private int panelViewportBottom() {
+        return Math.max(PANEL_PAD, this.height - PANEL_FOOTER_H);
+    }
+
+    private int panelContentHeight() {
+        return PANEL_PAD + (BUTTON_H * 10) + (BUTTON_GAP * 9) + 8;
+    }
+
+    private void clampPanelScroll() {
+        panelMaxScrollOffset = Math.max(0, panelContentHeight() - panelViewportBottom());
+        panelScrollOffset = clampInt(panelScrollOffset, 0, panelMaxScrollOffset);
+    }
+
+    private void updatePanelButtonVisibility() {
+        int viewportTop = 0;
+        int viewportBottom = panelViewportBottom();
+
+        setPanelButtonVisible(btnBack, viewportTop, viewportBottom);
+        setPanelButtonVisible(btnSave, viewportTop, viewportBottom);
+        setPanelButtonVisible(btnReset, viewportTop, viewportBottom);
+        setPanelButtonVisible(btnHudLayer, viewportTop, viewportBottom);
+        setPanelButtonVisible(btnBattery, viewportTop, viewportBottom);
+        setPanelButtonVisible(btnCoords, viewportTop, viewportBottom);
+        setPanelButtonVisible(btnToggleables, viewportTop, viewportBottom);
+        setPanelButtonVisible(btnShards, viewportTop, viewportBottom);
+        setPanelButtonVisible(btnTarget, viewportTop, viewportBottom);
+        setPanelButtonVisible(btnMinimap, viewportTop, viewportBottom);
+    }
+
+    private static void setPanelButtonVisible(@Nullable Button button, int viewportTop, int viewportBottom) {
+        if (button == null) return;
+
+        button.visible = button.getY() >= viewportTop && button.getY() + button.getHeight() <= viewportBottom;
+        button.active = button.visible;
+    }
+
+    private void renderPanelScrollbar(GuiGraphics gg) {
+        if (panelMaxScrollOffset <= 0) return;
+
+        int trackX = this.width - 3;
+        int trackTop = PANEL_PAD;
+        int trackBottom = panelViewportBottom() - PANEL_PAD;
+        int trackHeight = Math.max(1, trackBottom - trackTop);
+
+        gg.fill(trackX, trackTop, trackX + 1, trackBottom, 0x66555555);
+
+        int viewportHeight = Math.max(1, panelViewportBottom());
+        int thumbHeight = Math.max(8, Math.round(trackHeight * viewportHeight / (float) panelContentHeight()));
+        int availableTravel = Math.max(0, trackHeight - thumbHeight);
+        int thumbY = trackTop + Math.round(availableTravel * panelScrollOffset / (float) panelMaxScrollOffset);
+
+        gg.fill(trackX - 1, thumbY, trackX + 2, thumbY + thumbHeight, 0xFFAAAAAA);
     }
 
     private void renderComponentOutlines(GuiGraphics gg, int mouseX, int mouseY) {
@@ -477,15 +566,28 @@ public final class HudLayoutScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (mouseIsOverSlidePanelArea(mouseX, mouseY)) {
-            if (super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) {
-                return true;
+        if (panelOpen && mouseIsOverSlidePanelArea(mouseX, mouseY)) {
+            if (scrollY != 0.0D && panelMaxScrollOffset > 0) {
+                panelScrollOffset = clampInt(panelScrollOffset - (int) Math.signum(scrollY) * PANEL_SCROLL_STEP, 0, panelMaxScrollOffset);
+                rebuildWidgets();
             }
 
-            return panelOpen;
+            return true;
         }
 
-        HudConfigClient.HudComponent target = selected != null ? selected : findHitComponent(mouseX, mouseY);
+        if (mouseIsOverSlidePanelArea(mouseX, mouseY)) {
+            return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        }
+
+        HudConfigClient.HudComponent hovered = findHitComponent(mouseX, mouseY);
+
+        if (hovered == HudConfigClient.HudComponent.TOGGLE_LIST && scrollY != 0.0D) {
+            CyberwareHudLayer.scrollToggleSidebar(scrollY);
+            selected = hovered;
+            return true;
+        }
+
+        HudConfigClient.HudComponent target = selected != null ? selected : hovered;
 
         if (target != null) {
             if (target == HudConfigClient.HudComponent.HUD_LEFT || target == HudConfigClient.HudComponent.HUD_RIGHT) {
@@ -495,6 +597,7 @@ public final class HudLayoutScreen extends Screen {
                 layout.adjustScale((float) scrollY * SCALE_SCROLL_STEP);
             }
 
+            fitWorkingToScreen();
             clampWorkingToScreenBounds();
             selected = target;
             return true;
@@ -507,6 +610,7 @@ public final class HudLayoutScreen extends Screen {
         CyberwareHudLayer.HudWidgetRects rects = CyberwareHudLayer.computeRectsForConfig(Minecraft.getInstance(), working);
 
         HudConfigClient.HudComponent[] order = {
+                HudConfigClient.HudComponent.MINIMAP,
                 HudConfigClient.HudComponent.TARGET,
                 HudConfigClient.HudComponent.SHARDS,
                 HudConfigClient.HudComponent.TOGGLE_LIST,
@@ -528,6 +632,58 @@ public final class HudLayoutScreen extends Screen {
         return null;
     }
 
+    private void fitWorkingToScreen() {
+        Minecraft mc = Minecraft.getInstance();
+        int screenPxW = mc.getWindow().getScreenWidth();
+        int screenPxH = mc.getWindow().getScreenHeight();
+
+        fitHudLayerToScreen(screenPxW, screenPxH);
+        fitComponentToScreen(HudConfigClient.HudComponent.BATTERY, screenPxW, screenPxH);
+        fitComponentToScreen(HudConfigClient.HudComponent.COORDS, screenPxW, screenPxH);
+        fitComponentToScreen(HudConfigClient.HudComponent.TOGGLE_LIST, screenPxW, screenPxH);
+        fitComponentToScreen(HudConfigClient.HudComponent.SHARDS, screenPxW, screenPxH);
+        fitComponentToScreen(HudConfigClient.HudComponent.TARGET, screenPxW, screenPxH);
+        fitComponentToScreen(HudConfigClient.HudComponent.MINIMAP, screenPxW, screenPxH);
+    }
+
+    private void fitComponentToScreen(HudConfigClient.HudComponent component, int screenPxW, int screenPxH) {
+        if (!working.enabled(component)) return;
+        if (component == HudConfigClient.HudComponent.HUD_LEFT || component == HudConfigClient.HudComponent.HUD_RIGHT) return;
+
+        HudConfigClient.ComponentLayout layout = working.layout(component);
+
+        for (int attempts = 0; attempts < 256; attempts++) {
+            CyberwareHudLayer.HudRect rect = CyberwareHudLayer.computeRectsForConfig(Minecraft.getInstance(), working).rect(component);
+            if (rect == null) return;
+            if (rect.w() <= screenPxW && rect.h() <= screenPxH) return;
+
+            float previousScale = layout.scale;
+            layout.adjustScale(-SCALE_SCROLL_STEP);
+
+            if (layout.scale == previousScale) return;
+        }
+    }
+
+    private void fitHudLayerToScreen(int screenPxW, int screenPxH) {
+        if (!working.hudLayer.enabled) return;
+
+        for (int attempts = 0; attempts < 256; attempts++) {
+            CyberwareHudLayer.HudWidgetRects rects = CyberwareHudLayer.computeRectsForConfig(Minecraft.getInstance(), working);
+            CyberwareHudLayer.HudRect left = rects.rect(HudConfigClient.HudComponent.HUD_LEFT);
+            CyberwareHudLayer.HudRect right = rects.rect(HudConfigClient.HudComponent.HUD_RIGHT);
+
+            boolean leftFits = left == null || left.w() <= screenPxW && left.h() <= screenPxH;
+            boolean rightFits = right == null || right.w() <= screenPxW && right.h() <= screenPxH;
+
+            if (leftFits && rightFits) return;
+
+            float previousScale = working.hudLayer.scale;
+            working.hudLayer.adjustScale(-SCALE_SCROLL_STEP);
+
+            if (working.hudLayer.scale == previousScale) return;
+        }
+    }
+
     private void clampWorkingToScreenBounds() {
         Minecraft mc = Minecraft.getInstance();
         int screenPxW = mc.getWindow().getScreenWidth();
@@ -539,6 +695,7 @@ public final class HudLayoutScreen extends Screen {
         clampComponentToScreen(HudConfigClient.HudComponent.TOGGLE_LIST, screenPxW, screenPxH);
         clampComponentToScreen(HudConfigClient.HudComponent.SHARDS, screenPxW, screenPxH);
         clampComponentToScreen(HudConfigClient.HudComponent.TARGET, screenPxW, screenPxH);
+        clampComponentToScreen(HudConfigClient.HudComponent.MINIMAP, screenPxW, screenPxH);
     }
 
     private void clampComponentToScreen(HudConfigClient.HudComponent component, int screenPxW, int screenPxH) {

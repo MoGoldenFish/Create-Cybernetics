@@ -311,28 +311,121 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .unlocks("has_mantis_diamond", has(ModItems.ARMUPGRADES_MANTISBLADE_DIAMOND.get()))
                 .save(recipeOutput, "createcybernetics:armupgrades_mantisblade_netherite");
 
+//MULTIOPTICS VARIANTS
+        multiopticsStonecutting(recipeOutput,
+                ModItems.EYEUPGRADES_MULTIOPTICS1.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS2.get(),
+                "multioptics2_from_multioptics1");
+        multiopticsStonecutting(recipeOutput,
+                ModItems.EYEUPGRADES_MULTIOPTICS1.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS3.get(),
+                "multioptics3_from_multioptics1");
+        multiopticsStonecutting(recipeOutput,
+                ModItems.EYEUPGRADES_MULTIOPTICS1.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS4.get(),
+                "multioptics4_from_multioptics1");
+        multiopticsStonecutting(recipeOutput,
+                ModItems.EYEUPGRADES_MULTIOPTICS2.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS1.get(),
+                "multioptics1_from_multioptics2");
+        multiopticsStonecutting(recipeOutput,
+                ModItems.EYEUPGRADES_MULTIOPTICS2.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS3.get(),
+                "multioptics3_from_multioptics2");
+        multiopticsStonecutting(recipeOutput,
+                ModItems.EYEUPGRADES_MULTIOPTICS2.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS4.get(),
+                "multioptics4_from_multioptics2");
+        multiopticsStonecutting(recipeOutput,
+                ModItems.EYEUPGRADES_MULTIOPTICS3.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS1.get(),
+                "multioptics1_from_multioptics3");
+        multiopticsStonecutting(recipeOutput,
+                ModItems.EYEUPGRADES_MULTIOPTICS3.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS2.get(),
+                "multioptics2_from_multioptics3");
+        multiopticsStonecutting(recipeOutput,
+                ModItems.EYEUPGRADES_MULTIOPTICS3.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS4.get(),
+                "multioptics4_from_multioptics3");
+        multiopticsStonecutting(recipeOutput,
+                ModItems.EYEUPGRADES_MULTIOPTICS4.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS1.get(),
+                "multioptics1_from_multioptics4");
+        multiopticsStonecutting(recipeOutput,
+                ModItems.EYEUPGRADES_MULTIOPTICS4.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS2.get(),
+                "multioptics2_from_multioptics4");
+        multiopticsStonecutting(recipeOutput,
+                ModItems.EYEUPGRADES_MULTIOPTICS4.get(),
+                ModItems.EYEUPGRADES_MULTIOPTICS3.get(),
+                "multioptics3_from_multioptics4");
 
 //FOOD COOKING
         SimpleCookingRecipeBuilder.smelting(Ingredient.of(ModItems.BODYPART_BRAIN.get()),
                         RecipeCategory.FOOD, ModItems.COOKED_BRAIN.get(), 0.35f, 200)
                 .unlockedBy("has_brain", has(ModItems.BODYPART_BRAIN.get()))
                 .save(recipeOutput, "createcybernetics:cooked_brain_from_smelting");
+        SimpleCookingRecipeBuilder.smoking(Ingredient.of(ModItems.BODYPART_BRAIN.get()),
+                        RecipeCategory.FOOD, ModItems.COOKED_BRAIN.get(), 0.35f, 100)
+                .unlockedBy("has_brain", has(ModItems.BODYPART_BRAIN.get()))
+                .save(recipeOutput, "createcybernetics:cooked_brain_from_smoking");
+        SimpleCookingRecipeBuilder.campfireCooking(Ingredient.of(ModItems.BODYPART_BRAIN.get()),
+                        RecipeCategory.FOOD, ModItems.COOKED_BRAIN.get(), 0.35f, 600)
+                .unlockedBy("has_brain", has(ModItems.BODYPART_BRAIN.get()))
+                .save(recipeOutput, "createcybernetics:cooked_brain_from_campfire_cooking");
+
         SimpleCookingRecipeBuilder.smelting(Ingredient.of(ModItems.BODYPART_LIVER.get()),
                         RecipeCategory.FOOD, ModItems.COOKED_LIVER.get(), 0.35f, 200)
                 .unlockedBy("has_liver", has(ModItems.BODYPART_LIVER.get()))
                 .save(recipeOutput, "createcybernetics:cooked_liver_from_smelting");
+        SimpleCookingRecipeBuilder.smoking(Ingredient.of(ModItems.BODYPART_LIVER.get()),
+                        RecipeCategory.FOOD, ModItems.COOKED_LIVER.get(), 0.35f, 100)
+                .unlockedBy("has_liver", has(ModItems.BODYPART_LIVER.get()))
+                .save(recipeOutput, "createcybernetics:cooked_liver_from_smoking");
+        SimpleCookingRecipeBuilder.campfireCooking(Ingredient.of(ModItems.BODYPART_LIVER.get()),
+                        RecipeCategory.FOOD, ModItems.COOKED_LIVER.get(), 0.35f, 600)
+                .unlockedBy("has_liver", has(ModItems.BODYPART_LIVER.get()))
+                .save(recipeOutput, "createcybernetics:cooked_liver_from_campfire_cooking");
+
         SimpleCookingRecipeBuilder.smelting(Ingredient.of(ModItems.BODYPART_HEART.get()),
                         RecipeCategory.FOOD, ModItems.COOKED_HEART.get(), 0.35f, 200)
                 .unlockedBy("has_heart", has(ModItems.BODYPART_HEART.get()))
                 .save(recipeOutput, "createcybernetics:cooked_heart_from_smelting");
+        SimpleCookingRecipeBuilder.smoking(Ingredient.of(ModItems.BODYPART_HEART.get()),
+                        RecipeCategory.FOOD, ModItems.COOKED_HEART.get(), 0.35f, 100)
+                .unlockedBy("has_heart", has(ModItems.BODYPART_HEART.get()))
+                .save(recipeOutput, "createcybernetics:cooked_heart_from_smoking");
+        SimpleCookingRecipeBuilder.campfireCooking(Ingredient.of(ModItems.BODYPART_HEART.get()),
+                        RecipeCategory.FOOD, ModItems.COOKED_HEART.get(), 0.35f, 600)
+                .unlockedBy("has_heart", has(ModItems.BODYPART_HEART.get()))
+                .save(recipeOutput, "createcybernetics:cooked_heart_from_campfire_cooking");
+
         SimpleCookingRecipeBuilder.smelting(Ingredient.of(Items.BONE),
                         RecipeCategory.FOOD, ModItems.BONE_MARROW.get(), 0.35f, 200)
                 .unlockedBy("has_bone", has(Items.BONE))
                 .save(recipeOutput, "createcybernetics:bone_marrow_from_smelting");
-        SimpleCookingRecipeBuilder.smelting(Ingredient.of(ModItems.ANDOUILLE_SAUSAGE),
+        SimpleCookingRecipeBuilder.smoking(Ingredient.of(Items.BONE),
+                        RecipeCategory.FOOD, ModItems.BONE_MARROW.get(), 0.35f, 100)
+                .unlockedBy("has_bone", has(Items.BONE))
+                .save(recipeOutput, "createcybernetics:bone_marrow_from_smoking");
+        SimpleCookingRecipeBuilder.campfireCooking(Ingredient.of(Items.BONE),
+                        RecipeCategory.FOOD, ModItems.BONE_MARROW.get(), 0.35f, 600)
+                .unlockedBy("has_bone", has(Items.BONE))
+                .save(recipeOutput, "createcybernetics:bone_marrow_from_campfire_cooking");
+
+        SimpleCookingRecipeBuilder.smelting(Ingredient.of(ModItems.ANDOUILLE_SAUSAGE.get()),
                         RecipeCategory.FOOD, ModItems.ROASTED_ANDOUILLE.get(), 0.35f, 200)
-                .unlockedBy("has_bone", has(ModItems.ANDOUILLE_SAUSAGE.get()))
+                .unlockedBy("has_andouille_sausage", has(ModItems.ANDOUILLE_SAUSAGE.get()))
                 .save(recipeOutput, "createcybernetics:roasted_andouille_from_smelting");
+        SimpleCookingRecipeBuilder.smoking(Ingredient.of(ModItems.ANDOUILLE_SAUSAGE.get()),
+                        RecipeCategory.FOOD, ModItems.ROASTED_ANDOUILLE.get(), 0.35f, 100)
+                .unlockedBy("has_andouille_sausage", has(ModItems.ANDOUILLE_SAUSAGE.get()))
+                .save(recipeOutput, "createcybernetics:roasted_andouille_from_smoking");
+        SimpleCookingRecipeBuilder.campfireCooking(Ingredient.of(ModItems.ANDOUILLE_SAUSAGE.get()),
+                        RecipeCategory.FOOD, ModItems.ROASTED_ANDOUILLE.get(), 0.35f, 600)
+                .unlockedBy("has_andouille_sausage", has(ModItems.ANDOUILLE_SAUSAGE.get()))
+                .save(recipeOutput, "createcybernetics:roasted_andouille_from_campfire_cooking");
 
 
 
@@ -349,5 +442,10 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .unlockedBy("has_titaniumingot", has(ModBlocks.ETCHED_TITANIUM_COPPER)).save(recipeOutput);
         slab(recipeOutput, RecipeCategory.BUILDING_BLOCKS, ModBlocks.ETCHED_TITANIUM_COPPER_SLAB.get(), ModBlocks.ETCHED_TITANIUM_COPPER.get());
 
+    }
+
+    private static void multiopticsStonecutting(RecipeOutput recipeOutput, ItemLike input, ItemLike result, String recipeName) {
+        SingleItemRecipeBuilder.stonecutting(Ingredient.of(input), RecipeCategory.MISC, result)
+                .unlockedBy("has_multioptics", has(input)).save(recipeOutput, "createcybernetics:" + recipeName);
     }
 }

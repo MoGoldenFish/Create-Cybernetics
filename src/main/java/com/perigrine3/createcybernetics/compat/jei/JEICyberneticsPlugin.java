@@ -1,7 +1,10 @@
 package com.perigrine3.createcybernetics.compat.jei;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
+import com.perigrine3.createcybernetics.api.CyberwareSlot;
+import com.perigrine3.createcybernetics.api.ICyberwareItem;
 import com.perigrine3.createcybernetics.block.ModBlocks;
+import com.perigrine3.createcybernetics.common.durability.CyberwareDurabilityData;
 import com.perigrine3.createcybernetics.item.ModItems;
 import com.perigrine3.createcybernetics.recipe.EngineeringTableRecipe;
 import com.perigrine3.createcybernetics.recipe.GraftingTableRecipe;
@@ -11,6 +14,7 @@ import com.perigrine3.createcybernetics.screen.custom.crafting.EngineeringTableM
 import com.perigrine3.createcybernetics.screen.custom.crafting.EngineeringTableScreen;
 import com.perigrine3.createcybernetics.screen.custom.crafting.GraftingTableMenu;
 import com.perigrine3.createcybernetics.screen.custom.crafting.GraftingTableScreen;
+import com.perigrine3.createcybernetics.util.ModTags;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
@@ -19,12 +23,17 @@ import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.neoforged.fml.ModList;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @JeiPlugin
@@ -42,7 +51,9 @@ public class JEICyberneticsPlugin implements IModPlugin {
         registration.addRecipeCategories(
                 new EngineeringTableRecipeCategory(registration.getJeiHelpers().getGuiHelper()),
                 new GraftingTableRecipeCategory(registration.getJeiHelpers().getGuiHelper()),
-                new DynamicPotionAutoinjectorCraftingCategory(registration.getJeiHelpers().getGuiHelper())
+                new GraftingTableRepairRecipeCategory(registration.getJeiHelpers().getGuiHelper()),
+                new DynamicPotionAutoinjectorCraftingCategory(registration.getJeiHelpers().getGuiHelper()),
+                new CyberwareAnvilRepairJeiCategory(registration.getJeiHelpers().getGuiHelper())
         );
 
         if (isCreateLoaded()) {
@@ -56,13 +67,9 @@ public class JEICyberneticsPlugin implements IModPlugin {
     public void registerRecipes(IRecipeRegistration registration) {
         CreateCybernetics.LOGGER.info("[Create Cybernetics JEI] Registering recipes.");
 
-        List<DynamicPotionAutoinjectorJeiRecipe> craftingRecipes =
-                DynamicPotionAutoinjectorJeiRecipeFactory.createCraftingRecipes();
+        List<DynamicPotionAutoinjectorJeiRecipe> craftingRecipes = DynamicPotionAutoinjectorJeiRecipeFactory.createCraftingRecipes();
 
-        CreateCybernetics.LOGGER.info(
-                "[Create Cybernetics JEI] Dynamic potion autoinjector crafting recipes: {}",
-                craftingRecipes.size()
-        );
+        CreateCybernetics.LOGGER.info("[Create Cybernetics JEI] Dynamic potion autoinjector crafting recipes: {}", craftingRecipes.size());
 
         registration.addRecipes(
                 DynamicPotionAutoinjectorCraftingCategory.RECIPE_TYPE,
@@ -70,19 +77,33 @@ public class JEICyberneticsPlugin implements IModPlugin {
         );
 
         if (isCreateLoaded()) {
-            List<DynamicPotionAutoinjectorFillingJeiRecipe> fillingRecipes =
-                    DynamicPotionAutoinjectorJeiRecipeFactory.createFillingRecipes();
+            List<DynamicPotionAutoinjectorFillingJeiRecipe> fillingRecipes = DynamicPotionAutoinjectorJeiRecipeFactory.createFillingRecipes();
 
-            CreateCybernetics.LOGGER.info(
-                    "[Create Cybernetics JEI] Dynamic potion autoinjector filling recipes: {}",
-                    fillingRecipes.size()
-            );
+            CreateCybernetics.LOGGER.info("[Create Cybernetics JEI] Dynamic potion autoinjector filling recipes: {}", fillingRecipes.size());
 
             registration.addRecipes(
                     DynamicPotionAutoinjectorFillingCategory.RECIPE_TYPE,
                     fillingRecipes
             );
         }
+
+        List<GraftingTableRepairJeiRecipe> graftingTableRepairRecipes = createGraftingTableRepairRecipes();
+
+        CreateCybernetics.LOGGER.info("[Create Cybernetics JEI] Grafting table repair recipes: {}", graftingTableRepairRecipes.size());
+
+        registration.addRecipes(
+                GraftingTableRepairRecipeCategory.GRAFTING_TABLE_REPAIR_RECIPE_TYPE,
+                graftingTableRepairRecipes
+        );
+
+        List<CyberwareAnvilRepairJeiRecipe> anvilRepairRecipes = CyberwareAnvilRepairJeiRecipes.createRecipes();
+
+        CreateCybernetics.LOGGER.info("[Create Cybernetics JEI] Cyberware anvil repair recipes: {}", anvilRepairRecipes.size());
+
+        registration.addRecipes(
+                CyberwareAnvilRepairJeiCategory.RECIPE_TYPE,
+                anvilRepairRecipes
+        );
 
         if (Minecraft.getInstance().level == null) {
             CreateCybernetics.LOGGER.warn("[Create Cybernetics JEI] Client level is null; skipping table recipe-manager based recipes.");
@@ -91,26 +112,18 @@ public class JEICyberneticsPlugin implements IModPlugin {
 
         RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
 
-        List<RecipeHolder<EngineeringTableRecipe>> engineeringTableRecipes =
-                recipeManager.getAllRecipesFor(ModRecipes.ENGINEERING_TABLE_TYPE.get());
+        List<RecipeHolder<EngineeringTableRecipe>> engineeringTableRecipes = recipeManager.getAllRecipesFor(ModRecipes.ENGINEERING_TABLE_TYPE.get());
 
-        CreateCybernetics.LOGGER.info(
-                "[Create Cybernetics JEI] Engineering table recipes: {}",
-                engineeringTableRecipes.size()
-        );
+        CreateCybernetics.LOGGER.info("[Create Cybernetics JEI] Engineering table recipes: {}", engineeringTableRecipes.size());
 
         registration.addRecipes(
                 EngineeringTableRecipeCategory.ENGINEERING_TABLE_RECIPE_TYPE,
                 engineeringTableRecipes
         );
 
-        List<RecipeHolder<GraftingTableRecipe>> graftingTableRecipes =
-                recipeManager.getAllRecipesFor(ModRecipes.GRAFTING_TABLE_TYPE.get());
+        List<RecipeHolder<GraftingTableRecipe>> graftingTableRecipes = recipeManager.getAllRecipesFor(ModRecipes.GRAFTING_TABLE_TYPE.get());
 
-        CreateCybernetics.LOGGER.info(
-                "[Create Cybernetics JEI] Grafting table recipes: {}",
-                graftingTableRecipes.size()
-        );
+        CreateCybernetics.LOGGER.info("[Create Cybernetics JEI] Grafting table recipes: {}", graftingTableRecipes.size());
 
         registration.addRecipes(
                 GraftingTableRecipeCategory.GRAFTING_TABLE_RECIPE_TYPE,
@@ -133,6 +146,11 @@ public class JEICyberneticsPlugin implements IModPlugin {
         );
 
         registration.addRecipeCatalyst(
+                new ItemStack(ModBlocks.GRAFTING_TABLE.get()),
+                GraftingTableRepairRecipeCategory.GRAFTING_TABLE_REPAIR_RECIPE_TYPE
+        );
+
+        registration.addRecipeCatalyst(
                 new ItemStack(ModItems.EMPTY_AUTOINJECTOR.get()),
                 DynamicPotionAutoinjectorCraftingCategory.RECIPE_TYPE
         );
@@ -140,6 +158,21 @@ public class JEICyberneticsPlugin implements IModPlugin {
         registration.addRecipeCatalyst(
                 new ItemStack(ModItems.DYNAMIC_POTION_AUTOINJECTOR.get()),
                 DynamicPotionAutoinjectorCraftingCategory.RECIPE_TYPE
+        );
+
+        registration.addRecipeCatalyst(
+                new ItemStack(Items.ANVIL),
+                CyberwareAnvilRepairJeiCategory.RECIPE_TYPE
+        );
+
+        registration.addRecipeCatalyst(
+                new ItemStack(Items.CHIPPED_ANVIL),
+                CyberwareAnvilRepairJeiCategory.RECIPE_TYPE
+        );
+
+        registration.addRecipeCatalyst(
+                new ItemStack(Items.DAMAGED_ANVIL),
+                CyberwareAnvilRepairJeiCategory.RECIPE_TYPE
         );
 
         if (isCreateLoaded()) {
@@ -168,7 +201,8 @@ public class JEICyberneticsPlugin implements IModPlugin {
                 GraftingTableScreen.class,
                 109, 38,
                 14, 9,
-                GraftingTableRecipeCategory.GRAFTING_TABLE_RECIPE_TYPE
+                GraftingTableRecipeCategory.GRAFTING_TABLE_RECIPE_TYPE,
+                GraftingTableRepairRecipeCategory.GRAFTING_TABLE_REPAIR_RECIPE_TYPE
         );
     }
 
@@ -189,6 +223,53 @@ public class JEICyberneticsPlugin implements IModPlugin {
                 0, 7,
                 8, 36
         );
+
+        registration.addRecipeTransferHandler(
+                GraftingTableMenu.class,
+                ModMenuTypes.GRAFTING_TABLE_MENU.get(),
+                GraftingTableRepairRecipeCategory.GRAFTING_TABLE_REPAIR_RECIPE_TYPE,
+                0, 7,
+                8, 36
+        );
+    }
+
+    private static List<GraftingTableRepairJeiRecipe> createGraftingTableRepairRecipes() {
+        List<GraftingTableRepairJeiRecipe> recipes = new ArrayList<>();
+
+        BuiltInRegistries.ITEM.getTag(ModTags.Items.WETWARE_ITEM).ifPresent(tag -> {
+            for (Holder<Item> holder : tag) {
+                ItemStack damaged = new ItemStack(holder.value());
+                CyberwareSlot slot = findDurabilitySlot(damaged);
+
+                if (slot == null) continue;
+
+                int maxDurability = CyberwareDurabilityData.getMaxDurability(damaged, slot);
+                if (maxDurability <= 0) continue;
+
+                CyberwareDurabilityData.setDurability(damaged, slot, Math.max(1, maxDurability / 2));
+
+                ItemStack repaired = damaged.copy();
+                CyberwareDurabilityData.fullyRepair(repaired, slot);
+
+                recipes.add(new GraftingTableRepairJeiRecipe(damaged, repaired));
+            }
+        });
+
+        return recipes;
+    }
+
+    private static CyberwareSlot findDurabilitySlot(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return null;
+        if (!(stack.getItem() instanceof ICyberwareItem cyberwareItem)) return null;
+
+        for (CyberwareSlot slot : CyberwareSlot.values()) {
+            if (!cyberwareItem.supportsSlot(slot)) continue;
+            if (!CyberwareDurabilityData.supportsDurability(stack, slot)) continue;
+
+            return slot;
+        }
+
+        return null;
     }
 
     private static boolean isCreateLoaded() {

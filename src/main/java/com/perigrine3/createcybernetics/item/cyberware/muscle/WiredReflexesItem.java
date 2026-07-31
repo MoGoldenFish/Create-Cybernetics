@@ -3,6 +3,7 @@ package com.perigrine3.createcybernetics.item.cyberware.muscle;
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
+import com.perigrine3.createcybernetics.item.ModItems;
 import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -18,12 +19,14 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @EventBusSubscriber(modid = CreateCybernetics.MODID, bus = EventBusSubscriber.Bus.GAME)
@@ -45,6 +48,15 @@ public class WiredReflexesItem extends Item implements ICyberwareItem {
 
             tooltip.add(Component.translatable("tooltip.createcybernetics.muscleupgrades_wiredreflexes.energy").withStyle(ChatFormatting.RED));
         }
+    }
+
+    @Override
+    public Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                ModItems.COMPONENT_SSD.get(), 250,
+                ModItems.COMPONENT_SYNTHNERVES.get(), 350,
+                ModItems.TITANIUMNUGGET.get(), 100
+        );
     }
 
     @Override

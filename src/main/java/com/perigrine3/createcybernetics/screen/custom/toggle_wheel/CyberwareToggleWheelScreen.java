@@ -14,7 +14,6 @@ import com.perigrine3.createcybernetics.item.cyberware.leg.PneumaticCalvesItem;
 import com.perigrine3.createcybernetics.network.payload.CyberwareTogglePayloads;
 import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -22,18 +21,13 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.joml.Matrix4f;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,26 +39,12 @@ public class CyberwareToggleWheelScreen extends Screen {
 
     private static boolean OPEN = false;
     private static int SELECTED_INDEX = 0;
-    private static int STICKY_INDEX = 0;
+
     private record SlotIndex(CyberwareSlot slot, int index) {}
     private record Entry(ItemStack icon, List<SlotIndex> targets) {}
+
     private static final List<Entry> ENTRIES = new ArrayList<>();
     private static PlayerCyberwareData LAST_DATA = null;
-
-    private static double CURSOR_X = 0.0;
-    private static double CURSOR_Y = 0.0;
-
-    private static boolean HAS_LAST_ROT = false;
-    private static float LAST_YAW = 0.0f;
-    private static float LAST_PITCH = 0.0f;
-
-    private static final double YAW_TO_CURSOR = 0.010;
-    private static final double PITCH_TO_CURSOR = 0.010;
-
-    private static final double DAMPING = 0.85;
-    private static final double CURSOR_MAX = 1.25;
-
-    private static final double SELECT_DEADZONE = 0.08;
 
     public CyberwareToggleWheelScreen() {
         super(Component.empty());
@@ -73,23 +53,11 @@ public class CyberwareToggleWheelScreen extends Screen {
     @Override
     protected void init() {
         OPEN = true;
-
-        STICKY_INDEX = 0;
         SELECTED_INDEX = 0;
-        CURSOR_X = 0.0;
-        CURSOR_Y = 0.0;
 
         PacketDistributor.sendToServer(new CyberwareTogglePayloads.RequestToggleStatesPayload());
 
-        Minecraft mc = Minecraft.getInstance();
-        Player p = mc.player;
-        if (p != null) {
-            LAST_YAW = p.getYRot();
-            LAST_PITCH = p.getXRot();
-            HAS_LAST_ROT = true;
-        } else {
-            HAS_LAST_ROT = false;
-        }
+        LAST_DATA = rebuildEntries(Minecraft.getInstance());
 
         if (this.minecraft != null && this.minecraft.screen == this) {
             this.minecraft.setScreen(null);
@@ -107,38 +75,59 @@ public class CyberwareToggleWheelScreen extends Screen {
 
     public static void closeWheel() {
         OPEN = false;
-        HAS_LAST_ROT = false;
+        LAST_DATA = null;
+        ENTRIES.clear();
+    }
+
+    public static void scrollSelection(double scrollDelta) {
+        if (!OPEN) return;
+        if (scrollDelta == 0.0D) return;
+
+        LAST_DATA = rebuildEntries(Minecraft.getInstance());
+
+        if (ENTRIES.isEmpty()) {
+            SELECTED_INDEX = 0;
+            return;
+        }
+
+        int direction = scrollDelta > 0.0D ? -1 : 1;
+        SELECTED_INDEX = Math.floorMod(SELECTED_INDEX + direction, ENTRIES.size());
     }
 
     public static void toggleSelected() {
         if (!OPEN) return;
+
+        LAST_DATA = rebuildEntries(Minecraft.getInstance());
+
         if (ENTRIES.isEmpty()) return;
 
-        int idx = Mth.clamp(SELECTED_INDEX, 0, ENTRIES.size() - 1);
-        Entry e = ENTRIES.get(idx);
-        if (e.targets().isEmpty()) return;
+        SELECTED_INDEX = Mth.clamp(SELECTED_INDEX, 0, ENTRIES.size() - 1);
+
+        Entry entry = ENTRIES.get(SELECTED_INDEX);
+        if (entry.targets().isEmpty()) return;
 
         PlayerCyberwareData data = LAST_DATA;
+
         if (data == null) {
-            SlotIndex t = e.targets().get(0);
-            PacketDistributor.sendToServer(new CyberwareTogglePayloads.ToggleCyberwarePayload(t.slot().name(), t.index()));
+            SlotIndex target = entry.targets().get(0);
+            PacketDistributor.sendToServer(new CyberwareTogglePayloads.ToggleCyberwarePayload(target.slot().name(), target.index()));
             return;
         }
 
-        boolean currentlyEnabled = isEntryEnabled(data, e);
+        boolean currentlyEnabled = isEntryEnabled(data, entry);
         boolean desiredEnabled = !currentlyEnabled;
 
-        for (SlotIndex t : e.targets()) {
-            boolean nowEnabled = data.isEnabled(t.slot(), t.index());
+        for (SlotIndex target : entry.targets()) {
+            boolean nowEnabled = data.isEnabled(target.slot(), target.index());
+
             if (nowEnabled != desiredEnabled) {
-                PacketDistributor.sendToServer(new CyberwareTogglePayloads.ToggleCyberwarePayload(t.slot().name(), t.index()));
+                PacketDistributor.sendToServer(new CyberwareTogglePayloads.ToggleCyberwarePayload(target.slot().name(), target.index()));
             }
         }
     }
 
     @Override
-    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
     }
 
     public boolean shouldBlurBackground() {
@@ -147,90 +136,16 @@ public class CyberwareToggleWheelScreen extends Screen {
 
     @Override
     public void onClose() {
-        OPEN = false;
-        HAS_LAST_ROT = false;
+        closeWheel();
         super.onClose();
     }
 
     @EventBusSubscriber(modid = CreateCybernetics.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
     public static final class ClientModBus {
+
         @SubscribeEvent
         public static void registerGuiLayers(RegisterGuiLayersEvent event) {
             event.registerAboveAll(LAYER_ID, CyberwareToggleWheelScreen::renderHudLayer);
-        }
-    }
-
-    @EventBusSubscriber(modid = CreateCybernetics.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
-    public static final class ClientGameBus {
-
-        @SubscribeEvent
-        public static void onClientTick(ClientTickEvent.Post event) {
-            if (!OPEN) return;
-
-            Minecraft mc = Minecraft.getInstance();
-
-            if (mc.screen != null) {
-                closeWheel();
-                return;
-            }
-
-            KeyMapping attack = mc.options.keyAttack;
-            if (attack != null && attack.isDown()) {
-                attack.setDown(false);
-            }
-
-            Player p = mc.player;
-            if (p == null) return;
-
-            float yaw = p.getYRot();
-            float pitch = p.getXRot();
-
-            if (!HAS_LAST_ROT) {
-                LAST_YAW = yaw;
-                LAST_PITCH = pitch;
-                HAS_LAST_ROT = true;
-                return;
-            }
-
-            float dyaw = Mth.wrapDegrees(yaw - LAST_YAW);
-            float dpitch = pitch - LAST_PITCH;
-
-            LAST_YAW = yaw;
-            LAST_PITCH = pitch;
-
-            CURSOR_X += dyaw * YAW_TO_CURSOR;
-            CURSOR_Y += dpitch * PITCH_TO_CURSOR;
-
-            CURSOR_X = Mth.clamp(CURSOR_X, -CURSOR_MAX, CURSOR_MAX);
-            CURSOR_Y = Mth.clamp(CURSOR_Y, -CURSOR_MAX, CURSOR_MAX);
-
-            CURSOR_X *= DAMPING;
-            CURSOR_Y *= DAMPING;
-        }
-
-        @SubscribeEvent(priority = EventPriority.HIGHEST)
-        public static void onMouseButton(InputEvent.MouseButton.Pre event) {
-            if (!OPEN) return;
-            if (event.getAction() != GLFW.GLFW_PRESS) return;
-
-            Minecraft mc = Minecraft.getInstance();
-
-            // LMB: TOGGLE selected (and cancel so it does not break blocks)
-            if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-                event.setCanceled(true);
-
-                KeyMapping attack = mc.options.keyAttack;
-                if (attack != null) attack.setDown(false);
-
-                toggleSelected();
-                return;
-            }
-
-            // RMB: CLOSE (and cancel so it does not place/use items)
-            if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-                event.setCanceled(true);
-                closeWheel();
-            }
         }
     }
 
@@ -254,52 +169,36 @@ public class CyberwareToggleWheelScreen extends Screen {
         int cx = w / 2;
         int cy = h / 2;
 
-        int sw = window.getScreenWidth();
-        int sh = window.getScreenHeight();
+        int screenWidth = window.getScreenWidth();
+        int screenHeight = window.getScreenHeight();
         double guiScale = window.getGuiScale();
 
-        float outerR_px = Math.min(sw, sh) * 0.37f;
-        float outerR = (float) (outerR_px / guiScale);
+        float outerRadiusPixels = Math.min(screenWidth, screenHeight) * 0.37f;
+        float outerRadius = (float) (outerRadiusPixels / guiScale);
 
-        float innerR = outerR * 0.40f;
-        float midR = (innerR + outerR) * 0.5f;
+        float innerRadius = outerRadius * 0.40f;
+        float middleRadius = (innerRadius + outerRadius) * 0.5f;
 
-        int n = Math.max(1, ENTRIES.size());
+        int entryCount = ENTRIES.size();
 
-        int selected = selectedIndexFromCursor(n);
-        SELECTED_INDEX = selected;
+        if (entryCount <= 0) {
+            SELECTED_INDEX = 0;
+            renderEmptyWheel(graphics, mc, cx, cy, innerRadius, outerRadius);
+            return;
+        }
+
+        SELECTED_INDEX = Mth.clamp(SELECTED_INDEX, 0, entryCount - 1);
+        int selected = SELECTED_INDEX;
 
         final int baseArgb = 0x88000000;
-        final int hoverArgb = 0xAA2E7BFF;
+        final int selectedArgb = 0xAA2E7BFF;
 
-        for (int i = 0; i < n; i++) {
-            int argb = (i == selected) ? hoverArgb : baseArgb;
-            drawDonutSegment(graphics, cx, cy, innerR, outerR, n, i, 24, argb);
+        for (int i = 0; i < entryCount; i++) {
+            int argb = i == selected ? selectedArgb : baseArgb;
+            drawDonutSegment(graphics, cx, cy, innerRadius, outerRadius, entryCount, i, 24, argb);
         }
 
-        final String line1 = "LMB = Select";
-        final String line2 = "RMB = Close";
-
-        int textX = (int) (cx + outerR + 12);
-        int textY = cy - mc.font.lineHeight;
-
-        int maxX = w - 4;
-        int maxY = h - 4;
-
-        int w1 = mc.font.width(line1);
-        int w2 = mc.font.width(line2);
-        int maxLineW = Math.max(w1, w2);
-
-        if (textX + maxLineW > maxX) {
-            textX = maxX - maxLineW;
-        }
-        if (textY < 4) textY = 4;
-        if (textY + (mc.font.lineHeight * 2) + 2 > maxY) {
-            textY = maxY - (mc.font.lineHeight * 2) - 2;
-        }
-
-        graphics.drawString(mc.font, line1, textX, textY, 0xFFFFFFFF, true);
-        graphics.drawString(mc.font, line2, textX, textY + mc.font.lineHeight + 2, 0xFFFFFFFF, true);
+        renderInstructions(graphics, mc, w, h, cx, cy, outerRadius);
 
         final int nameColor = 0xFFFFFFFF;
         final int enabledColor = 0xFF55FF55;
@@ -308,102 +207,166 @@ public class CyberwareToggleWheelScreen extends Screen {
         RenderSystem.enableDepthTest();
 
         for (int i = 0; i < ENTRIES.size(); i++) {
-            Entry e = ENTRIES.get(i);
+            Entry entry = ENTRIES.get(i);
 
-            double ang = angleForIndex(n, i) + ((Math.PI * 2.0) / n) * 0.5;
+            double angle = angleForIndex(entryCount, i) + ((Math.PI * 2.0) / entryCount) * 0.5;
 
-            int centerX = (int) Math.round(cx + Math.cos(ang) * midR);
-            int centerY = (int) Math.round(cy + Math.sin(ang) * midR);
+            int centerX = (int) Math.round(cx + Math.cos(angle) * middleRadius);
+            int centerY = (int) Math.round(cy + Math.sin(angle) * middleRadius);
 
-            int ix = centerX - 8;
-            int iy = centerY - 8;
-            graphics.renderItem(e.icon(), ix, iy);
+            int iconX = centerX - 8;
+            int iconY = centerY - 8;
 
-            String rawName = e.icon().getHoverName().getString();
-            String name = (rawName.length() > 22) ? (rawName.substring(0, 21) + "…") : rawName;
+            graphics.renderItem(entry.icon(), iconX, iconY);
+
+            String rawName = entry.icon().getHoverName().getString();
+            String name = rawName.length() > 22 ? rawName.substring(0, 21) + "…" : rawName;
 
             var poseStack = graphics.pose();
             poseStack.pushPose();
 
             final float nameScale = 0.55f;
+
             poseStack.scale(nameScale, nameScale, 1.0f);
 
-            int nameW = mc.font.width(name);
+            int nameWidth = mc.font.width(name);
             int scaledCenterX = (int) (centerX / nameScale);
-            int scaledNameX = scaledCenterX - (nameW / 2);
-            int scaledNameY = (int) ((iy - (mc.font.lineHeight + 2)) / nameScale);
+            int scaledNameX = scaledCenterX - nameWidth / 2;
+            int scaledNameY = (int) ((iconY - mc.font.lineHeight - 2) / nameScale);
 
             graphics.drawString(mc.font, name, scaledNameX, scaledNameY, nameColor, true);
 
             poseStack.popPose();
 
-            boolean enabled = data != null && isEntryEnabled(data, e);
+            boolean enabled = data != null && isEntryEnabled(data, entry);
             String stateText = enabled ? "ENABLED" : "DISABLED";
 
-            int stateW = mc.font.width(stateText);
-            int stateX = centerX - (stateW / 2);
-            int stateY = iy + 16 + 2;
+            int stateWidth = mc.font.width(stateText);
+            int stateX = centerX - stateWidth / 2;
+            int stateY = iconY + 18;
 
             graphics.drawString(mc.font, stateText, stateX, stateY, enabled ? enabledColor : disabledColor, true);
         }
+
+        renderSelectedEntry(graphics, mc, data, ENTRIES.get(selected), cx, cy);
     }
 
-    private static boolean isEntryEnabled(PlayerCyberwareData data, Entry e) {
+    private static void renderInstructions(GuiGraphics graphics, Minecraft mc, int screenWidth, int screenHeight, int centerX, int centerY, float outerRadius) {
+        final String line1 = "SCROLL = Select";
+        final String line2 = "L-MB = Toggle";
+        final String line3 = "R-MB = Close";
+
+        int textX = (int) (centerX + outerRadius + 12);
+        int textY = centerY - mc.font.lineHeight;
+
+        int maxX = screenWidth - 4;
+        int maxY = screenHeight - 4;
+
+        int line1Width = mc.font.width(line1);
+        int line2Width = mc.font.width(line2);
+        int line3Width = mc.font.width(line3);
+        int maxLineWidth = Math.max(line1Width, Math.max(line2Width, line3Width));
+
+        if (textX + maxLineWidth > maxX) {
+            textX = maxX - maxLineWidth;
+        }
+
+        if (textX < 4) {
+            textX = 4;
+        }
+
+        if (textY < 4) {
+            textY = 4;
+        }
+
+        if (textY + mc.font.lineHeight * 3 + 4 > maxY) {
+            textY = maxY - mc.font.lineHeight * 3 - 4;
+        }
+
+        graphics.drawString(mc.font, line1, textX, textY, 0xFFFFFFFF, true);
+        graphics.drawString(mc.font, line2, textX, textY + mc.font.lineHeight + 2, 0xFFFFFFFF, true);
+        graphics.drawString(mc.font, line3, textX, textY + (mc.font.lineHeight + 2) * 2, 0xFFFFFFFF, true);
+    }
+
+    private static void renderSelectedEntry(GuiGraphics graphics, Minecraft mc, PlayerCyberwareData data, Entry entry, int centerX, int centerY) {
+        String name = entry.icon().getHoverName().getString();
+        boolean enabled = data != null && isEntryEnabled(data, entry);
+        String state = enabled ? "ENABLED" : "DISABLED";
+
+        int nameWidth = mc.font.width(name);
+        int stateWidth = mc.font.width(state);
+
+        graphics.drawString(mc.font, name, centerX - nameWidth / 2, centerY - mc.font.lineHeight - 2, 0xFFFFFFFF, true);
+        graphics.drawString(mc.font, state, centerX - stateWidth / 2, centerY + 2, enabled ? 0xFF55FF55 : 0xFFFF5555, true);
+    }
+
+    private static void renderEmptyWheel(GuiGraphics graphics, Minecraft mc, int centerX, int centerY, float innerRadius, float outerRadius) {
+        drawDonutSegment(graphics, centerX, centerY, innerRadius, outerRadius, 1, 0, 48, 0x88000000);
+
+        String text = "NO TOGGLEABLE CYBERWARE";
+        int textWidth = mc.font.width(text);
+
+        graphics.drawString(mc.font, text, centerX - textWidth / 2, centerY - mc.font.lineHeight / 2, 0xFFFF5555, true);
+    }
+
+    private static boolean isEntryEnabled(PlayerCyberwareData data, Entry entry) {
         if (data == null) return false;
-        for (SlotIndex t : e.targets()) {
-            if (data.isEnabled(t.slot(), t.index())) return true;
+
+        for (SlotIndex target : entry.targets()) {
+            if (data.isEnabled(target.slot(), target.index())) {
+                return true;
+            }
         }
+
         return false;
-    }
-
-    private static int selectedIndexFromCursor(int n) {
-        if (n <= 0) return 0;
-
-        double mag = Math.sqrt(CURSOR_X * CURSOR_X + CURSOR_Y * CURSOR_Y);
-
-        if (mag < SELECT_DEADZONE) {
-            return Mth.clamp(STICKY_INDEX, 0, n - 1);
-        }
-
-        double ang = Math.atan2(CURSOR_Y, CURSOR_X);
-        ang = (ang + Math.PI / 2.0 + (Math.PI * 2.0)) % (Math.PI * 2.0);
-
-        int idx = (int) Math.floor((ang / (Math.PI * 2.0)) * n);
-        if (idx < 0) idx += n;
-        if (idx >= n) idx -= n;
-
-        STICKY_INDEX = idx;
-        return idx;
     }
 
     private static PlayerCyberwareData rebuildEntries(Minecraft mc) {
         ENTRIES.clear();
 
-        if (mc.player == null) return null;
-        if (!mc.player.hasData(ModAttachments.CYBERWARE)) return null;
+        if (mc.player == null) {
+            SELECTED_INDEX = 0;
+            return null;
+        }
+
+        if (!mc.player.hasData(ModAttachments.CYBERWARE)) {
+            SELECTED_INDEX = 0;
+            return null;
+        }
 
         PlayerCyberwareData data = mc.player.getData(ModAttachments.CYBERWARE);
-        if (data == null) return null;
+
+        if (data == null) {
+            SELECTED_INDEX = 0;
+            return null;
+        }
 
         List<SlotIndex> pneumaticCalvesTargets = new ArrayList<>();
         ItemStack pneumaticCalvesIcon = ItemStack.EMPTY;
 
         for (var entry : data.getAll().entrySet()) {
             CyberwareSlot slot = entry.getKey();
-            var arr = entry.getValue();
-            if (arr == null) continue;
+            var installedCyberware = entry.getValue();
 
-            for (int i = 0; i < arr.length; i++) {
-                var cw = arr[i];
-                if (cw == null) continue;
+            if (installedCyberware == null) continue;
 
-                ItemStack stack = cw.getItem();
+            for (int i = 0; i < installedCyberware.length; i++) {
+                var installed = installedCyberware[i];
+
+                if (installed == null) continue;
+
+                ItemStack stack = installed.getItem();
+
                 if (stack == null || stack.isEmpty()) continue;
                 if (!stack.is(ModTags.Items.TOGGLEABLE_CYBERWARE)) continue;
 
                 if (stack.getItem() instanceof PneumaticCalvesItem) {
                     pneumaticCalvesTargets.add(new SlotIndex(slot, i));
-                    if (pneumaticCalvesIcon.isEmpty()) pneumaticCalvesIcon = stack.copy();
+
+                    if (pneumaticCalvesIcon.isEmpty()) {
+                        pneumaticCalvesIcon = stack.copy();
+                    }
+
                     continue;
                 }
 
@@ -412,43 +375,32 @@ public class CyberwareToggleWheelScreen extends Screen {
         }
 
         if (pneumaticCalvesTargets.size() >= 2) {
-            ENTRIES.add(new Entry(
-                    pneumaticCalvesIcon.isEmpty() ? ItemStack.EMPTY : pneumaticCalvesIcon,
-                    pneumaticCalvesTargets
-            ));
+            ENTRIES.add(new Entry(pneumaticCalvesIcon.isEmpty() ? ItemStack.EMPTY : pneumaticCalvesIcon, pneumaticCalvesTargets));
         }
 
-        if (SELECTED_INDEX >= ENTRIES.size()) {
-            SELECTED_INDEX = Math.max(0, ENTRIES.size() - 1);
-        }
-        if (STICKY_INDEX >= ENTRIES.size()) {
-            STICKY_INDEX = Math.max(0, ENTRIES.size() - 1);
+        if (ENTRIES.isEmpty()) {
+            SELECTED_INDEX = 0;
+        } else {
+            SELECTED_INDEX = Mth.clamp(SELECTED_INDEX, 0, ENTRIES.size() - 1);
         }
 
         return data;
     }
 
-    private static double angleForIndex(int n, int i) {
-        double step = (Math.PI * 2.0) / n;
-        return -Math.PI / 2.0 + step * i;
+    private static double angleForIndex(int entryCount, int index) {
+        double step = Math.PI * 2.0 / entryCount;
+        return -Math.PI / 2.0 + step * index;
     }
 
-    private static void drawDonutSegment(
-            GuiGraphics graphics,
-            int cx, int cy,
-            float innerR, float outerR,
-            int n, int idx,
-            int arcSteps,
-            int argb
-    ) {
-        float a = ((argb >>> 24) & 0xFF) / 255.0f;
-        float r = ((argb >>> 16) & 0xFF) / 255.0f;
-        float g = ((argb >>> 8) & 0xFF) / 255.0f;
-        float b = (argb & 0xFF) / 255.0f;
+    private static void drawDonutSegment(GuiGraphics graphics, int centerX, int centerY, float innerRadius, float outerRadius, int entryCount, int index, int arcSteps, int argb) {
+        float alpha = ((argb >>> 24) & 0xFF) / 255.0f;
+        float red = ((argb >>> 16) & 0xFF) / 255.0f;
+        float green = ((argb >>> 8) & 0xFF) / 255.0f;
+        float blue = (argb & 0xFF) / 255.0f;
 
-        double step = (Math.PI * 2.0) / (double) n;
-        double a0 = -Math.PI / 2.0 + step * (double) idx;
-        double a1 = a0 + step;
+        double step = Math.PI * 2.0 / entryCount;
+        double startAngle = -Math.PI / 2.0 + step * index;
+        double endAngle = startAngle + step;
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
@@ -456,26 +408,26 @@ public class CyberwareToggleWheelScreen extends Screen {
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         Matrix4f pose = graphics.pose().last().pose();
-        BufferBuilder bb = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
 
         for (int i = 0; i <= arcSteps; i++) {
-            double t = i / (double) arcSteps;
-            double ang = a0 + (a1 - a0) * t;
+            double progress = i / (double) arcSteps;
+            double angle = startAngle + (endAngle - startAngle) * progress;
 
-            float cos = (float) Math.cos(ang);
-            float sin = (float) Math.sin(ang);
+            float cosine = (float) Math.cos(angle);
+            float sine = (float) Math.sin(angle);
 
-            float xo = cx + cos * outerR;
-            float yo = cy + sin * outerR;
+            float outerX = centerX + cosine * outerRadius;
+            float outerY = centerY + sine * outerRadius;
 
-            float xi = cx + cos * innerR;
-            float yi = cy + sin * innerR;
+            float innerX = centerX + cosine * innerRadius;
+            float innerY = centerY + sine * innerRadius;
 
-            bb.addVertex(pose, xo, yo, 0.0f).setColor(r, g, b, a);
-            bb.addVertex(pose, xi, yi, 0.0f).setColor(r, g, b, a);
+            buffer.addVertex(pose, outerX, outerY, 0.0f).setColor(red, green, blue, alpha);
+            buffer.addVertex(pose, innerX, innerY, 0.0f).setColor(red, green, blue, alpha);
         }
 
-        BufferUploader.drawWithShader(bb.buildOrThrow());
+        BufferUploader.drawWithShader(buffer.buildOrThrow());
 
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();

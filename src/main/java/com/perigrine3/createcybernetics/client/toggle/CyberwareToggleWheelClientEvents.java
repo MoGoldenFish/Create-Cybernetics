@@ -4,8 +4,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.client.ModKeyMappings;
 import com.perigrine3.createcybernetics.screen.custom.toggle_wheel.CyberwareToggleWheelScreen;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -13,6 +13,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 @EventBusSubscriber(modid = CreateCybernetics.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public final class CyberwareToggleWheelClientEvents {
+
     private CyberwareToggleWheelClientEvents() {}
 
     @SubscribeEvent
@@ -21,14 +22,14 @@ public final class CyberwareToggleWheelClientEvents {
         if (mc.player == null) return;
 
         if (ModKeyMappings.CYBERWARE_WHEEL.get().consumeClick()) {
-            if (mc.screen instanceof CyberwareToggleWheelScreen) {
-                mc.setScreen(null);
+            if (CyberwareToggleWheelScreen.isWheelOpen()) {
+                CyberwareToggleWheelScreen.closeWheel();
             } else {
                 mc.setScreen(new CyberwareToggleWheelScreen());
             }
         }
 
-        if (mc.screen instanceof CyberwareToggleWheelScreen) {
+        if (CyberwareToggleWheelScreen.isWheelOpen()) {
             passthroughMovement(mc);
         }
     }

@@ -1,5 +1,7 @@
 package com.perigrine3.createcybernetics.item.sculked;
 
+import com.perigrine3.createcybernetics.api.CyberwareDurabilityCategory;
+import com.perigrine3.createcybernetics.api.CyberwareRepairType;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
@@ -35,6 +37,16 @@ public class SculkedIntestinesItem extends Item implements ICyberwareItem {
         if (Screen.hasShiftDown()) {
             tooltip.add(Component.translatable("tooltip.createcybernetics.humanity", humanityCost).withStyle(ChatFormatting.GOLD));
         }
+    }
+
+    @Override
+    public CyberwareRepairType getRepairType(ItemStack installedStack, CyberwareSlot slot) {
+        return CyberwareRepairType.BIOLOGICAL;
+    }
+
+    @Override
+    public CyberwareDurabilityCategory getDurabilityCategory(ItemStack installedStack, CyberwareSlot slot) {
+        return CyberwareDurabilityCategory.WETWARE;
     }
 
     @Override

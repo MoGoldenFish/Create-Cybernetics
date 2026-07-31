@@ -2,6 +2,9 @@ package com.perigrine3.createcybernetics.event.custom;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.common.attributes.ModAttributes;
+import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
+import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.item.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -32,48 +35,52 @@ public final class OreMultiplierHandler {
     @SubscribeEvent
     public static void onBreak(BlockEvent.BreakEvent event) {
         Player player = event.getPlayer();
-        if (player == null || player.isCreative()) return;
+        if (player.isCreative()) return;
         if (!(event.getLevel() instanceof ServerLevel level)) return;
+        PlayerCyberwareData data = player.getData(ModAttachments.CYBERWARE);
 
-        BlockPos pos = event.getPos();
-        BlockState state = event.getState();
-        ItemStack tool = player.getMainHandItem();
+        if (data.hasChipwareShardExact(ModItems.DATA_SHARD_ORANGE.get())) {
 
-        if (state.is(Blocks.ANCIENT_DEBRIS)) {
-            if (hasSilkTouch(level, tool)) return;
+            BlockPos pos = event.getPos();
+            BlockState state = event.getState();
+            ItemStack tool = player.getMainHandItem();
 
-            level.destroyBlock(pos, false, player);
-            Block.popResource(level, pos, new ItemStack(Items.NETHERITE_SCRAP, 2));
+            if (state.is(Blocks.ANCIENT_DEBRIS)) {
+                if (hasSilkTouch(level, tool)) return;
 
-            if (!tool.isEmpty()) {
-                tool.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
+                level.destroyBlock(pos, false, player);
+                Block.popResource(level, pos, new ItemStack(Items.NETHERITE_SCRAP, 2));
+
+                if (!tool.isEmpty()) {
+                    tool.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
+                }
+
+                event.setCanceled(true);
+                return;
             }
 
-            event.setCanceled(true);
-            return;
-        }
+            double mult = player.getAttributeValue(ModAttributes.ORE_DROP_MULTIPLIER);
+            if (!Double.isFinite(mult) || mult <= 1.0D) return;
 
-        double mult = player.getAttributeValue(ModAttributes.ORE_DROP_MULTIPLIER);
-        if (!Double.isFinite(mult) || mult <= 1.0D) return;
+            if (!state.is(Tags.Blocks.ORES)) return;
+            if (hasSilkTouch(level, tool)) return;
 
-        if (!state.is(Tags.Blocks.ORES)) return;
-        if (hasSilkTouch(level, tool)) return;
+            BlockEntity be = level.getBlockEntity(pos);
+            List<ItemStack> drops = Block.getDrops(state, level, pos, be, player, tool);
 
-        BlockEntity be = level.getBlockEntity(pos);
-        List<ItemStack> drops = Block.getDrops(state, level, pos, be, player, tool);
+            for (ItemStack drop : drops) {
+                if (drop.isEmpty()) continue;
 
-        for (ItemStack drop : drops) {
-            if (drop.isEmpty()) continue;
+                int base = drop.getCount();
+                if (base <= 0) continue;
 
-            int base = drop.getCount();
-            if (base <= 0) continue;
+                int extra = (int) Math.floor(base * (mult - 1.0D));
+                if (extra <= 0) continue;
 
-            int extra = (int) Math.floor(base * (mult - 1.0D));
-            if (extra <= 0) continue;
-
-            ItemStack extraStack = drop.copy();
-            extraStack.setCount(extra);
-            Block.popResource(level, pos, extraStack);
+                ItemStack extraStack = drop.copy();
+                extraStack.setCount(extra);
+                Block.popResource(level, pos, extraStack);
+            }
         }
     }
 

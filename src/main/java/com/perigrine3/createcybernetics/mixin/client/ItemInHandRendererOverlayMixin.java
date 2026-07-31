@@ -1,8 +1,12 @@
 package com.perigrine3.createcybernetics.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.perigrine3.createcybernetics.api.CyberwareSlot;
+import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
+import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
 import com.perigrine3.createcybernetics.compat.bettercombat.BetterCombatFirstPersonCompat;
 import com.perigrine3.createcybernetics.compat.playeranimator.PlayerAnimatorFirstPersonOverlayCompat;
+import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -25,20 +29,8 @@ public abstract class ItemInHandRendererOverlayMixin {
     @Final
     private Minecraft minecraft;
 
-    @Inject(
-            method = "renderPlayerArm",
-            at = @At("HEAD"),
-            cancellable = true
-    )
-    private void createcybernetics$hideFirstPersonArmWhenBetterCombatHidesArms(
-            PoseStack poseStack,
-            MultiBufferSource buffer,
-            int packedLight,
-            float equippedProgress,
-            float swingProgress,
-            HumanoidArm arm,
-            CallbackInfo ci
-    ) {
+    @Inject(method = "renderPlayerArm", at = @At("HEAD"), cancellable = true)
+    private void createcybernetics$hideFirstPersonArm(PoseStack poseStack, MultiBufferSource buffer, int packedLight, float equippedProgress, float swingProgress, HumanoidArm arm, CallbackInfo ci) {
         if (!(minecraft.player instanceof AbstractClientPlayer player)) {
             return;
         }
@@ -47,26 +39,18 @@ public abstract class ItemInHandRendererOverlayMixin {
             return;
         }
 
-        if (!BetterCombatFirstPersonCompat.shouldHideFirstPersonArms(player)) {
+        if (!createcybernetics$hasArm(player, arm)) {
+            ci.cancel();
             return;
         }
 
-        ci.cancel();
+        if (BetterCombatFirstPersonCompat.shouldHideFirstPersonArms(player)) {
+            ci.cancel();
+        }
     }
 
-    @Inject(
-            method = "renderPlayerArm",
-            at = @At("TAIL")
-    )
-    private void createcybernetics$renderFirstPersonArmOverlays(
-            PoseStack poseStack,
-            MultiBufferSource buffer,
-            int packedLight,
-            float equippedProgress,
-            float swingProgress,
-            HumanoidArm arm,
-            CallbackInfo ci
-    ) {
+    @Inject(method = "renderPlayerArm", at = @At("TAIL"))
+    private void createcybernetics$renderFirstPersonArmOverlays(PoseStack poseStack, MultiBufferSource buffer, int packedLight, float equippedProgress, float swingProgress, HumanoidArm arm, CallbackInfo ci) {
         if (!(minecraft.player instanceof AbstractClientPlayer player)) {
             return;
         }
@@ -75,8 +59,11 @@ public abstract class ItemInHandRendererOverlayMixin {
             return;
         }
 
-        if (!BetterCombatFirstPersonCompat
-                .shouldRenderCreateCyberneticsFirstPersonArms(player)) {
+        if (!createcybernetics$hasArm(player, arm)) {
+            return;
+        }
+
+        if (!BetterCombatFirstPersonCompat.shouldRenderCreateCyberneticsFirstPersonArms(player)) {
             return;
         }
 
@@ -84,24 +71,30 @@ public abstract class ItemInHandRendererOverlayMixin {
             return;
         }
 
-        EntityRenderer<? super AbstractClientPlayer> entityRenderer =
-                minecraft.getEntityRenderDispatcher().getRenderer(player);
+        EntityRenderer<? super AbstractClientPlayer> entityRenderer = minecraft.getEntityRenderDispatcher().getRenderer(player);
 
         if (!(entityRenderer instanceof PlayerRenderer renderer)) {
             return;
         }
 
-        PlayerModel<AbstractClientPlayer> model =
-                renderer.getModel();
+        PlayerModel<AbstractClientPlayer> model = renderer.getModel();
+        PlayerAnimatorFirstPersonOverlayCompat.renderVanillaFirstPersonArmOverlays(player, arm, model, poseStack, buffer, packedLight);
+    }
 
-        PlayerAnimatorFirstPersonOverlayCompat
-                .renderVanillaFirstPersonArmOverlays(
-                        player,
-                        arm,
-                        model,
-                        poseStack,
-                        buffer,
-                        packedLight
-                );
+    private static boolean createcybernetics$hasArm(AbstractClientPlayer player, HumanoidArm arm) {
+        PlayerCyberwareData data =
+                player.getData(ModAttachments.CYBERWARE);
+
+        if (arm == HumanoidArm.LEFT) {
+            return data.hasAnyTagged(
+                    ModTags.Items.LEFTARM_ITEMS,
+                    CyberwareSlot.LARM
+            );
+        }
+
+        return data.hasAnyTagged(
+                ModTags.Items.RIGHTARM_ITEMS,
+                CyberwareSlot.RARM
+        );
     }
 }

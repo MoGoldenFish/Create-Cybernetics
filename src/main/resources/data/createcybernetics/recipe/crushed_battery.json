@@ -26,7 +26,11 @@
     },
     {
       "chance": 0.25,
-      "id": "minecraft:redstone_block"
+      "id": "minecraft:blaze_powder"
+    },
+    {
+      "chance": 0.25,
+      "id": "minecraft:redstone"
     },
     {
       "chance": 0.25,

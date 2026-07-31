@@ -21,6 +21,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -29,6 +30,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class EnderJammerItem extends Item implements ICyberwareItem {
@@ -53,6 +55,14 @@ public class EnderJammerItem extends Item implements ICyberwareItem {
             tooltip.add(Component.translatable("tooltip.createcybernetics.brainupgrades_enderjammer.energy")
                     .withStyle(ChatFormatting.RED));
         }
+    }
+
+    @Override
+    public Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                Items.CHORUS_FRUIT, 250,
+                Items.ENDER_PEARL, 250
+        );
     }
 
     @Override

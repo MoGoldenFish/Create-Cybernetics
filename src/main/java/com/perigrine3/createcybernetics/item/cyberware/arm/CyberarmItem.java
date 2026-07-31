@@ -1,6 +1,7 @@
 package com.perigrine3.createcybernetics.item.cyberware.arm;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
+import com.perigrine3.createcybernetics.api.CyberwareRepairType;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
 import com.perigrine3.createcybernetics.common.capabilities.EntityCyberwareData;
@@ -106,6 +107,16 @@ public class CyberarmItem extends Item implements ICyberwareItem {
             return Set.of(ModTags.Items.RIGHTARM_REPLACEMENTS);
         }
         return Set.of();
+    }
+
+    @Override
+    public CyberwareRepairType getRepairType(ItemStack installedStack, CyberwareSlot slot) {
+        return CyberwareRepairType.CYBERLIMB;
+    }
+
+    @Override
+    public int getMaxCyberwareDurability(ItemStack installedStack, CyberwareSlot slot) {
+        return slot == CyberwareSlot.RARM || slot == CyberwareSlot.LARM ? 2200 : 2000;
     }
 
     @Override

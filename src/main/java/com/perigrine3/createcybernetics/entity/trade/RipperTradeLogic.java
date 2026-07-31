@@ -24,10 +24,7 @@ public final class RipperTradeLogic {
     }
 
     public static boolean isCyberware(ItemStack stack) {
-        return !stack.isEmpty() && (
-                stack.is(ModTags.Items.CYBERWARE_ITEM) ||
-                        stack.is(ModTags.Items.SCAVENGED_CYBERWARE)
-        );
+        return !stack.isEmpty() && (stack.is(ModTags.Items.CYBERWARE_ITEM) || stack.is(ModTags.Items.SCAVENGED_CYBERWARE));
     }
 
     public static boolean isScavengedCyberware(ItemStack stack) {

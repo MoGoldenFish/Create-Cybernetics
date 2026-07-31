@@ -1313,37 +1313,15 @@ public final class SurgeryController {
     }
 
     private static int countInstalledSameInSlotType(PlayerCyberwareData data, CyberwareSlot slotType, ItemStack needle) {
-        int count = 0;
-        for (int i = 0; i < slotType.size; i++) {
-            InstalledCyberware inst = data.get(slotType, i);
-            if (inst == null || inst.getItem() == null || inst.getItem().isEmpty()) continue;
-            if (ItemStack.isSameItemSameComponents(inst.getItem(), needle)) {
-                count++;
-            }
-        }
-        return count;
-    }
+        if (needle == null || needle.isEmpty()) return 0;
 
-    private static int countPlannedRemovalsSameInSlotType(
-            PlayerCyberwareData data,
-            CyberwareSlot slotType,
-            RobosurgeonBlockEntity surgeon,
-            boolean[] markedForRemoval,
-            ItemStack needle
-    ) {
-        if (markedForRemoval == null) return 0;
         int count = 0;
 
         for (int i = 0; i < slotType.size; i++) {
-            int invIndex = RobosurgeonSlotMap.toInventoryIndex(slotType, i);
-            if (invIndex < 0 || invIndex >= surgeon.inventory.getSlots()) continue;
-            if (invIndex >= markedForRemoval.length) continue;
-            if (!markedForRemoval[invIndex]) continue;
-
             InstalledCyberware inst = data.get(slotType, i);
             if (inst == null || inst.getItem() == null || inst.getItem().isEmpty()) continue;
 
-            if (ItemStack.isSameItemSameComponents(inst.getItem(), needle)) {
+            if (inst.getItem().is(needle.getItem())) {
                 count++;
             }
         }
@@ -1351,26 +1329,43 @@ public final class SurgeryController {
         return count;
     }
 
-    private static int countPlannedRemovalsSameInSlotType(
-            PlayerCyberwareData data,
-            CyberwareSlot slotType,
-            SurgeryTableBlockEntity surgeon,
-            boolean[] markedForRemoval,
-            ItemStack needle
-    ) {
+    private static int countPlannedRemovalsSameInSlotType(PlayerCyberwareData data, CyberwareSlot slotType, RobosurgeonBlockEntity surgeon, boolean[] markedForRemoval, ItemStack needle) {
         if (markedForRemoval == null) return 0;
+        if (needle == null || needle.isEmpty()) return 0;
+
         int count = 0;
 
         for (int i = 0; i < slotType.size; i++) {
             int invIndex = RobosurgeonSlotMap.toInventoryIndex(slotType, i);
             if (invIndex < 0 || invIndex >= surgeon.inventory.getSlots()) continue;
-            if (invIndex >= markedForRemoval.length) continue;
-            if (!markedForRemoval[invIndex]) continue;
+            if (invIndex >= markedForRemoval.length || !markedForRemoval[invIndex]) continue;
 
             InstalledCyberware inst = data.get(slotType, i);
             if (inst == null || inst.getItem() == null || inst.getItem().isEmpty()) continue;
 
-            if (ItemStack.isSameItemSameComponents(inst.getItem(), needle)) {
+            if (inst.getItem().is(needle.getItem())) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static int countPlannedRemovalsSameInSlotType(PlayerCyberwareData data, CyberwareSlot slotType, SurgeryTableBlockEntity surgeon, boolean[] markedForRemoval, ItemStack needle) {
+        if (markedForRemoval == null) return 0;
+        if (needle == null || needle.isEmpty()) return 0;
+
+        int count = 0;
+
+        for (int i = 0; i < slotType.size; i++) {
+            int invIndex = RobosurgeonSlotMap.toInventoryIndex(slotType, i);
+            if (invIndex < 0 || invIndex >= surgeon.inventory.getSlots()) continue;
+            if (invIndex >= markedForRemoval.length || !markedForRemoval[invIndex]) continue;
+
+            InstalledCyberware inst = data.get(slotType, i);
+            if (inst == null || inst.getItem() == null || inst.getItem().isEmpty()) continue;
+
+            if (inst.getItem().is(needle.getItem())) {
                 count++;
             }
         }

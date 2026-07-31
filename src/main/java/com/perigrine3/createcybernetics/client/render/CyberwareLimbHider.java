@@ -3,6 +3,7 @@ package com.perigrine3.createcybernetics.client.render;
 import com.perigrine3.createcybernetics.CreateCybernetics;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.compat.fancymenu.FancyMenuCompat;
 import com.perigrine3.createcybernetics.item.ModItems;
 import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.client.model.PlayerModel;
@@ -30,13 +31,22 @@ public final class CyberwareLimbHider {
         if (!(event.getRenderer() instanceof PlayerRenderer renderer)) return;
         if (!(renderer.getModel() instanceof PlayerModel<?> model)) return;
 
+        if (FancyMenuCompat.shouldIgnorePlayer(player)) {
+            setAllLimbsVisible(model);
+            return;
+        }
+
         SNAPSHOTS.put(player.getId(), VisibilitySnapshot.capture(model));
 
         PlayerCyberwareData data = PlayerCyberwareData.getForVisual(player, player.registryAccess());
         if (data == null) return;
 
-        boolean hasLeftArm = data.hasAnyTagged(ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM) || data.hasSpecificItem(ModItems.ARMUPGRADES_ARCCANNON.get(), CyberwareSlot.LARM);
-        boolean hasRightArm = data.hasAnyTagged(ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM) || data.hasSpecificItem(ModItems.ARMUPGRADES_ARCCANNON.get(), CyberwareSlot.RARM);
+        boolean hasLeftArm = data.hasAnyTagged(ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM)
+                || data.hasSpecificItem(ModItems.ARMUPGRADES_ARCCANNON.get(), CyberwareSlot.LARM);
+
+        boolean hasRightArm = data.hasAnyTagged(ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM)
+                || data.hasSpecificItem(ModItems.ARMUPGRADES_ARCCANNON.get(), CyberwareSlot.RARM);
+
         boolean hasLeftLeg = data.hasAnyTagged(ModTags.Items.LEFTLEG_ITEMS, CyberwareSlot.LLEG);
         boolean hasRightLeg = data.hasAnyTagged(ModTags.Items.RIGHTLEG_ITEMS, CyberwareSlot.RLEG);
 
@@ -56,6 +66,11 @@ public final class CyberwareLimbHider {
         if (!(event.getRenderer() instanceof PlayerRenderer renderer)) return;
         if (!(renderer.getModel() instanceof PlayerModel<?> model)) return;
 
+        if (FancyMenuCompat.shouldIgnorePlayer(player)) {
+            setAllLimbsVisible(model);
+            return;
+        }
+
         VisibilitySnapshot snap = SNAPSHOTS.remove(player.getId());
         if (snap == null) return;
 
@@ -63,23 +78,41 @@ public final class CyberwareLimbHider {
     }
 
     public static boolean shouldRenderLeftArm(AbstractClientPlayer player) {
+        if (FancyMenuCompat.shouldIgnorePlayer(player)) return true;
+
         PlayerCyberwareData data = PlayerCyberwareData.getForVisual(player, player.registryAccess());
-        return data == null || data.hasAnyTagged(ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM) || data.hasSpecificItem(ModItems.ARMUPGRADES_ARCCANNON.get(), CyberwareSlot.LARM);
+
+        return data == null
+                || data.hasAnyTagged(ModTags.Items.LEFTARM_ITEMS, CyberwareSlot.LARM)
+                || data.hasSpecificItem(ModItems.ARMUPGRADES_ARCCANNON.get(), CyberwareSlot.LARM);
     }
 
     public static boolean shouldRenderRightArm(AbstractClientPlayer player) {
+        if (FancyMenuCompat.shouldIgnorePlayer(player)) return true;
+
         PlayerCyberwareData data = PlayerCyberwareData.getForVisual(player, player.registryAccess());
-        return data == null || data.hasAnyTagged(ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM) || data.hasSpecificItem(ModItems.ARMUPGRADES_ARCCANNON.get(), CyberwareSlot.RARM);
+
+        return data == null
+                || data.hasAnyTagged(ModTags.Items.RIGHTARM_ITEMS, CyberwareSlot.RARM)
+                || data.hasSpecificItem(ModItems.ARMUPGRADES_ARCCANNON.get(), CyberwareSlot.RARM);
     }
 
     public static boolean shouldRenderLeftLeg(AbstractClientPlayer player) {
+        if (FancyMenuCompat.shouldIgnorePlayer(player)) return true;
+
         PlayerCyberwareData data = PlayerCyberwareData.getForVisual(player, player.registryAccess());
-        return data == null || data.hasAnyTagged(ModTags.Items.LEFTLEG_ITEMS, CyberwareSlot.LLEG);
+
+        return data == null
+                || data.hasAnyTagged(ModTags.Items.LEFTLEG_ITEMS, CyberwareSlot.LLEG);
     }
 
     public static boolean shouldRenderRightLeg(AbstractClientPlayer player) {
+        if (FancyMenuCompat.shouldIgnorePlayer(player)) return true;
+
         PlayerCyberwareData data = PlayerCyberwareData.getForVisual(player, player.registryAccess());
-        return data == null || data.hasAnyTagged(ModTags.Items.RIGHTLEG_ITEMS, CyberwareSlot.RLEG);
+
+        return data == null
+                || data.hasAnyTagged(ModTags.Items.RIGHTLEG_ITEMS, CyberwareSlot.RLEG);
     }
 
     public static void setLeftArmVisible(PlayerModel<?> model, boolean visible) {
@@ -100,6 +133,13 @@ public final class CyberwareLimbHider {
     public static void setRightLegVisible(PlayerModel<?> model, boolean visible) {
         model.rightLeg.visible = visible;
         model.rightPants.visible = visible;
+    }
+
+    private static void setAllLimbsVisible(PlayerModel<?> model) {
+        setLeftArmVisible(model, true);
+        setRightArmVisible(model, true);
+        setLeftLegVisible(model, true);
+        setRightLegVisible(model, true);
     }
 
     private static final class VisibilitySnapshot {

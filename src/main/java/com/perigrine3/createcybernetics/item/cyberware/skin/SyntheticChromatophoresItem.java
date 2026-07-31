@@ -7,6 +7,7 @@ import com.perigrine3.createcybernetics.common.capabilities.EntityCyberwareData;
 import com.perigrine3.createcybernetics.common.capabilities.ModAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.ModMobAttachments;
 import com.perigrine3.createcybernetics.common.capabilities.PlayerCyberwareData;
+import com.perigrine3.createcybernetics.item.ModItems;
 import com.perigrine3.createcybernetics.util.ModTags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -18,15 +19,17 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class SyntheticChromatophoresItem extends Item implements ICyberwareItem {
     private final int humanityCost;
 
-    private static final int ENERGY_PER_TICK_ACTIVE = 7;
+    private static final int ENERGY_PER_TICK_ACTIVE = 5000;
 
     public SyntheticChromatophoresItem(Properties props, int humanityCost) {
         super(props);
@@ -40,6 +43,14 @@ public class SyntheticChromatophoresItem extends Item implements ICyberwareItem 
                     .withStyle(ChatFormatting.GOLD));
             tooltip.add(Component.translatable("tooltip.createcybernetics.skinupgrades_chromatophores.energy").withStyle(ChatFormatting.RED));
         }
+    }
+
+    @Override
+    public Map<Item, Integer> getAdditionalAnvilRepairMaterials(ItemStack cyberwareStack) {
+        return Map.of(
+                ModItems.COMPONENT_FIBEROPTICS.get(), 500,
+                ModItems.COMPONENT_ACTUATOR.get(), 350
+        );
     }
 
     @Override

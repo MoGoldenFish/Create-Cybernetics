@@ -1,0 +1,32 @@
+{
+"type": "create:crushing",
+  "ingredients": [
+    {
+      "type": "neoforge:compound",
+      "ingredients": [
+        {
+          "item": "createcybernetics:muscleupgrades_ballisticgel"
+        }
+      ]
+    }
+  ],
+  "processing_time": 100,
+  "results": [
+    {
+      "chance": 0.70,
+      "id": "minecraft:slime_ball"
+    },
+    {
+      "chance": 0.70,
+      "id": "minecraft:bone_meal"
+    },
+    {
+      "chance": 0.20,
+      "id": "createcybernetics:graphene_elastomer"
+    },
+    {
+      "chance": 0.25,
+      "id": "create:experience_nugget"
+    }
+  ]
+}

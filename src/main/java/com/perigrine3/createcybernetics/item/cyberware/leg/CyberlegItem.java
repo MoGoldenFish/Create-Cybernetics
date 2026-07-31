@@ -1,6 +1,7 @@
 package com.perigrine3.createcybernetics.item.cyberware.leg;
 
 import com.perigrine3.createcybernetics.CreateCybernetics;
+import com.perigrine3.createcybernetics.api.CyberwareRepairType;
 import com.perigrine3.createcybernetics.api.CyberwareSlot;
 import com.perigrine3.createcybernetics.api.ICyberwareItem;
 import com.perigrine3.createcybernetics.common.capabilities.EntityCyberwareData;
@@ -91,6 +92,16 @@ public class CyberlegItem extends Item implements ICyberwareItem {
     @Override
     public Set<CyberwareSlot> getReplacedOrgans() {
         return Set.of(side);
+    }
+
+    @Override
+    public CyberwareRepairType getRepairType(ItemStack installedStack, CyberwareSlot slot) {
+        return CyberwareRepairType.CYBERLIMB;
+    }
+
+    @Override
+    public int getMaxCyberwareDurability(ItemStack installedStack, CyberwareSlot slot) {
+        return slot == CyberwareSlot.RLEG || slot == CyberwareSlot.LLEG ? 2200 : 2000;
     }
 
     @Override
