@@ -279,6 +279,7 @@ public class SpinalInjectorItem extends Item implements ICyberwareItem {
 
     private static final String INJECT_COOLDOWN_TAG = "cc_spinal_injector_cd";
     private static final int INJECT_COOLDOWN_TICKS = 20;
+    private static final int NEUROPOZYNE_REFRESH_THRESHOLD_TICKS = 10 * 20;
 
     private static int getCooldown(ServerPlayer sp) {
         CompoundTag pd = sp.getPersistentData();
@@ -363,7 +364,7 @@ public class SpinalInjectorItem extends Item implements ICyberwareItem {
         sp.syncData(ModAttachments.CYBERWARE);
 
         if (dropsAutoInjector) {
-            dropEmptyAutoInjectorBehind(sp);
+            giveOrDropEmptyAutoInjector(sp);
         } else {
             dropEmptyBottleBehind(sp);
         }
@@ -389,13 +390,12 @@ public class SpinalInjectorItem extends Item implements ICyberwareItem {
             if (!isInjectable(base)) continue;
 
             if (base.is(ModItems.NEUROPOZYNE_AUTOINJECTOR.get())) {
-                var cyberwareRejection = ModEffects.CYBERWARE_REJECTION;
-
-                if (!sp.hasEffect(cyberwareRejection)) {
+                MobEffectInstance current = sp.getEffect(ModEffects.NEUROPOZYNE);
+                if (current != null && current.getDuration() >= NEUROPOZYNE_REFRESH_THRESHOLD_TICKS) {
                     continue;
                 }
 
-                if (sp.hasEffect(ModEffects.NEUROPOZYNE)) {
+                if (current != null) {
                     applyNeuropozyneBoostDay(sp);
                 } else {
                     applyNeuropozyneDay(sp);
@@ -499,8 +499,11 @@ public class SpinalInjectorItem extends Item implements ICyberwareItem {
         dropItemBehind(sp, new ItemStack(Items.GLASS_BOTTLE));
     }
 
-    private static void dropEmptyAutoInjectorBehind(ServerPlayer sp) {
-        dropItemBehind(sp, new ItemStack(ModItems.EMPTY_AUTOINJECTOR.get()));
+    private static void giveOrDropEmptyAutoInjector(ServerPlayer sp) {
+        ItemStack empty = new ItemStack(ModItems.EMPTY_AUTOINJECTOR.get());
+        if (!sp.getInventory().add(empty)) {
+            sp.drop(empty, false);
+        }
     }
 
     private static boolean tryInjectFromAnyInstalled(ServerPlayer sp, PlayerCyberwareData data) {
